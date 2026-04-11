@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>🌙 Nova Chat | Мессенджер</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
@@ -29,7 +29,6 @@
             padding: 10px;
         }
 
-        /* ШАПКА */
         .header {
             background: rgba(0,0,0,0.3);
             backdrop-filter: blur(10px);
@@ -107,7 +106,6 @@
             background: rgba(220,38,38,0.6);
         }
 
-        /* ОСНОВНОЙ ЧАТ */
         .chat-container {
             display: flex;
             gap: 15px;
@@ -115,7 +113,6 @@
             min-height: 0;
         }
 
-        /* КОМНАТЫ */
         .rooms-sidebar {
             width: 280px;
             background: rgba(0,0,0,0.3);
@@ -185,7 +182,6 @@
             box-shadow: 0 5px 15px rgba(168,85,247,0.4);
         }
 
-        /* ОКНО СООБЩЕНИЙ */
         .messages-area {
             flex: 1;
             background: rgba(0,0,0,0.3);
@@ -222,13 +218,7 @@
         .message {
             display: flex;
             gap: 12px;
-            animation: fadeIn 0.3s;
             max-width: 80%;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
         }
 
         .message-avatar {
@@ -267,7 +257,6 @@
             text-align: right;
         }
 
-        /* ВВОД СООБЩЕНИЯ */
         .message-input-area {
             padding: 15px 20px;
             border-top: 1px solid rgba(255,255,255,0.1);
@@ -306,7 +295,6 @@
             box-shadow: 0 5px 15px rgba(168,85,247,0.4);
         }
 
-        /* МОДАЛКИ */
         .modal {
             display: none;
             position: fixed;
@@ -432,7 +420,6 @@
             transform: none !important;
         }
 
-        /* ПРОФИЛЬ */
         .profile-avatar-selector {
             display: flex;
             gap: 15px;
@@ -459,7 +446,6 @@
             box-shadow: 0 0 15px #a855f7;
         }
 
-        /* СКРОЛЛ */
         ::-webkit-scrollbar {
             width: 6px;
         }
@@ -474,7 +460,6 @@
             border-radius: 10px;
         }
 
-        /* АДАПТИВНОСТЬ */
         @media (max-width: 768px) {
             .rooms-sidebar {
                 width: 200px;
@@ -596,11 +581,11 @@
 
     <script>
         // ============================================
-        // КОНФИГУРАЦИЯ
+        // КОНФИГУРАЦИЯ - ВАШИ ДАННЫЕ
         // ============================================
         const SUPABASE_URL = 'https://drsmnvtmyxqeqjoybaxq.supabase.co';
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRyc21udnRteXhxZXFqb3liYXhxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU4NzE0MDEsImV4cCI6MjA5MTQ0NzQwMX0.copFAJWP57olKR3cm6PTfYdMh5gQM1-z0Bo7-q-q004';
-        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
         // EmailJS
         emailjs.init('ZGGZOMtj2UyXw9FqL');
@@ -651,7 +636,7 @@
         // ============================================
         // РЕГИСТРАЦИЯ И ПОДТВЕРЖДЕНИЕ
         // ============================================
-        async function sendVerificationCode() {
+        window.sendVerificationCode = async function() {
             const username = document.getElementById('regUsername').value.trim();
             const email = document.getElementById('regEmail').value.trim();
             const password = document.getElementById('regPassword').value;
@@ -665,7 +650,7 @@
                 return;
             }
 
-            const { data: existing } = await supabase
+            const { data: existing } = await supabaseClient
                 .from('users')
                 .select('username')
                 .eq('username', username)
@@ -693,9 +678,9 @@
             } catch (error) {
                 showError('registerError', '❌ Ошибка отправки кода. Попробуйте позже.');
             }
-        }
+        };
 
-        async function verifyCode() {
+        window.verifyCode = async function() {
             const code = getCode();
             if (code.length !== 6) {
                 showError('verifyError', '❌ Введите 6-значный код');
@@ -706,7 +691,7 @@
                 return;
             }
 
-            const { error } = await supabase
+            const { error } = await supabaseClient
                 .from('users')
                 .insert([{
                     username: pendingRegistration.username,
@@ -725,10 +710,10 @@
             alert('✅ Регистрация успешна! Теперь войдите.');
             pendingRegistration = null;
             pendingCode = null;
-            showLoginForm();
-        }
+            window.showLoginForm();
+        };
 
-        async function resendCode() {
+        window.resendCode = async function() {
             if (!pendingRegistration) return;
             const code = Math.floor(100000 + Math.random() * 900000).toString();
             pendingCode = code;
@@ -737,16 +722,16 @@
                 code: code
             });
             alert('📨 Код отправлен повторно');
-        }
+        };
 
         // ============================================
         // АВТОРИЗАЦИЯ
         // ============================================
-        async function doLogin() {
+        window.doLogin = async function() {
             const username = document.getElementById('loginUsername').value.trim();
             const password = document.getElementById('loginPassword').value;
 
-            const { data, error } = await supabase
+            const { data, error } = await supabaseClient
                 .from('users')
                 .select('*')
                 .eq('username', username)
@@ -768,27 +753,26 @@
             loadChats();
             loadMessages();
             startRealtime();
-        }
+        };
 
-        function logout() {
+        window.logout = function() {
             if (realtimeSubscription) {
                 realtimeSubscription.unsubscribe();
             }
             currentUser = null;
             document.getElementById('chatContainer').style.display = 'none';
             document.getElementById('authModal').style.display = 'flex';
-            showLoginForm();
-        }
+            window.showLoginForm();
+        };
 
         // ============================================
         // ПРОФИЛЬ
         // ============================================
-        function showProfileModal() {
+        window.showProfileModal = function() {
             document.getElementById('profileDisplayName').value = currentUser.display_name || currentUser.username;
             document.getElementById('profileBio').value = currentUser.bio || '';
             document.getElementById('profileModal').style.display = 'flex';
             
-            // Подсветка выбранного аватара
             document.querySelectorAll('.avatar-option').forEach(opt => {
                 if (opt.innerText === (currentUser.avatar || '👤')) {
                     opt.classList.add('selected');
@@ -796,13 +780,13 @@
                     opt.classList.remove('selected');
                 }
             });
-        }
+        };
 
-        function closeProfileModal() {
+        window.closeProfileModal = function() {
             document.getElementById('profileModal').style.display = 'none';
-        }
+        };
 
-        function selectAvatar(avatar) {
+        window.selectAvatar = function(avatar) {
             selectedAvatar = avatar;
             document.querySelectorAll('.avatar-option').forEach(opt => {
                 if (opt.innerText === avatar) {
@@ -811,13 +795,13 @@
                     opt.classList.remove('selected');
                 }
             });
-        }
+        };
 
-        async function updateProfile() {
+        window.updateProfile = async function() {
             const displayName = document.getElementById('profileDisplayName').value.trim();
             const bio = document.getElementById('profileBio').value.trim();
             
-            const { error } = await supabase
+            const { error } = await supabaseClient
                 .from('users')
                 .update({
                     display_name: displayName || currentUser.username,
@@ -838,16 +822,15 @@
             document.getElementById('userName').innerText = currentUser.display_name;
             document.getElementById('userAvatar').innerText = selectedAvatar;
             
-            closeProfileModal();
+            window.closeProfileModal();
             alert('✅ Профиль обновлён');
-        }
+        };
 
         // ============================================
         // ЧАТЫ И СООБЩЕНИЯ
         // ============================================
         async function loadChats() {
-            // Группы
-            const { data: memberships } = await supabase
+            const { data: memberships } = await supabaseClient
                 .from('group_members')
                 .select('groups(*)')
                 .eq('username', currentUser.username);
@@ -867,8 +850,7 @@
             }
             document.getElementById('groupsList').innerHTML = groupsHtml || '<div style="color:#a0a0ff; font-size:12px; padding:10px;">Нет групп</div>';
 
-            // Пользователи для личных сообщений
-            const { data: users } = await supabase
+            const { data: users } = await supabaseClient
                 .from('users')
                 .select('username, display_name, avatar')
                 .neq('username', currentUser.username);
@@ -889,7 +871,7 @@
             document.getElementById('usersList').innerHTML = usersHtml || '<div style="color:#a0a0ff; font-size:12px; padding:10px;">Нет пользователей</div>';
         }
 
-        function switchChat(type, id, name, icon) {
+        window.switchChat = function(type, id, name, icon) {
             currentChat = { type, id, name, icon: icon || (type === 'group' ? '👥' : '👤') };
             document.getElementById('currentChatHeader').innerHTML = `
                 <span class="messages-header-icon">${currentChat.icon}</span>
@@ -902,21 +884,21 @@
                 const btn = event.target.closest('.room-btn');
                 if (btn) btn.classList.add('active');
             }
-        }
+        };
 
         async function loadMessages() {
             const container = document.getElementById('messagesList');
             let messages = [];
 
             if (currentChat.type === 'group') {
-                const { data } = await supabase
+                const { data } = await supabaseClient
                     .from('group_messages')
                     .select('*')
                     .eq('group_id', currentChat.id)
                     .order('created_at', { ascending: true });
                 messages = data || [];
             } else {
-                const { data } = await supabase
+                const { data } = await supabaseClient
                     .from('messages')
                     .select('*')
                     .or(`and(from_user.eq.${currentUser.username},to_user.eq.${currentChat.id}),and(from_user.eq.${currentChat.id},to_user.eq.${currentUser.username})`)
@@ -924,9 +906,8 @@
                 messages = data || [];
             }
 
-            // Загружаем аватары пользователей
             const usersMap = {};
-            const { data: users } = await supabase.from('users').select('username, avatar, display_name');
+            const { data: users } = await supabaseClient.from('users').select('username, avatar, display_name');
             if (users) {
                 users.forEach(u => {
                     usersMap[u.username] = { avatar: u.avatar || '👤', display_name: u.display_name || u.username };
@@ -944,7 +925,7 @@
                     <div class="message ${isOwn ? 'message-own' : ''}">
                         <div class="message-avatar">${avatar}</div>
                         <div class="message-content">
-                            <div class="message-user">${displayName} <span class="message-time">${time}</span></div>
+                            <div class="message-user">${escapeHtml(displayName)} <span class="message-time">${time}</span></div>
                             <div class="message-text">${escapeHtml(msg.message)}</div>
                         </div>
                     </div>
@@ -960,18 +941,18 @@
             return div.innerHTML;
         }
 
-        async function sendMessage() {
+        window.sendMessage = async function() {
             const text = document.getElementById('messageInput').value.trim();
             if (!text) return;
 
             if (currentChat.type === 'group') {
-                await supabase.from('group_messages').insert([{
+                await supabaseClient.from('group_messages').insert([{
                     group_id: currentChat.id,
                     username: currentUser.username,
                     message: text
                 }]);
             } else {
-                await supabase.from('messages').insert([{
+                await supabaseClient.from('messages').insert([{
                     from_user: currentUser.username,
                     to_user: currentChat.id,
                     message: text
@@ -980,13 +961,13 @@
 
             document.getElementById('messageInput').value = '';
             loadMessages();
-        }
+        };
 
         function startRealtime() {
             if (realtimeSubscription) {
                 realtimeSubscription.unsubscribe();
             }
-            realtimeSubscription = supabase
+            realtimeSubscription = supabaseClient
                 .channel('nova-chat-realtime')
                 .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'group_messages' }, () => {
                     if (currentChat.type === 'group') loadMessages();
@@ -1000,14 +981,14 @@
         // ============================================
         // ГРУППЫ
         // ============================================
-        async function createGroup() {
+        window.createGroup = async function() {
             const name = document.getElementById('groupName').value.trim();
             if (!name) {
                 alert('Введите название группы');
                 return;
             }
 
-            const { data: group, error } = await supabase
+            const { data: group, error } = await supabaseClient
                 .from('groups')
                 .insert([{ name, owner: currentUser.username }])
                 .select();
@@ -1017,40 +998,40 @@
                 return;
             }
 
-            await supabase.from('group_members').insert([{
+            await supabaseClient.from('group_members').insert([{
                 group_id: group[0].id,
                 username: currentUser.username
             }]);
 
             closeCreateGroupModal();
             loadChats();
-            switchChat('group', group[0].id, name, '👥');
-        }
+            window.switchChat('group', group[0].id, name, '👥');
+        };
 
-        function showCreateGroupModal() {
+        window.showCreateGroupModal = function() {
             document.getElementById('createGroupModal').style.display = 'flex';
-        }
+        };
 
-        function closeCreateGroupModal() {
+        window.closeCreateGroupModal = function() {
             document.getElementById('createGroupModal').style.display = 'none';
             document.getElementById('groupName').value = '';
             document.getElementById('groupDescription').value = '';
-        }
+        };
 
         // ============================================
         // ПЕРЕКЛЮЧЕНИЕ ФОРМ
         // ============================================
-        function showRegisterForm() {
+        window.showRegisterForm = function() {
             document.getElementById('loginForm').style.display = 'none';
             document.getElementById('registerForm').style.display = 'block';
             document.getElementById('verifyForm').style.display = 'none';
-        }
+        };
 
-        function showLoginForm() {
+        window.showLoginForm = function() {
             document.getElementById('loginForm').style.display = 'block';
             document.getElementById('registerForm').style.display = 'none';
             document.getElementById('verifyForm').style.display = 'none';
-        }
+        };
     </script>
 </body>
 </html>
