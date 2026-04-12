@@ -31,20 +31,6 @@
             background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2a 100%);
         }
 
-        .bg-animation::before {
-            content: '';
-            position: absolute;
-            width: 200%;
-            height: 200%;
-            background: radial-gradient(circle at 20% 30%, rgba(168,85,247,0.15) 0%, transparent 50%);
-            animation: rotate 20s linear infinite;
-        }
-
-        @keyframes rotate {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
-        }
-
         .app {
             display: flex;
             height: 100vh;
@@ -110,24 +96,6 @@
             width: 100%;
             height: 100%;
             object-fit: cover;
-        }
-
-        .user-avatar-sidebar .avatar-overlay {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background: rgba(0,0,0,0.7);
-            color: white;
-            font-size: 10px;
-            text-align: center;
-            padding: 2px;
-            transform: translateY(100%);
-            transition: transform 0.3s;
-        }
-
-        .user-avatar-sidebar:hover .avatar-overlay {
-            transform: translateY(0);
         }
 
         .user-info-sidebar .user-details {
@@ -432,6 +400,34 @@
             word-wrap: break-word;
         }
 
+        .voice-message {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            min-width: 180px;
+        }
+
+        .voice-play {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 20px;
+            cursor: pointer;
+        }
+
+        .voice-wave {
+            flex: 1;
+            height: 30px;
+            background: repeating-linear-gradient(90deg, #a855f7, #a855f7 2px, transparent 2px, transparent 6px);
+            background-size: 4px 100%;
+        }
+
+        .voice-duration {
+            font-size: 11px;
+            color: #a0a0ff;
+            min-width: 40px;
+        }
+
         .message-file {
             margin-top: 5px;
         }
@@ -446,10 +442,6 @@
             text-decoration: none;
             color: #a855f7;
             font-size: 12px;
-        }
-
-        .file-link:hover {
-            background: rgba(168,85,247,0.2);
         }
 
         .message-image {
@@ -486,33 +478,6 @@
 
         .message:hover .message-delete {
             display: flex;
-        }
-
-        .voice-message {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            min-width: 150px;
-        }
-
-        .voice-play {
-            background: none;
-            border: none;
-            color: white;
-            font-size: 20px;
-            cursor: pointer;
-        }
-
-        .voice-wave {
-            flex: 1;
-            height: 30px;
-            background: repeating-linear-gradient(90deg, #a855f7, #a855f7 2px, transparent 2px, transparent 6px);
-            background-size: 4px 100%;
-        }
-
-        .voice-duration {
-            font-size: 11px;
-            color: #a0a0ff;
         }
 
         .message-input-area {
@@ -582,16 +547,24 @@
             align-items: center;
             justify-content: center;
             transition: all 0.3s;
-        }
-
-        .voice-record-btn:hover {
-            background: #a855f7;
-            transform: scale(1.05);
+            position: relative;
         }
 
         .voice-record-btn.recording {
             background: #ef4444;
             animation: pulse 1s infinite;
+        }
+
+        .voice-record-btn .timer {
+            position: absolute;
+            bottom: -25px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 10px;
+            white-space: nowrap;
+            background: #1a1a2a;
+            padding: 2px 6px;
+            border-radius: 10px;
         }
 
         @keyframes pulse {
@@ -731,72 +704,6 @@
             width: 100%;
             height: 100%;
             object-fit: cover;
-        }
-
-        .avatar-preview .avatar-overlay {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background: rgba(0,0,0,0.7);
-            text-align: center;
-            padding: 5px;
-            font-size: 10px;
-            transform: translateY(100%);
-            transition: transform 0.3s;
-        }
-
-        .avatar-preview:hover .avatar-overlay {
-            transform: translateY(0);
-        }
-
-        .members-list {
-            max-height: 300px;
-            overflow-y: auto;
-            margin: 15px 0;
-        }
-
-        .member-item {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            padding: 10px;
-            border-bottom: 1px solid rgba(255,255,255,0.1);
-        }
-
-        .member-avatar {
-            width: 40px;
-            height: 40px;
-            background: linear-gradient(135deg, #2a2a4a, #1a1a3a);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 20px;
-            overflow: hidden;
-        }
-
-        .member-avatar img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-
-        .member-name {
-            flex: 1;
-        }
-
-        .member-role {
-            font-size: 10px;
-            color: #a855f7;
-        }
-
-        .remove-member {
-            background: none;
-            border: none;
-            color: #ef4444;
-            cursor: pointer;
-            font-size: 16px;
         }
 
         .code-inputs {
@@ -1111,16 +1018,6 @@
         </div>
     </div>
 
-    <!-- МОДАЛКА ДОБАВЛЕНИЯ УЧАСТНИКОВ -->
-    <div id="addMembersModal" class="modal">
-        <div class="modal-content">
-            <span class="close-modal" onclick="closeAddMembersModal()">✖</span>
-            <h2>👥 Добавить участников</h2>
-            <div id="membersList"></div>
-            <button onclick="addSelectedMembers()">Добавить</button>
-        </div>
-    </div>
-
     <script>
         // ============================================
         // КОНФИГУРАЦИЯ
@@ -1151,6 +1048,8 @@
         let mediaRecorder = null;
         let audioChunks = [];
         let isRecording = false;
+        let recordingStartTime = null;
+        let recordingTimer = null;
         
         // Переменные для звонков
         let localStream = null;
@@ -1221,6 +1120,12 @@
 
         function clearSession() {
             localStorage.removeItem('nova_chat_user');
+        }
+
+        function formatDuration(seconds) {
+            const mins = Math.floor(seconds / 60);
+            const secs = seconds % 60;
+            return `${mins}:${secs.toString().padStart(2, '0')}`;
         }
 
         // ============================================
@@ -1424,50 +1329,80 @@
         };
 
         // ============================================
-        // ЗАГРУЗКА ЧАТОВ
+        // ЗАГРУЗКА ЧАТОВ (ИСПРАВЛЕНО)
         // ============================================
         async function loadChats() {
-            // Группы
+            // Группы - упрощённый запрос
             const { data: memberships, error: groupsError } = await supabaseClient
                 .from('group_members')
-                .select(`
-                    group_id,
-                    groups:group_id (id, name)
-                `)
+                .select('group_id')
                 .eq('username', currentUser.username);
 
             if (groupsError) {
                 console.error('Groups error:', groupsError);
             }
 
+            // Получаем данные групп отдельно
+            let groupsList = [];
+            if (memberships && memberships.length > 0) {
+                const groupIds = memberships.map(m => m.group_id);
+                const { data: groupsData } = await supabaseClient
+                    .from('groups')
+                    .select('*')
+                    .in('id', groupIds);
+                groupsList = groupsData || [];
+            }
+
+            // Каналы
+            const { data: channelsList } = await supabaseClient
+                .from('channel_subscribers')
+                .select('channel_id')
+                .eq('username', currentUser.username);
+
+            let channelsData = [];
+            if (channelsList && channelsList.length > 0) {
+                const channelIds = channelsList.map(c => c.channel_id);
+                const { data: chData } = await supabaseClient
+                    .from('channels')
+                    .select('*')
+                    .in('id', channelIds);
+                channelsData = chData || [];
+            }
+
             // Пользователи для ЛС
-            const { data: users, error: usersError } = await supabaseClient
+            const { data: usersList } = await supabaseClient
                 .from('users')
                 .select('username, display_name, avatar, status')
                 .neq('username', currentUser.username);
 
-            if (usersError) {
-                console.error('Users error:', usersError);
-            }
-
             chats = [];
             
-            if (memberships && !groupsError) {
-                memberships.forEach(g => {
-                    if (g.groups) {
-                        chats.push({
-                            id: g.groups.id,
-                            type: 'group',
-                            name: g.groups.name,
-                            avatar: '👥',
-                            preview: ''
-                        });
-                    }
+            // Добавляем группы
+            groupsList.forEach(g => {
+                chats.push({
+                    id: g.id,
+                    type: 'group',
+                    name: g.name,
+                    avatar: g.avatar || '👥',
+                    preview: ''
                 });
-            }
+            });
             
-            if (users && !usersError) {
-                users.forEach(u => {
+            // Добавляем каналы
+            channelsData.forEach(c => {
+                chats.push({
+                    id: c.id,
+                    type: 'channel',
+                    name: c.name,
+                    avatar: c.avatar || '📢',
+                    preview: '',
+                    isChannel: true
+                });
+            });
+            
+            // Добавляем пользователей
+            if (usersList) {
+                usersList.forEach(u => {
                     chats.push({
                         id: u.username,
                         type: 'user',
@@ -1503,7 +1438,7 @@
                     <div class="chat-item ${isActive ? 'active' : ''}" onclick="switchChat('${chat.type}', '${chat.id}', '${chat.name.replace(/'/g, "\\'")}', '${chat.avatar}')">
                         <div class="chat-avatar">${typeof chat.avatar === 'string' && chat.avatar.startsWith('data:') ? `<img src="${chat.avatar}">` : chat.avatar}</div>
                         <div class="chat-info">
-                            <div class="chat-name">${chat.name} ${chat.type === 'user' ? statusIcon : ''}</div>
+                            <div class="chat-name">${chat.name} ${chat.type === 'user' ? statusIcon : ''} ${chat.type === 'channel' ? '📢' : ''}</div>
                             <div class="chat-preview">${chat.preview || 'Напишите сообщение...'}</div>
                         </div>
                     </div>
@@ -1523,12 +1458,17 @@
             currentChat = { type, id, name, avatar };
             document.getElementById('chatHeaderName').innerText = name;
             document.getElementById('chatHeaderAvatarContent').innerHTML = typeof avatar === 'string' && avatar.startsWith('data:') ? `<img src="${avatar}">` : avatar;
-            document.getElementById('chatHeaderType').innerHTML = type === 'group' ? '(группа)' : '(личные)';
-            if (type === 'user') {
+            
+            if (type === 'group') {
+                document.getElementById('chatHeaderType').innerHTML = '(группа)';
+                document.getElementById('chatHeaderStatus').innerHTML = '👥 Группа';
+            } else if (type === 'channel') {
+                document.getElementById('chatHeaderType').innerHTML = '(канал)';
+                document.getElementById('chatHeaderStatus').innerHTML = '📢 Канал';
+            } else {
+                document.getElementById('chatHeaderType').innerHTML = '(личные)';
                 const user = chats.find(c => c.id === id);
                 document.getElementById('chatHeaderStatus').innerHTML = user?.status === 'online' ? '🟢 Онлайн' : '⚫ Офлайн';
-            } else {
-                document.getElementById('chatHeaderStatus').innerHTML = '👥 Группа';
             }
             loadMessages();
             renderChats();
@@ -1546,6 +1486,13 @@
                     .from('group_messages')
                     .select('*')
                     .eq('group_id', currentChat.id)
+                    .order('created_at', { ascending: true });
+                messages = data || [];
+            } else if (currentChat.type === 'channel') {
+                const { data } = await supabaseClient
+                    .from('channel_messages')
+                    .select('*')
+                    .eq('channel_id', currentChat.id)
                     .order('created_at', { ascending: true });
                 messages = data || [];
             } else {
@@ -1568,12 +1515,14 @@
             let html = '';
             messages.forEach(msg => {
                 const isOwn = msg.from_user === currentUser.username;
+                const canDelete = isOwn || currentUser.role === 'admin';
                 const avatar = isOwn ? (currentUser.avatar || '👤') : (usersMap[msg.from_user]?.avatar || '👤');
                 const displayName = isOwn ? (currentUser.display_name || currentUser.username) : (usersMap[msg.from_user]?.display_name || msg.from_user);
                 const time = new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
                 
                 if (msg.message && msg.message.startsWith('audio:')) {
                     const audioData = msg.message.substring(6);
+                    const duration = msg.duration || '0:00';
                     html += `
                         <div class="message ${isOwn ? 'message-own' : ''}">
                             <div class="message-avatar">${typeof avatar === 'string' && avatar.startsWith('data:') ? `<img src="${avatar}">` : avatar}</div>
@@ -1582,11 +1531,11 @@
                                 <div class="voice-message">
                                     <button class="voice-play" onclick="playAudio('${audioData}')">▶️</button>
                                     <div class="voice-wave"></div>
-                                    <span class="voice-duration">🎤 Голосовое</span>
+                                    <span class="voice-duration">${duration}</span>
                                 </div>
                                 <div class="message-time">${time}</div>
                             </div>
-                            <button class="message-delete" onclick="deleteMessage('${msg.id}', '${currentChat.type}')">✖</button>
+                            ${canDelete ? `<button class="message-delete" onclick="deleteMessage('${msg.id}', '${currentChat.type}')">✖</button>` : ''}
                         </div>
                     `;
                 } else if (msg.message && msg.message.startsWith('file:')) {
@@ -1602,7 +1551,7 @@
                                 }
                                 <div class="message-time">${time}</div>
                             </div>
-                            <button class="message-delete" onclick="deleteMessage('${msg.id}', '${currentChat.type}')">✖</button>
+                            ${canDelete ? `<button class="message-delete" onclick="deleteMessage('${msg.id}', '${currentChat.type}')">✖</button>` : ''}
                         </div>
                     `;
                 } else {
@@ -1614,7 +1563,7 @@
                                 <div class="message-text">${escapeHtml(msg.message)}</div>
                                 <div class="message-time">${time}</div>
                             </div>
-                            <button class="message-delete" onclick="deleteMessage('${msg.id}', '${currentChat.type}')">✖</button>
+                            ${canDelete ? `<button class="message-delete" onclick="deleteMessage('${msg.id}', '${currentChat.type}')">✖</button>` : ''}
                         </div>
                     `;
                 }
@@ -1627,6 +1576,8 @@
             if (!confirm('Удалить сообщение?')) return;
             if (type === 'group') {
                 await supabaseClient.from('group_messages').delete().eq('id', id);
+            } else if (type === 'channel') {
+                await supabaseClient.from('channel_messages').delete().eq('id', id);
             } else {
                 await supabaseClient.from('messages').delete().eq('id', id);
             }
@@ -1658,6 +1609,22 @@
                     username: currentUser.username,
                     message: text
                 }]);
+            } else if (currentChat.type === 'channel') {
+                // Только создатель канала может писать
+                const { data: channel } = await supabaseClient
+                    .from('channels')
+                    .select('owner')
+                    .eq('id', currentChat.id)
+                    .single();
+                if (channel.owner === currentUser.username) {
+                    await supabaseClient.from('channel_messages').insert([{
+                        channel_id: currentChat.id,
+                        username: currentUser.username,
+                        message: text
+                    }]);
+                } else {
+                    alert('❌ Только создатель канала может писать сообщения');
+                }
             } else {
                 await supabaseClient.from('messages').insert([{
                     from_user: currentUser.username,
@@ -1688,6 +1655,19 @@
                             username: currentUser.username,
                             message: message
                         }]);
+                    } else if (currentChat.type === 'channel') {
+                        const { data: channel } = await supabaseClient
+                            .from('channels')
+                            .select('owner')
+                            .eq('id', currentChat.id)
+                            .single();
+                        if (channel.owner === currentUser.username) {
+                            await supabaseClient.from('channel_messages').insert([{
+                                channel_id: currentChat.id,
+                                username: currentUser.username,
+                                message: message
+                            }]);
+                        }
                     } else {
                         await supabaseClient.from('messages').insert([{
                             from_user: currentUser.username,
@@ -1703,7 +1683,7 @@
         };
 
         // ============================================
-        // ГОЛОСОВЫЕ СООБЩЕНИЯ
+        // ГОЛОСОВЫЕ СООБЩЕНИЯ С ТАЙМЕРОМ
         // ============================================
         window.toggleVoiceRecording = async function() {
             if (!isRecording) {
@@ -1711,29 +1691,69 @@
                     const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
                     mediaRecorder = new MediaRecorder(stream);
                     audioChunks = [];
+                    recordingStartTime = Date.now();
+                    
+                    const voiceBtn = document.getElementById('voiceRecordBtn');
+                    voiceBtn.classList.add('recording');
+                    
+                    let seconds = 0;
+                    recordingTimer = setInterval(() => {
+                        seconds++;
+                        const mins = Math.floor(seconds / 60);
+                        const secs = seconds % 60;
+                        voiceBtn.innerHTML = `⏹️ ${mins}:${secs.toString().padStart(2, '0')}`;
+                    }, 1000);
                     
                     mediaRecorder.ondataavailable = (event) => {
                         audioChunks.push(event.data);
                     };
                     
                     mediaRecorder.onstop = async () => {
+                        clearInterval(recordingTimer);
+                        voiceBtn.classList.remove('recording');
+                        voiceBtn.innerHTML = '🎙️';
+                        
                         const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
                         const reader = new FileReader();
                         reader.onloadend = async () => {
                             const audioDataUrl = reader.result;
+                            const duration = Math.floor((Date.now() - recordingStartTime) / 1000);
+                            const mins = Math.floor(duration / 60);
+                            const secs = duration % 60;
                             const audioMessage = `audio:${audioDataUrl}`;
+                            
+                            const messageData = {
+                                message: audioMessage,
+                                duration: `${mins}:${secs.toString().padStart(2, '0')}`
+                            };
                             
                             if (currentChat.type === 'group') {
                                 await supabaseClient.from('group_messages').insert([{
                                     group_id: currentChat.id,
                                     username: currentUser.username,
-                                    message: audioMessage
+                                    message: audioMessage,
+                                    duration: messageData.duration
                                 }]);
+                            } else if (currentChat.type === 'channel') {
+                                const { data: channel } = await supabaseClient
+                                    .from('channels')
+                                    .select('owner')
+                                    .eq('id', currentChat.id)
+                                    .single();
+                                if (channel.owner === currentUser.username) {
+                                    await supabaseClient.from('channel_messages').insert([{
+                                        channel_id: currentChat.id,
+                                        username: currentUser.username,
+                                        message: audioMessage,
+                                        duration: messageData.duration
+                                    }]);
+                                }
                             } else {
                                 await supabaseClient.from('messages').insert([{
                                     from_user: currentUser.username,
                                     to_user: currentChat.id,
-                                    message: audioMessage
+                                    message: audioMessage,
+                                    duration: messageData.duration
                                 }]);
                             }
                             loadMessages();
@@ -1744,12 +1764,10 @@
                     
                     mediaRecorder.start();
                     isRecording = true;
-                    document.getElementById('voiceRecordBtn').classList.add('recording');
-                    document.getElementById('voiceRecordBtn').innerHTML = '⏹️';
                     
                     setTimeout(() => {
                         if (isRecording) stopVoiceRecording();
-                    }, 30000);
+                    }, 60000);
                     
                 } catch (err) {
                     alert('Не удалось получить доступ к микрофону');
@@ -1763,8 +1781,6 @@
             if (mediaRecorder && isRecording) {
                 mediaRecorder.stop();
                 isRecording = false;
-                document.getElementById('voiceRecordBtn').classList.remove('recording');
-                document.getElementById('voiceRecordBtn').innerHTML = '🎙️';
             }
         }
 
@@ -1807,7 +1823,6 @@
                 };
                 
                 peerConnection.onconnectionstatechange = () => {
-                    console.log('Connection state:', peerConnection.connectionState);
                     if (peerConnection.connectionState === 'connected') {
                         document.getElementById('callStatus').innerHTML = '🎙️ В разговоре';
                         callActive = true;
@@ -2058,7 +2073,11 @@
 
             const { data: group, error } = await supabaseClient
                 .from('groups')
-                .insert([{ name, owner: currentUser.username }])
+                .insert([{ 
+                    name, 
+                    owner: currentUser.username,
+                    avatar: groupAvatarData || '👥'
+                }])
                 .select();
 
             if (error) {
@@ -2073,7 +2092,7 @@
 
             closeCreateGroupModal();
             await loadChats();
-            switchChat('group', group[0].id, name, '👥');
+            switchChat('group', group[0].id, name, groupAvatarData || '👥');
         };
 
         window.previewGroupAvatar = function(event) {
@@ -2112,7 +2131,12 @@
 
             const { data: channel, error } = await supabaseClient
                 .from('channels')
-                .insert([{ name, owner: currentUser.username, avatar: channelAvatarData || '📢' }])
+                .insert([{ 
+                    name, 
+                    owner: currentUser.username, 
+                    avatar: channelAvatarData || '📢',
+                    description: document.getElementById('channelDescription').value 
+                }])
                 .select();
 
             if (error) {
@@ -2162,7 +2186,7 @@
             document.getElementById('chatInfoTitle').innerText = currentChat.name;
             let content = '';
             if (currentChat.type === 'group') {
-                content = `<p>👥 Группа</p><p>ID: ${currentChat.id}</p><button onclick="showAddMembersModal()">➕ Добавить участников</button>`;
+                content = `<p>👥 Группа</p><p>ID: ${currentChat.id}</p><button onclick="showAddMembersModal()" class="send-btn" style="margin-top:10px;">➕ Добавить участников</button>`;
             } else if (currentChat.type === 'channel') {
                 content = `<p>📢 Канал</p><p>Только создатель может писать</p>`;
             } else {
@@ -2185,10 +2209,12 @@
             let html = '';
             users.forEach(u => {
                 html += `
-                    <div class="member-item">
-                        <div class="member-avatar">${typeof u.avatar === 'string' && u.avatar.startsWith('data:') ? `<img src="${u.avatar}">` : (u.avatar || '👤')}</div>
-                        <div class="member-name">${u.display_name || u.username}</div>
-                        <button class="remove-member" onclick="addMemberToGroup('${u.username}')">➕</button>
+                    <div class="member-item" style="display:flex; align-items:center; gap:10px; padding:10px; border-bottom:1px solid rgba(255,255,255,0.1);">
+                        <div class="member-avatar" style="width:40px;height:40px;background:linear-gradient(135deg,#2a2a4a,#1a1a3a);border-radius:50%;display:flex;align-items:center;justify-content:center;overflow:hidden;">
+                            ${typeof u.avatar === 'string' && u.avatar.startsWith('data:') ? `<img src="${u.avatar}" style="width:100%;height:100%;object-fit:cover;">` : (u.avatar || '👤')}
+                        </div>
+                        <div class="member-name" style="flex:1;">${u.display_name || u.username}</div>
+                        <button class="remove-member" onclick="addMemberToGroup('${u.username}')" style="background:#a855f7;border:none;color:white;padding:5px 10px;border-radius:10px;cursor:pointer;">➕</button>
                     </div>
                 `;
             });
@@ -2222,7 +2248,10 @@
                     if (currentChat.type === 'group') loadMessages();
                 })
                 .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, () => {
-                    if (currentChat.type !== 'group') loadMessages();
+                    if (currentChat.type === 'user') loadMessages();
+                })
+                .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'channel_messages' }, () => {
+                    if (currentChat.type === 'channel') loadMessages();
                 })
                 .subscribe();
         }
