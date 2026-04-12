@@ -1682,113 +1682,122 @@
             document.getElementById('fileInput').value = '';
         };
 
-        // ============================================
-        // ГОЛОСОВЫЕ СООБЩЕНИЯ С ТАЙМЕРОМ
-        // ============================================
-        window.toggleVoiceRecording = async function() {
-            if (!isRecording) {
-                try {
-                    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-                    mediaRecorder = new MediaRecorder(stream);
-                    audioChunks = [];
-                    recordingStartTime = Date.now();
-                    
-                    const voiceBtn = document.getElementById('voiceRecordBtn');
-                    voiceBtn.classList.add('recording');
-                    
-                    let seconds = 0;
-                    recordingTimer = setInterval(() => {
-                        seconds++;
-                        const mins = Math.floor(seconds / 60);
-                        const secs = seconds % 60;
-                        voiceBtn.innerHTML = `⏹️ ${mins}:${secs.toString().padStart(2, '0')}`;
-                    }, 1000);
-                    
-                    mediaRecorder.ondataavailable = (event) => {
-                        audioChunks.push(event.data);
-                    };
-                    
-                    mediaRecorder.onstop = async () => {
-                        clearInterval(recordingTimer);
-                        voiceBtn.classList.remove('recording');
-                        voiceBtn.innerHTML = '🎙️';
+       // ГОЛОСОВЫЕ СООБЩЕНИЯ С ТАЙМЕРОМ (ИСПРАВЛЕНО)
+window.toggleVoiceRecording = async function() {
+    if (!isRecording) {
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            mediaRecorder = new MediaRecorder(stream);
+            audioChunks = [];
+            recordingStartTime = Date.now();
+            
+            const voiceBtn = document.getElementById('voiceRecordBtn');
+            voiceBtn.classList.add('recording');
+            
+            let seconds = 0;
+            recordingTimer = setInterval(() => {
+                seconds++;
+                const mins = Math.floor(seconds / 60);
+                const secs = seconds % 60;
+                voiceBtn.innerHTML = `⏹️ ${mins}:${secs.toString().padStart(2, '0')}`;
+            }, 1000);
+            
+            mediaRecorder.ondataavailable = (event) => {
+                if (event.data.size > 0) {
+                    audioChunks.push(event.data);
+                }
+            };
+            
+            mediaRecorder.onstop = async () => {
+                clearInterval(recordingTimer);
+                voiceBtn.classList.remove('recording');
+                voiceBtn.innerHTML = '🎙️';
+                
+                if (audioChunks.length === 0) {
+                    console.log('Нет данных для отправки');
+                    return;
+                }
+                
+                const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+                const reader = new FileReader();
+                
+                reader.onloadend = async () => {
+                    try {
+                        const audioDataUrl = reader.result;
+                        const duration = Math.floor((Date.now() - recordingStartTime) / 1000);
+                        const mins = Math.floor(duration / 60);
+                        const secs = duration % 60;
+                        const durationStr = `${mins}:${secs.toString().padStart(2, '0')}`;
+                        const audioMessage = `audio:${audioDataUrl}`;
                         
-                        const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
-                        const reader = new FileReader();
-                        reader.onloadend = async () => {
-                            const audioDataUrl = reader.result;
-                            const duration = Math.floor((Date.now() - recordingStartTime) / 1000);
-                            const mins = Math.floor(duration / 60);
-                            const secs = duration % 60;
-                            const audioMessage = `audio:${audioDataUrl}`;
-                            
-                            const messageData = {
+                        if (currentChat.type === 'group') {
+                            await supabaseClient.from('group_messages').insert([{
+                                group_id: currentChat.id,
+                                username: currentUser.username,
                                 message: audioMessage,
-                                duration: `${mins}:${secs.toString().padStart(2, '0')}`
-                            };
-                            
-                            if (currentChat.type === 'group') {
-                                await supabaseClient.from('group_messages').insert([{
-                                    group_id: currentChat.id,
+                                duration: durationStr
+                            }]);
+                        } else if (currentChat.type === 'channel') {
+                            const { data: channel } = await supabaseClient
+                                .from('channels')
+                                .select('owner')
+                                .eq('id', currentChat.id)
+                                .single();
+                            if (channel.owner === currentUser.username) {
+                                await supabaseClient.from('channel_messages').insert([{
+                                    channel_id: currentChat.id,
                                     username: currentUser.username,
                                     message: audioMessage,
-                                    duration: messageData.duration
+                                    duration: durationStr
                                 }]);
-                            } else if (currentChat.type === 'channel') {
-                                const { data: channel } = await supabaseClient
-                                    .from('channels')
-                                    .select('owner')
-                                    .eq('id', currentChat.id)
-                                    .single();
-                                if (channel.owner === currentUser.username) {
-                                    await supabaseClient.from('channel_messages').insert([{
-                                        channel_id: currentChat.id,
-                                        username: currentUser.username,
-                                        message: audioMessage,
-                                        duration: messageData.duration
-                                    }]);
-                                }
                             } else {
-                                await supabaseClient.from('messages').insert([{
-                                    from_user: currentUser.username,
-                                    to_user: currentChat.id,
-                                    message: audioMessage,
-                                    duration: messageData.duration
-                                }]);
+                                alert('❌ Только создатель канала может отправлять сообщения');
                             }
-                            loadMessages();
-                        };
-                        reader.readAsDataURL(audioBlob);
-                        stream.getTracks().forEach(track => track.stop());
-                    };
-                    
-                    mediaRecorder.start();
-                    isRecording = true;
-                    
-                    setTimeout(() => {
-                        if (isRecording) stopVoiceRecording();
-                    }, 60000);
-                    
-                } catch (err) {
-                    alert('Не удалось получить доступ к микрофону');
+                        } else {
+                            await supabaseClient.from('messages').insert([{
+                                from_user: currentUser.username,
+                                to_user: currentChat.id,
+                                message: audioMessage,
+                                duration: durationStr
+                            }]);
+                        }
+                        loadMessages();
+                    } catch (error) {
+                        console.error('Ошибка отправки голосового:', error);
+                        alert('Ошибка отправки голосового сообщения');
+                    }
+                };
+                
+                reader.readAsDataURL(audioBlob);
+                stream.getTracks().forEach(track => track.stop());
+                audioChunks = [];
+            };
+            
+            mediaRecorder.start(100);
+            isRecording = true;
+            
+            // Автоматическая остановка через 60 секунд
+            setTimeout(() => {
+                if (isRecording) {
+                    stopVoiceRecording();
                 }
-            } else {
-                stopVoiceRecording();
-            }
-        };
-
-        function stopVoiceRecording() {
-            if (mediaRecorder && isRecording) {
-                mediaRecorder.stop();
-                isRecording = false;
-            }
+            }, 60000);
+            
+        } catch (err) {
+            console.error('Ошибка доступа к микрофону:', err);
+            alert('Не удалось получить доступ к микрофону. Разрешите доступ в браузере.');
         }
+    } else {
+        stopVoiceRecording();
+    }
+};
 
-        window.playAudio = function(audioDataUrl) {
-            const audio = new Audio(audioDataUrl);
-            audio.play();
-        };
-
+function stopVoiceRecording() {
+    if (mediaRecorder && isRecording && mediaRecorder.state === 'recording') {
+        mediaRecorder.stop();
+        isRecording = false;
+    }
+}
         // ============================================
         // ЗВОНКИ (WebRTC)
         // ============================================
