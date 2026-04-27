@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MoonTunnel | Видео</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #0a0a1a;
+            min-height: 100vh;
+            color: white;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            padding: 30px;
+            background: #1a1a3a;
+            border-radius: 20px;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            color: #b0b0ff;
+        }
+
+        .header p {
+            color: #888;
+            margin-top: 10px;
+            font-size: 14px;
+        }
+
+        .login-btn {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #4a4a8a;
+            border: none;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            z-index: 100;
+            font-size: 12px;
+        }
+
+        .admin-panel {
+            background: #1a1a2a;
+            border-radius: 20px;
+            padding: 20px;
+            margin-bottom: 30px;
+            display: none;
+        }
+
+        .admin-panel.active {
+            display: block;
+        }
+
+        .upload-label {
+            display: inline-block;
+            background: #4a4a8a;
+            padding: 10px 25px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+
+        .upload-label:hover {
+            background: #5a5a9a;
+        }
+
+        input[type="file"] {
+            display: none;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 15px;
+            background: #2a2a4a;
+            border-radius: 15px;
+            overflow: hidden;
+            margin-top: 15px;
+        }
+
+        .progress-fill {
+            width: 0%;
+            height: 100%;
+            background: #7a7aff;
+            transition: width 0.3s;
+        }
+
+        .status {
+            text-align: center;
+            padding: 10px;
+            color: #a0a0ff;
+            font-size: 12px;
+        }
+
+        .videos-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
+        }
+
+        .video-card {
+            background: #1a1a2a;
+            border-radius: 15px;
+            padding: 15px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .video-card:hover {
+            background: #2a2a4a;
+        }
+
+        .video-thumb {
+            width: 100%;
+            height: 160px;
+            background: #000;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 40px;
+            margin-bottom: 10px;
+        }
+
+        .video-name {
+            font-weight: bold;
+            margin-bottom: 5px;
+            font-size: 14px;
+        }
+
+        .video-size {
+            font-size: 11px;
+            color: #888;
+        }
+
+        .delete-video {
+            background: rgba(239,68,68,0.2);
+            border: 1px solid #ef4444;
+            color: #ef4444;
+            padding: 4px 8px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 10px;
+            margin-top: 10px;
+        }
+
+        .player-section {
+            background: #1a1a2a;
+            border-radius: 20px;
+            padding: 20px;
+            margin-top: 30px;
+            display: none;
+        }
+
+        .player-section.active {
+            display: block;
+        }
+
+        video {
+            width: 100%;
+            max-height: 450px;
+            border-radius: 15px;
+            background: #000;
+        }
+
+        .close-player {
+            background: #4a4a8a;
+            border: none;
+            color: white;
+            padding: 8px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            margin-top: 15px;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.95);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: #1a1a3a;
+            border-radius: 25px;
+            padding: 30px;
+            width: 90%;
+            max-width: 350px;
+            text-align: center;
+            border: 1px solid #4a4a8a;
+        }
+
+        .modal-content h2 {
+            margin-bottom: 20px;
+            font-size: 18px;
+        }
+
+        .modal-content input {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
+            background: #2a2a4a;
+            border: 1px solid #4a4a8a;
+            border-radius: 8px;
+            color: white;
+            font-size: 14px;
+        }
+
+        .modal-content button {
+            background: #4a4a8a;
+            border: none;
+            padding: 10px;
+            border-radius: 8px;
+            color: white;
+            font-size: 14px;
+            cursor: pointer;
+            width: 100%;
+        }
+
+        .error {
+            color: #ef4444;
+            margin-top: 10px;
+            font-size: 12px;
+        }
+
+        @media (max-width: 600px) {
+            .videos-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <button class="login-btn" id="loginBtn" onclick="showLoginModal()">ВХОД</button>
+
+    <div class="container">
+        <div class="header">
+            <h1>MOONTUNNEL</h1>
+            <p>Видео строительства</p>
+        </div>
+
+        <div id="adminPanel" class="admin-panel">
+            <div style="text-align: center;">
+                <label class="upload-label" onclick="document.getElementById('videoInput').click()">
+                    ЗАГРУЗИТЬ ВИДЕО
+                </label>
+                <input type="file" id="videoInput" accept="video/*" onchange="uploadVideo()">
+                <div class="progress-bar" id="progressBar" style="display: none;">
+                    <div class="progress-fill" id="progressFill"></div>
+                </div>
+                <div id="uploadStatus" class="status"></div>
+            </div>
+        </div>
+
+        <div class="videos-grid" id="videosGrid"></div>
+
+        <div class="player-section" id="playerSection">
+            <video id="videoPlayer" controls></video>
+            <button class="close-player" onclick="closePlayer()">ЗАКРЫТЬ</button>
+        </div>
+    </div>
+
+    <div id="loginModal" class="modal">
+        <div class="modal-content">
+            <h2>ВХОД</h2>
+            <input type="text" id="loginUsername" placeholder="Логин">
+            <input type="password" id="loginPassword" placeholder="Пароль">
+            <button onclick="checkAdminLogin()">ВОЙТИ</button>
+            <div id="loginError" class="error"></div>
+        </div>
+    </div>
+
+    <script>
+        // ============================================
+        // SUPABASE (ТВОИ КЛЮЧИ)
+        // ============================================
+        const SUPABASE_URL = 'https://pmvbhhidcojkkpumsxxb.supabase.co';
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBtdmJoaGlkY29qa2twdW1zeHhiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzcyNzk3MjcsImV4cCI6MjA5Mjg1NTcyN30.1eKxcaqeClRdAVH8lVcOdYaV0o_PbRzjnM9vBUP15QQ';
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        let videos = [];
+        let isAdmin = false;
+
+        // ============================================
+        // ЗАГРУЗКА ВИДЕО
+        // ============================================
+        async function loadVideos() {
+            const { data, error } = await supabase
+                .from('videos')
+                .select('*')
+                .order('created_at', { ascending: false });
+
+            if (error) {
+                console.error('Ошибка:', error);
+                return;
+            }
+
+            videos = data;
+            renderVideos();
+        }
+
+        function renderVideos() {
+            const grid = document.getElementById('videosGrid');
+            
+            if (videos.length === 0) {
+                grid.innerHTML = '<div style="text-align:center; color:#888; padding:40px;">Нет видео</div>';
+                return;
+            }
+
+            let html = '';
+            videos.forEach(video => {
+                const sizeMB = (video.size / 1024 / 1024).toFixed(2);
+                html += `
+                    <div class="video-card" onclick="playVideo('${video.url}', '${video.name}')">
+                        <div class="video-thumb">🎬</div>
+                        <div class="video-name">${escapeHtml(video.name)}</div>
+                        <div class="video-size">${sizeMB} MB</div>
+                        ${isAdmin ? `<button class="delete-video" onclick="event.stopPropagation(); deleteVideo('${video.id}')">УДАЛИТЬ</button>` : ''}
+                    </div>
+                `;
+            });
+            grid.innerHTML = html;
+        }
+
+        // ============================================
+        // ЗАГРУЗКА ВИДЕО
+        // ============================================
+        async function uploadVideo() {
+            if (!isAdmin) {
+                alert('Только админ');
+                return;
+            }
+
+            const fileInput = document.getElementById('videoInput');
+            const file = fileInput.files[0];
+            
+            if (!file) return;
+            
+            if (file.size > 2 * 1024 * 1024 * 1024) {
+                alert('Файл больше 2GB');
+                return;
+            }
+            
+            const progressBar = document.getElementById('progressBar');
+            const progressFill = document.getElementById('progressFill');
+            const statusDiv = document.getElementById('uploadStatus');
+            
+            progressBar.style.display = 'block';
+            statusDiv.innerHTML = 'Загрузка... 0%';
+            
+            const fileName = `${Date.now()}_${file.name}`;
+            const filePath = `videos/${fileName}`;
+            
+            const { data, error } = await supabase.storage
+                .from('videos')
+                .upload(filePath, file, {
+                    onUploadProgress: (progress) => {
+                        const percent = (progress.loaded / progress.total) * 100;
+                        progressFill.style.width = `${percent}%`;
+                        statusDiv.innerHTML = `Загрузка... ${Math.round(percent)}%`;
+                    }
+                });
+            
+            if (error) {
+                statusDiv.innerHTML = 'Ошибка';
+                progressBar.style.display = 'none';
+                return;
+            }
+            
+            const { data: urlData } = supabase.storage
+                .from('videos')
+                .getPublicUrl(filePath);
+            
+            const videoUrl = urlData.publicUrl;
+            
+            await supabase
+                .from('videos')
+                .insert([{
+                    name: file.name,
+                    size: file.size,
+                    url: videoUrl,
+                    created_at: new Date().toISOString()
+                }]);
+            
+            statusDiv.innerHTML = 'Готово!';
+            progressFill.style.width = '100%';
+            
+            setTimeout(() => {
+                progressBar.style.display = 'none';
+                statusDiv.innerHTML = '';
+            }, 2000);
+            
+            fileInput.value = '';
+            await loadVideos();
+        }
+
+        // ============================================
+        // ПЛЕЕР
+        // ============================================
+        function playVideo(url, name) {
+            const player = document.getElementById('videoPlayer');
+            const section = document.getElementById('playerSection');
+            
+            player.src = url;
+            player.load();
+            section.classList.add('active');
+            section.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function closePlayer() {
+            const player = document.getElementById('videoPlayer');
+            const section = document.getElementById('playerSection');
+            
+            player.pause();
+            player.src = '';
+            section.classList.remove('active');
+        }
+
+        // ============================================
+        // УДАЛЕНИЕ
+        // ============================================
+        async function deleteVideo(id) {
+            if (!confirm('Удалить?')) return;
+            
+            const video = videos.find(v => v.id === id);
+            if (!video) return;
+            
+            const urlParts = video.url.split('/');
+            const filePath = `videos/${urlParts[urlParts.length - 1]}`;
+            
+            await supabase.storage.from('videos').remove([filePath]);
+            await supabase.from('videos').delete().eq('id', id);
+            await loadVideos();
+        }
+
+        // ============================================
+        // ВХОД
+        // ============================================
+        function showLoginModal() {
+            document.getElementById('loginModal').classList.add('active');
+        }
+
+        async function checkAdminLogin() {
+            const username = document.getElementById('loginUsername').value.trim();
+            const password = document.getElementById('loginPassword').value.trim();
+            
+            if (username === 'milk' && password === 'milk') {
+                isAdmin = true;
+                document.getElementById('loginModal').classList.remove('active');
+                document.getElementById('adminPanel').classList.add('active');
+                document.getElementById('loginBtn').style.display = 'none';
+                renderVideos();
+            } else {
+                document.getElementById('loginError').innerText = 'Неверно';
+            }
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // ============================================
+        // СТАРТ
+        // ============================================
+        document.addEventListener('DOMContentLoaded', () => {
+            loadVideos();
+        });
+
+        window.onclick = function(event) {
+            const modal = document.getElementById('loginModal');
+            if (event.target === modal) {
+                modal.classList.remove('active');
+            }
+        }
+    </script>
+</body>
+</html>
