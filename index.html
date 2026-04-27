@@ -466,10 +466,10 @@
 
         <div id="adminPanel" class="admin-panel">
             <div style="text-align: center;">
-                <label class="upload-label" onclick="document.getElementById('videoInput').click()">
+                <label class="upload-label" id="uploadLabelBtn">
                     📹 ЗАГРУЗИТЬ ВИДЕО
                 </label>
-                <input type="file" id="videoInput" accept="video/*" onchange="uploadVideo()">
+                <input type="file" id="videoInput" accept="video/*" style="display: none;">
                 <div class="progress-bar" id="progressBar" style="display: none;">
                     <div class="progress-fill" id="progressFill"></div>
                 </div>
@@ -481,7 +481,7 @@
 
         <div class="player-section" id="playerSection">
             <video id="videoPlayer" controls></video>
-            <button class="close-player" onclick="closePlayer()">✖ ЗАКРЫТЬ ПЛЕЕР</button>
+            <button class="close-player" id="closePlayerBtn">✖ ЗАКРЫТЬ ПЛЕЕР</button>
         </div>
     </div>
 
@@ -490,7 +490,7 @@
             <h2>🔐 ВХОД ДЛЯ АДМИНА</h2>
             <input type="text" id="loginUsername" placeholder="ЛОГИН">
             <input type="password" id="loginPassword" placeholder="ПАРОЛЬ">
-            <button onclick="checkAdminLogin()">ВОЙТИ</button>
+            <button id="loginSubmitBtn">ВОЙТИ</button>
             <div id="loginError" class="error"></div>
         </div>
     </div>
@@ -501,32 +501,48 @@
         // ============================================
         const SUPABASE_URL = 'https://pmvbhhidcojkkpumsxxb.supabase.co';
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBtdmJoaGlkY29qa2twdW1zeHhiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzcyNzk3MjcsImV4cCI6MjA5Mjg1NTcyN30.1eKxcaqeClRdAVH8lVcOdYaV0o_PbRzjnM9vBUP15QQ';
-        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-
+        
+        // Глобальная переменная supabase - создаем один раз
+        let supabaseClient = null;
         let videos = [];
         let isAdmin = false;
+
+        // Инициализация Supabase
+        function initSupabase() {
+            if (window.supabase && !supabaseClient) {
+                supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+                console.log('✅ Supabase инициализирован');
+            } else if (!window.supabase) {
+                console.error('❌ Supabase не загружен');
+            }
+            return supabaseClient;
+        }
 
         // ============================================
         // ЗАГРУЗКА ВИДЕО
         // ============================================
         async function loadVideos() {
+            const supabase = initSupabase();
+            if (!supabase) return;
+
             const { data, error } = await supabase
                 .from('videos')
                 .select('*')
                 .order('created_at', { ascending: false });
 
             if (error) {
-                console.error('Ошибка:', error);
+                console.error('Ошибка загрузки:', error);
                 return;
             }
 
-            videos = data;
+            videos = data || [];
             renderVideos();
         }
 
         function renderVideos() {
             const grid = document.getElementById('videosGrid');
-            
+            if (!grid) return;
+
             if (videos.length === 0) {
                 grid.innerHTML = '<div style="text-align:center; color:#888; padding:60px; background:rgba(0,0,0,0.2); border-radius:30px;">📭 ВИДЕО ПОКА НЕТ</div>';
                 return;
@@ -536,72 +552,97 @@
             videos.forEach(video => {
                 const sizeMB = (video.size / 1024 / 1024).toFixed(2);
                 const date = new Date(video.created_at).toLocaleDateString('ru-RU');
-                
+
                 html += `
-                    <div class="video-card" onclick="playVideo('${video.url}', '${video.name}')">
+                    <div class="video-card" data-video-url="${video.url}" data-video-name="${escapeHtml(video.name)}">
                         <div class="video-thumb">🎬</div>
                         <div class="video-name">${escapeHtml(video.name)}</div>
                         <div class="video-size">📁 ${sizeMB} MB</div>
                         <div class="video-date">📅 ${date}</div>
-                        ${isAdmin ? `<button class="delete-video" onclick="event.stopPropagation(); deleteVideo('${video.id}')">🗑️ УДАЛИТЬ ВИДЕО</button>` : ''}
+                        ${isAdmin ? `<button class="delete-video" data-video-id="${video.id}" data-video-url="${video.url}">🗑️ УДАЛИТЬ ВИДЕО</button>` : ''}
                     </div>
                 `;
             });
             grid.innerHTML = html;
+
+            // Добавляем обработчики событий
+            document.querySelectorAll('.video-card').forEach(card => {
+                const url = card.dataset.videoUrl;
+                const name = card.dataset.videoName;
+                card.addEventListener('click', (e) => {
+                    if (!e.target.classList.contains('delete-video')) {
+                        playVideo(url, name);
+                    }
+                });
+            });
+
+            if (isAdmin) {
+                document.querySelectorAll('.delete-video').forEach(btn => {
+                    btn.addEventListener('click', async (e) => {
+                        e.stopPropagation();
+                        const id = btn.dataset.videoId;
+                        const url = btn.dataset.videoUrl;
+                        await deleteVideo(id, url);
+                    });
+                });
+            }
         }
 
         // ============================================
         // ЗАГРУЗКА ВИДЕО (АДМИН)
         // ============================================
-        async function uploadVideo() {
-            if (!isAdmin) {
-                alert('⛔ Только администратор может загружать видео');
-                return;
+        async function uploadVideo(file) {
+            const supabase = initSupabase();
+            if (!supabase) {
+                alert('❌ Ошибка подключения к Supabase');
+                return false;
             }
 
-            const fileInput = document.getElementById('videoInput');
-            const file = fileInput.files[0];
-            
-            if (!file) return;
-            
+            if (!isAdmin) {
+                alert('⛔ Только администратор может загружать видео');
+                return false;
+            }
+
+            if (!file) return false;
+
             if (file.size > 2 * 1024 * 1024 * 1024) {
                 alert('❌ Файл превышает 2GB');
-                return;
+                return false;
             }
-            
+
             const progressBar = document.getElementById('progressBar');
             const progressFill = document.getElementById('progressFill');
             const statusDiv = document.getElementById('uploadStatus');
-            
+
             progressBar.style.display = 'block';
             statusDiv.innerHTML = '⏳ ЗАГРУЗКА... 0%';
-            
+
             const fileName = `${Date.now()}_${file.name}`;
             const filePath = `videos/${fileName}`;
-            
+
+            // Простая загрузка без onUploadProgress (так как версия supabase-js 2.x не поддерживает upload progress)
             const { data, error } = await supabase.storage
                 .from('videos')
-                .upload(filePath, file, {
-                    onUploadProgress: (progress) => {
-                        const percent = (progress.loaded / progress.total) * 100;
-                        progressFill.style.width = `${percent}%`;
-                        statusDiv.innerHTML = `⏳ ЗАГРУЗКА... ${Math.round(percent)}%`;
-                    }
-                });
-            
+                .upload(filePath, file);
+
             if (error) {
-                statusDiv.innerHTML = '❌ ОШИБКА ЗАГРУЗКИ';
+                statusDiv.innerHTML = '❌ ОШИБКА ЗАГРУЗКИ: ' + error.message;
                 progressBar.style.display = 'none';
-                return;
+                return false;
             }
-            
+
+            progressFill.style.width = '100%';
+            statusDiv.innerHTML = '⏳ ПОЛУЧЕНИЕ ССЫЛКИ...';
+
             const { data: urlData } = supabase.storage
                 .from('videos')
                 .getPublicUrl(filePath);
-            
+
             const videoUrl = urlData.publicUrl;
-            
-            await supabase
+
+            statusDiv.innerHTML = '⏳ СОХРАНЕНИЕ В БАЗУ...';
+
+            const { error: insertError } = await supabase
                 .from('videos')
                 .insert([{
                     name: file.name,
@@ -609,17 +650,23 @@
                     url: videoUrl,
                     created_at: new Date().toISOString()
                 }]);
-            
+
+            if (insertError) {
+                statusDiv.innerHTML = '❌ ОШИБКА БАЗЫ ДАННЫХ';
+                progressBar.style.display = 'none';
+                return false;
+            }
+
             statusDiv.innerHTML = '✅ ВИДЕО ЗАГРУЖЕНО!';
-            progressFill.style.width = '100%';
             
             setTimeout(() => {
                 progressBar.style.display = 'none';
                 statusDiv.innerHTML = '';
+                progressFill.style.width = '0%';
             }, 2000);
-            
-            fileInput.value = '';
+
             await loadVideos();
+            return true;
         }
 
         // ============================================
@@ -628,84 +675,180 @@
         function playVideo(url, name) {
             const player = document.getElementById('videoPlayer');
             const section = document.getElementById('playerSection');
-            
-            player.src = url;
-            player.load();
-            section.classList.add('active');
-            section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+            if (player && section) {
+                player.src = url;
+                player.load();
+                section.classList.add('active');
+                setTimeout(() => {
+                    section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }, 100);
+            }
         }
 
         function closePlayer() {
             const player = document.getElementById('videoPlayer');
             const section = document.getElementById('playerSection');
-            
-            player.pause();
-            player.src = '';
-            section.classList.remove('active');
+
+            if (player) {
+                player.pause();
+                player.src = '';
+            }
+            if (section) {
+                section.classList.remove('active');
+            }
         }
 
         // ============================================
         // УДАЛЕНИЕ
         // ============================================
-        async function deleteVideo(id) {
+        async function deleteVideo(id, url) {
             if (!confirm('🗑️ Удалить это видео навсегда?')) return;
-            
-            const video = videos.find(v => v.id === id);
-            if (!video) return;
-            
-            const urlParts = video.url.split('/');
-            const filePath = `videos/${urlParts[urlParts.length - 1]}`;
-            
-            await supabase.storage.from('videos').remove([filePath]);
-            await supabase.from('videos').delete().eq('id', id);
+
+            const supabase = initSupabase();
+            if (!supabase) return;
+
+            // Извлекаем путь файла из URL
+            const urlParts = url.split('/');
+            const fileName = urlParts[urlParts.length - 1];
+            const filePath = `videos/${fileName}`;
+
+            const { error: storageError } = await supabase.storage.from('videos').remove([filePath]);
+            if (storageError) {
+                console.error('Ошибка удаления из Storage:', storageError);
+            }
+
+            const { error: dbError } = await supabase.from('videos').delete().eq('id', id);
+            if (dbError) {
+                console.error('Ошибка удаления из БД:', dbError);
+            }
+
             await loadVideos();
         }
 
         // ============================================
         // ВХОД (ИСПРАВЛЕНО)
         // ============================================
-        document.getElementById('loginBtn').onclick = function() {
-            document.getElementById('loginModal').classList.add('active');
+        function showLoginModal() {
+            const modal = document.getElementById('loginModal');
+            if (modal) {
+                modal.classList.add('active');
+            }
         }
 
         function closeLoginModal() {
-            document.getElementById('loginModal').classList.remove('active');
+            const modal = document.getElementById('loginModal');
+            if (modal) {
+                modal.classList.remove('active');
+            }
+            const errorDiv = document.getElementById('loginError');
+            if (errorDiv) {
+                errorDiv.innerText = '';
+            }
         }
 
-        async function checkAdminLogin() {
+        function checkAdminLogin() {
             const username = document.getElementById('loginUsername').value.trim();
             const password = document.getElementById('loginPassword').value.trim();
-            
+
             if (username === 'milk' && password === 'milk') {
                 isAdmin = true;
                 closeLoginModal();
-                document.getElementById('adminPanel').classList.add('active');
-                document.getElementById('loginBtn').style.display = 'none';
+                const adminPanel = document.getElementById('adminPanel');
+                const loginBtn = document.getElementById('loginBtn');
+                if (adminPanel) adminPanel.classList.add('active');
+                if (loginBtn) loginBtn.style.display = 'none';
                 renderVideos();
+                
+                // Очищаем поля
+                document.getElementById('loginUsername').value = '';
+                document.getElementById('loginPassword').value = '';
             } else {
-                document.getElementById('loginError').innerText = '❌ Неверный логин или пароль';
+                const errorDiv = document.getElementById('loginError');
+                if (errorDiv) {
+                    errorDiv.innerText = '❌ Неверный логин или пароль';
+                }
             }
         }
 
         function escapeHtml(text) {
+            if (!text) return '';
             const div = document.createElement('div');
             div.textContent = text;
             return div.innerHTML;
         }
 
         // ============================================
-        // ИНИЦИАЛИЗАЦИЯ
+        // ИНИЦИАЛИЗАЦИЯ ВСЕХ ОБРАБОТЧИКОВ
         // ============================================
         document.addEventListener('DOMContentLoaded', () => {
+            // Инициализируем Supabase
+            initSupabase();
+            
+            // Загружаем видео
             loadVideos();
-        });
 
-        window.onclick = function(event) {
-            const modal = document.getElementById('loginModal');
-            if (event.target === modal) {
-                closeLoginModal();
+            // Кнопка входа
+            const loginBtn = document.getElementById('loginBtn');
+            if (loginBtn) {
+                loginBtn.addEventListener('click', showLoginModal);
             }
-        }
+
+            // Кнопка закрытия плеера
+            const closePlayerBtn = document.getElementById('closePlayerBtn');
+            if (closePlayerBtn) {
+                closePlayerBtn.addEventListener('click', closePlayer);
+            }
+
+            // Кнопка загрузки видео
+            const uploadLabelBtn = document.getElementById('uploadLabelBtn');
+            const videoInput = document.getElementById('videoInput');
+            if (uploadLabelBtn && videoInput) {
+                uploadLabelBtn.addEventListener('click', () => {
+                    if (isAdmin) {
+                        videoInput.click();
+                    } else {
+                        alert('⛔ Только администратор может загружать видео');
+                    }
+                });
+                
+                videoInput.addEventListener('change', (e) => {
+                    if (e.target.files && e.target.files[0]) {
+                        uploadVideo(e.target.files[0]);
+                        videoInput.value = ''; // Очищаем input
+                    }
+                });
+            }
+
+            // Кнопка входа в модальном окне
+            const loginSubmitBtn = document.getElementById('loginSubmitBtn');
+            if (loginSubmitBtn) {
+                loginSubmitBtn.addEventListener('click', checkAdminLogin);
+            }
+
+            // Закрытие модального окна по клику вне его
+            const modal = document.getElementById('loginModal');
+            if (modal) {
+                modal.addEventListener('click', (event) => {
+                    if (event.target === modal) {
+                        closeLoginModal();
+                    }
+                });
+            }
+
+            // Обработка Enter в полях ввода
+            const loginUsername = document.getElementById('loginUsername');
+            const loginPassword = document.getElementById('loginPassword');
+            if (loginUsername && loginPassword) {
+                const handleEnter = (e) => {
+                    if (e.key === 'Enter') {
+                        checkAdminLogin();
+                    }
+                };
+                loginUsername.addEventListener('keypress', handleEnter);
+                loginPassword.addEventListener('keypress', handleEnter);
+            }
+        });
     </script>
 </body>
 </html>
