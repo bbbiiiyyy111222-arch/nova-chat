@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MoonTunnel | Видео</title>
+    <title>🌙 MoonTunnel | Видео строительства в выживании</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         * {
@@ -14,35 +14,126 @@
 
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: #0a0a1a;
+            background: linear-gradient(135deg, #0a0a1a 0%, #1a1a3a 50%, #0f0f2a 100%);
             min-height: 100vh;
             color: white;
+            position: relative;
+        }
+
+        /* АНИМИРОВАННЫЙ ФОН */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at 20% 30%, rgba(168,85,247,0.1) 0%, transparent 50%),
+                        radial-gradient(circle at 80% 70%, rgba(124,58,237,0.1) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: 0;
+            animation: bgPulse 10s infinite;
+        }
+
+        @keyframes bgPulse {
+            0%, 100% { opacity: 0.5; }
+            50% { opacity: 1; }
         }
 
         .container {
             max-width: 1200px;
             margin: 0 auto;
             padding: 20px;
+            position: relative;
+            z-index: 1;
         }
 
-        /* ШАПКА */
+        /* ШАПКА С ДЕКОРОМ */
         .header {
             text-align: center;
-            padding: 30px;
-            background: #1a1a3a;
-            border-radius: 20px;
+            padding: 50px 30px;
+            background: rgba(0,0,0,0.35);
+            backdrop-filter: blur(15px);
+            border-radius: 50px;
             margin-bottom: 30px;
+            border: 1px solid rgba(168,85,247,0.3);
+            position: relative;
+            overflow: hidden;
+            animation: headerGlow 3s infinite;
+        }
+
+        @keyframes headerGlow {
+            0%, 100% { box-shadow: 0 0 20px rgba(168,85,247,0.2); }
+            50% { box-shadow: 0 0 50px rgba(168,85,247,0.4); }
+        }
+
+        .header::before {
+            content: '🌙';
+            position: absolute;
+            top: -30px;
+            right: -30px;
+            font-size: 180px;
+            opacity: 0.08;
+            pointer-events: none;
+            animation: rotate 20s linear infinite;
+        }
+
+        .header::after {
+            content: '🔨';
+            position: absolute;
+            bottom: -30px;
+            left: -30px;
+            font-size: 180px;
+            opacity: 0.08;
+            pointer-events: none;
+            animation: rotateReverse 20s linear infinite;
+        }
+
+        @keyframes rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        @keyframes rotateReverse {
+            from { transform: rotate(360deg); }
+            to { transform: rotate(0deg); }
         }
 
         .header h1 {
-            font-size: 28px;
-            color: #b0b0ff;
+            font-size: 48px;
+            background: linear-gradient(135deg, #a855f7, #7c3aed, #d8b4fe, #a855f7);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 15px;
+            text-shadow: 0 0 30px rgba(168,85,247,0.3);
+            animation: titleGlow 3s infinite;
+        }
+
+        @keyframes titleGlow {
+            0%, 100% { filter: brightness(1); }
+            50% { filter: brightness(1.2); }
         }
 
         .header p {
-            color: #888;
-            margin-top: 10px;
-            font-size: 14px;
+            color: #c0c0ff;
+            font-size: 16px;
+            letter-spacing: 2px;
+        }
+
+        .header .sub {
+            font-size: 13px;
+            color: #8a8aff;
+            margin-top: 15px;
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .header .sub span {
+            background: rgba(168,85,247,0.15);
+            padding: 5px 12px;
+            border-radius: 20px;
         }
 
         /* КНОПКА ВХОДА */
@@ -50,29 +141,36 @@
             position: fixed;
             top: 20px;
             right: 20px;
-            background: #4a4a8a;
-            border: none;
+            background: linear-gradient(135deg, #4a4a8a, #5a5a9a);
+            border: 1px solid #7a7aff;
             color: white;
-            padding: 10px 20px;
-            border-radius: 25px;
+            padding: 10px 25px;
+            border-radius: 40px;
             cursor: pointer;
             z-index: 100;
             font-size: 12px;
             transition: all 0.3s;
+            backdrop-filter: blur(10px);
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
 
         .login-btn:hover {
-            background: #5a5a9a;
+            background: linear-gradient(135deg, #5a5a9a, #6a6aaa);
             transform: scale(1.05);
+            box-shadow: 0 0 20px rgba(122,122,255,0.5);
         }
 
         /* АДМИН ПАНЕЛЬ */
         .admin-panel {
-            background: #1a1a2a;
-            border-radius: 20px;
-            padding: 25px;
+            background: rgba(26,26,42,0.9);
+            backdrop-filter: blur(15px);
+            border-radius: 35px;
+            padding: 30px;
             margin-bottom: 30px;
             display: none;
+            border: 1px solid rgba(168,85,247,0.3);
             animation: fadeIn 0.5s;
         }
 
@@ -82,19 +180,21 @@
 
         /* КНОПКА ЗАГРУЗКИ */
         .upload-label {
-            display: inline-block;
-            background: #4a4a8a;
-            padding: 12px 30px;
-            border-radius: 30px;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            background: linear-gradient(135deg, #a855f7, #7c3aed);
+            padding: 14px 40px;
+            border-radius: 60px;
             cursor: pointer;
             font-size: 14px;
             transition: all 0.3s;
+            box-shadow: 0 0 25px rgba(168,85,247,0.4);
         }
 
         .upload-label:hover {
-            background: #5a5a9a;
             transform: scale(1.05);
-            box-shadow: 0 0 15px #4a4a8a;
+            box-shadow: 0 0 45px rgba(168,85,247,0.7);
         }
 
         input[type="file"] {
@@ -108,20 +208,15 @@
             background: #2a2a4a;
             border-radius: 20px;
             overflow: hidden;
-            margin-top: 15px;
+            margin-top: 20px;
         }
 
         .progress-fill {
             width: 0%;
             height: 100%;
-            background: #7a7aff;
+            background: linear-gradient(90deg, #a855f7, #7c3aed);
             transition: width 0.3s;
-            animation: pulse 1s infinite;
-        }
-
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.7; }
+            border-radius: 20px;
         }
 
         .status {
@@ -131,74 +226,77 @@
             font-size: 12px;
         }
 
+        /* СООБЩЕНИЕ */
+        .info-message {
+            text-align: center;
+            padding: 15px;
+            background: rgba(0,0,0,0.3);
+            backdrop-filter: blur(10px);
+            border-radius: 50px;
+            margin-bottom: 30px;
+            color: #ffaa44;
+            font-size: 13px;
+            border: 1px solid rgba(255,170,68,0.3);
+        }
+
         /* СЕТКА ВИДЕО */
         .videos-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            gap: 20px;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 25px;
         }
 
         /* КАРТОЧКА ВИДЕО */
         .video-card {
-            background: #1a1a2a;
-            border-radius: 20px;
-            padding: 15px;
+            background: rgba(26,26,42,0.9);
+            backdrop-filter: blur(10px);
+            border-radius: 25px;
+            padding: 20px;
             cursor: pointer;
-            transition: all 0.3s;
+            transition: all 0.4s;
+            border: 1px solid rgba(168,85,247,0.2);
             position: relative;
             overflow: hidden;
         }
 
+        .video-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(168,85,247,0.1), transparent);
+            transition: left 0.5s;
+        }
+
+        .video-card:hover::before {
+            left: 100%;
+        }
+
         .video-card:hover {
-            transform: translateY(-5px);
-            background: #2a2a4a;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            transform: translateY(-8px);
+            border-color: rgba(168,85,247,0.5);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.4);
         }
 
         .video-thumb {
             width: 100%;
             height: 180px;
-            background: #000;
-            border-radius: 15px;
+            background: linear-gradient(135deg, #1a1a3a, #0a0a2a);
+            border-radius: 18px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 48px;
-            margin-bottom: 10px;
+            font-size: 55px;
+            margin-bottom: 15px;
             position: relative;
-        }
-
-        /* СТАТУС ВИДЕО (НЕДОСТУПНО) */
-        .video-status {
-            position: absolute;
-            bottom: 10px;
-            left: 10px;
-            right: 10px;
-            background: rgba(0,0,0,0.8);
-            padding: 5px;
-            border-radius: 10px;
-            font-size: 10px;
-            text-align: center;
-        }
-
-        .status-waiting {
-            background: #ffaa44;
-            color: #1a1a2a;
-        }
-
-        .status-available {
-            background: #4aff7a;
-            color: #1a1a2a;
-        }
-
-        .status-uploading {
-            background: #4a4a8a;
-            color: white;
+            overflow: hidden;
         }
 
         .video-name {
             font-weight: bold;
-            margin-bottom: 5px;
+            margin-bottom: 8px;
             font-size: 14px;
             word-break: break-word;
         }
@@ -208,10 +306,13 @@
             color: #888;
         }
 
-        .video-time {
+        .video-date {
             font-size: 11px;
-            color: #ffaa44;
-            margin-top: 5px;
+            color: #a855f7;
+            margin-top: 8px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
         }
 
         /* КНОПКА УДАЛЕНИЯ */
@@ -219,12 +320,13 @@
             background: rgba(239,68,68,0.2);
             border: 1px solid #ef4444;
             color: #ef4444;
-            padding: 5px 10px;
-            border-radius: 12px;
+            padding: 8px 12px;
+            border-radius: 15px;
             cursor: pointer;
             font-size: 10px;
-            margin-top: 10px;
+            margin-top: 12px;
             transition: all 0.3s;
+            width: 100%;
         }
 
         .delete-video:hover {
@@ -234,11 +336,13 @@
 
         /* ПЛЕЕР */
         .player-section {
-            background: #1a1a2a;
-            border-radius: 20px;
-            padding: 20px;
+            background: rgba(26,26,42,0.95);
+            backdrop-filter: blur(15px);
+            border-radius: 35px;
+            padding: 25px;
             margin-top: 30px;
             display: none;
+            border: 1px solid rgba(168,85,247,0.3);
             animation: fadeIn 0.5s;
         }
 
@@ -248,25 +352,27 @@
 
         video {
             width: 100%;
-            max-height: 450px;
-            border-radius: 15px;
+            max-height: 500px;
+            border-radius: 20px;
             background: #000;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.5);
         }
 
         .close-player {
-            background: #4a4a8a;
+            background: linear-gradient(135deg, #4a4a8a, #5a5a9a);
             border: none;
             color: white;
-            padding: 10px 25px;
-            border-radius: 30px;
+            padding: 12px 35px;
+            border-radius: 40px;
             cursor: pointer;
-            margin-top: 15px;
+            margin-top: 20px;
+            font-size: 14px;
             transition: all 0.3s;
         }
 
         .close-player:hover {
-            background: #5a5a9a;
             transform: scale(1.05);
+            box-shadow: 0 0 20px rgba(122,122,255,0.5);
         }
 
         /* МОДАЛКА ВХОДА */
@@ -278,10 +384,10 @@
             width: 100%;
             height: 100%;
             background: rgba(0,0,0,0.95);
+            backdrop-filter: blur(15px);
             justify-content: center;
             align-items: center;
             z-index: 1000;
-            animation: fadeIn 0.3s;
         }
 
         .modal.active {
@@ -289,110 +395,116 @@
         }
 
         .modal-content {
-            background: #1a1a3a;
-            border-radius: 30px;
-            padding: 40px;
+            background: linear-gradient(135deg, #1a1a3a, #0f0f2a);
+            border-radius: 45px;
+            padding: 50px;
             width: 90%;
-            max-width: 380px;
+            max-width: 400px;
             text-align: center;
-            border: 1px solid #4a4a8a;
-            animation: slideIn 0.3s;
+            border: 1px solid rgba(168,85,247,0.3);
+            animation: modalFadeIn 0.4s;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.5);
         }
 
-        @keyframes slideIn {
+        @keyframes modalFadeIn {
             from {
-                transform: translateY(-50px);
                 opacity: 0;
+                transform: scale(0.9);
             }
             to {
-                transform: translateY(0);
                 opacity: 1;
+                transform: scale(1);
             }
         }
 
         .modal-content h2 {
-            margin-bottom: 20px;
-            font-size: 20px;
-            color: #b0b0ff;
+            margin-bottom: 25px;
+            font-size: 24px;
+            background: linear-gradient(135deg, #fff, #a855f7);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
         }
 
         .modal-content input {
             width: 100%;
-            padding: 12px;
+            padding: 14px;
             margin-bottom: 15px;
-            background: #2a2a4a;
-            border: 1px solid #4a4a8a;
-            border-radius: 10px;
+            background: rgba(26,26,58,0.8);
+            border: 1px solid rgba(168,85,247,0.3);
+            border-radius: 15px;
             color: white;
             font-size: 14px;
+            transition: all 0.3s;
+        }
+
+        .modal-content input:focus {
+            outline: none;
+            border-color: #a855f7;
+            box-shadow: 0 0 15px rgba(168,85,247,0.3);
         }
 
         .modal-content button {
-            background: #4a4a8a;
+            background: linear-gradient(135deg, #a855f7, #7c3aed);
             border: none;
-            padding: 12px;
-            border-radius: 10px;
+            padding: 14px;
+            border-radius: 15px;
             color: white;
-            font-size: 14px;
+            font-size: 16px;
             cursor: pointer;
             width: 100%;
             transition: all 0.3s;
         }
 
         .modal-content button:hover {
-            background: #5a5a9a;
+            transform: scale(1.02);
+            box-shadow: 0 0 20px rgba(168,85,247,0.5);
         }
 
         .error {
             color: #ef4444;
-            margin-top: 10px;
+            margin-top: 15px;
             font-size: 12px;
-        }
-
-        /* СООБЩЕНИЕ О ВРЕМЕНИ */
-        .time-message {
-            text-align: center;
-            padding: 20px;
-            background: #1a1a2a;
-            border-radius: 15px;
-            margin-bottom: 20px;
-            color: #ffaa44;
-            font-size: 12px;
-            animation: blink 2s infinite;
-        }
-
-        @keyframes blink {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.6; }
         }
 
         @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
         @media (max-width: 600px) {
             .videos-grid {
                 grid-template-columns: 1fr;
             }
+            .header h1 {
+                font-size: 28px;
+            }
+            .header .sub span {
+                font-size: 10px;
+            }
         }
     </style>
 </head>
 <body>
-    <button class="login-btn" id="loginBtn" onclick="showLoginModal()">🔐 ВХОД</button>
+    <button class="login-btn" id="loginBtn" onclick="showLoginModal()">
+        🔑 ВХОД ДЛЯ АДМИНА
+    </button>
 
     <div class="container">
         <div class="header">
             <h1>🌙 MOONTUNNEL</h1>
-            <p>Видео строительства в выживании</p>
+            <p>Видео строительства в выживании | Туннель под водой</p>
+            <div class="sub">
+                <span>⛏️ ЧИСТОВОЕ ВЫЖИВАНИЕ</span>
+                <span>🏗️ СТРОИТЕЛЬСТВО</span>
+                <span>🌊 ПОДВОДНЫЙ ТУННЕЛЬ</span>
+                <span>🎬 ВИДЕО СКОРО БУДЕТ ДОСТУПНО</span>
+            </div>
         </div>
 
-        <!-- СООБЩЕНИЕ О ВРЕМЕНИ -->
-        <div class="time-message" id="timeMessage">
-            ⏳ ВИДЕО БУДЕТ ДОСТУПНО ЧЕРЕЗ 1 ДЕНЬ ⏳
+        <div class="info-message">
+            🎥 ВИДЕО ЗАГРУЖАЮТСЯ | ОНИ ПОЯВЯТСЯ ЗДЕСЬ ПОСЛЕ ЗАВЕРШЕНИЯ ЗАГРУЗКИ
         </div>
 
-        <!-- АДМИН ПАНЕЛЬ -->
         <div id="adminPanel" class="admin-panel">
             <div style="text-align: center;">
                 <label class="upload-label" onclick="document.getElementById('videoInput').click()">
@@ -406,17 +518,14 @@
             </div>
         </div>
 
-        <!-- СПИСОК ВИДЕО -->
         <div class="videos-grid" id="videosGrid"></div>
 
-        <!-- ПЛЕЕР -->
         <div class="player-section" id="playerSection">
             <video id="videoPlayer" controls></video>
-            <button class="close-player" onclick="closePlayer()">❌ ЗАКРЫТЬ</button>
+            <button class="close-player" onclick="closePlayer()">✖ ЗАКРЫТЬ ПЛЕЕР</button>
         </div>
     </div>
 
-    <!-- МОДАЛКА ВХОДА -->
     <div id="loginModal" class="modal">
         <div class="modal-content">
             <h2>🔐 ВХОД ДЛЯ АДМИНА</h2>
@@ -437,34 +546,6 @@
 
         let videos = [];
         let isAdmin = false;
-
-        // ДАТА ДОСТУПА (через 1 день от загрузки)
-        function getAvailableDate(createdAt) {
-            const date = new Date(createdAt);
-            date.setDate(date.getDate() + 1);
-            return date;
-        }
-
-        function isVideoAvailable(createdAt) {
-            const availableDate = getAvailableDate(createdAt);
-            return new Date() >= availableDate;
-        }
-
-        function formatTimeLeft(createdAt) {
-            const availableDate = getAvailableDate(createdAt);
-            const now = new Date();
-            const diff = availableDate - now;
-            
-            if (diff <= 0) return null;
-            
-            const hours = Math.floor(diff / (1000 * 60 * 60));
-            const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-            
-            if (hours > 0) {
-                return `${hours} ч ${minutes} мин`;
-            }
-            return `${minutes} мин`;
-        }
 
         // ============================================
         // ЗАГРУЗКА ВИДЕО
@@ -488,45 +569,26 @@
             const grid = document.getElementById('videosGrid');
             
             if (videos.length === 0) {
-                grid.innerHTML = '<div style="text-align:center; color:#888; padding:40px;">📭 Нет видео</div>';
+                grid.innerHTML = '<div style="text-align:center; color:#888; padding:60px; background:rgba(0,0,0,0.2); border-radius:30px;">📭 ВИДЕО ПОКА НЕТ</div>';
                 return;
             }
 
             let html = '';
             videos.forEach(video => {
                 const sizeMB = (video.size / 1024 / 1024).toFixed(2);
-                const available = isVideoAvailable(video.created_at);
-                const timeLeft = formatTimeLeft(video.created_at);
-                
-                let statusHtml = '';
-                let playHandler = '';
-                
-                if (!available) {
-                    statusHtml = `<div class="video-status status-waiting">⏳ Доступно через ${timeLeft}</div>`;
-                    playHandler = `onclick="showWaitMessage()"`;
-                } else {
-                    statusHtml = `<div class="video-status status-available">✅ Доступно</div>`;
-                    playHandler = `onclick="playVideo('${video.url}', '${video.name}')"`;
-                }
+                const date = new Date(video.created_at).toLocaleDateString('ru-RU');
                 
                 html += `
-                    <div class="video-card" ${playHandler}>
-                        <div class="video-thumb">
-                            🎬
-                            ${statusHtml}
-                        </div>
+                    <div class="video-card" onclick="playVideo('${video.url}', '${video.name}')">
+                        <div class="video-thumb">🎬</div>
                         <div class="video-name">${escapeHtml(video.name)}</div>
-                        <div class="video-size">${sizeMB} MB</div>
-                        <div class="video-time">📅 ${new Date(video.created_at).toLocaleDateString()}</div>
-                        ${isAdmin ? `<button class="delete-video" onclick="event.stopPropagation(); deleteVideo('${video.id}')">🗑️ УДАЛИТЬ</button>` : ''}
+                        <div class="video-size">📁 ${sizeMB} MB</div>
+                        <div class="video-date">📅 ${date}</div>
+                        ${isAdmin ? `<button class="delete-video" onclick="event.stopPropagation(); deleteVideo('${video.id}')">🗑️ УДАЛИТЬ ВИДЕО</button>` : ''}
                     </div>
                 `;
             });
             grid.innerHTML = html;
-        }
-
-        function showWaitMessage() {
-            alert('⏳ ВИДЕО БУДЕТ ДОСТУПНО ЧЕРЕЗ 1 ДЕНЬ ПОСЛЕ ЗАГРУЗКИ ⏳');
         }
 
         // ============================================
@@ -534,7 +596,7 @@
         // ============================================
         async function uploadVideo() {
             if (!isAdmin) {
-                alert('Только админ может загружать видео');
+                alert('⛔ Только администратор может загружать видео');
                 return;
             }
 
@@ -544,7 +606,7 @@
             if (!file) return;
             
             if (file.size > 2 * 1024 * 1024 * 1024) {
-                alert('❌ Файл больше 2GB');
+                alert('❌ Файл превышает 2GB');
                 return;
             }
             
@@ -553,7 +615,7 @@
             const statusDiv = document.getElementById('uploadStatus');
             
             progressBar.style.display = 'block';
-            statusDiv.innerHTML = '⏳ Загрузка... 0%';
+            statusDiv.innerHTML = '⏳ ЗАГРУЗКА... 0%';
             
             const fileName = `${Date.now()}_${file.name}`;
             const filePath = `videos/${fileName}`;
@@ -564,12 +626,12 @@
                     onUploadProgress: (progress) => {
                         const percent = (progress.loaded / progress.total) * 100;
                         progressFill.style.width = `${percent}%`;
-                        statusDiv.innerHTML = `⏳ Загрузка... ${Math.round(percent)}%`;
+                        statusDiv.innerHTML = `⏳ ЗАГРУЗКА... ${Math.round(percent)}%`;
                     }
                 });
             
             if (error) {
-                statusDiv.innerHTML = '❌ Ошибка';
+                statusDiv.innerHTML = '❌ ОШИБКА ЗАГРУЗКИ';
                 progressBar.style.display = 'none';
                 return;
             }
@@ -589,7 +651,7 @@
                     created_at: new Date().toISOString()
                 }]);
             
-            statusDiv.innerHTML = '✅ Готово!';
+            statusDiv.innerHTML = '✅ ВИДЕО ЗАГРУЖЕНО!';
             progressFill.style.width = '100%';
             
             setTimeout(() => {
@@ -611,7 +673,7 @@
             player.src = url;
             player.load();
             section.classList.add('active');
-            section.scrollIntoView({ behavior: 'smooth' });
+            section.scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
 
         function closePlayer() {
@@ -627,7 +689,7 @@
         // УДАЛЕНИЕ
         // ============================================
         async function deleteVideo(id) {
-            if (!confirm('🗑️ Удалить это видео?')) return;
+            if (!confirm('🗑️ Удалить это видео навсегда?')) return;
             
             const video = videos.find(v => v.id === id);
             if (!video) return;
@@ -641,10 +703,14 @@
         }
 
         // ============================================
-        // ВХОД
+        // ВХОД (РАБОТАЕТ)
         // ============================================
         function showLoginModal() {
             document.getElementById('loginModal').classList.add('active');
+        }
+
+        function closeLoginModal() {
+            document.getElementById('loginModal').classList.remove('active');
         }
 
         async function checkAdminLogin() {
@@ -653,7 +719,7 @@
             
             if (username === 'milk' && password === 'milk') {
                 isAdmin = true;
-                document.getElementById('loginModal').classList.remove('active');
+                closeLoginModal();
                 document.getElementById('adminPanel').classList.add('active');
                 document.getElementById('loginBtn').style.display = 'none';
                 renderVideos();
@@ -669,7 +735,7 @@
         }
 
         // ============================================
-        // СТАРТ
+        // ИНИЦИАЛИЗАЦИЯ
         // ============================================
         document.addEventListener('DOMContentLoaded', () => {
             loadVideos();
@@ -678,7 +744,7 @@
         window.onclick = function(event) {
             const modal = document.getElementById('loginModal');
             if (event.target === modal) {
-                modal.classList.remove('active');
+                closeLoginModal();
             }
         }
     </script>
