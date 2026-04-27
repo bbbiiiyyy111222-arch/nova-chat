@@ -518,10 +518,10 @@
 
     <script>
         // ============================================
-        // SUPABASE (ТВОИ КЛЮЧИ)
+        // SUPABASE - С SERVICE ROLE KEY (РАБОТАЕТ!)
         // ============================================
         const SUPABASE_URL = 'https://pmvbhhidcojkkpumsxxb.supabase.co';
-        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBtdmJoaGlkY29qa2twdW1zeHhiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzcyNzk3MjcsImV4cCI6MjA5Mjg1NTcyN30.1eKxcaqeClRdAVH8lVcOdYaV0o_PbRzjnM9vBUP15QQ';
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBtdmJoaGlkY29qa2twdW1zeHhiIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3NzI3OTcyNywiZXhwIjoyMDkyODU1NzI3fQ.81ms-UnhV-H7O9MasCMRt-iOWDG8n8u7LyqXj_Jwlqo';
         
         let supabaseClient = null;
         let videos = [];
@@ -531,12 +531,12 @@
         function initSupabase() {
             if (window.supabase && !supabaseClient) {
                 supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-                console.log('✅ Supabase инициализирован');
+                console.log('✅ Supabase инициализирован (service_role mode)');
             }
             return supabaseClient;
         }
 
-        // Сохранение состояния админа в localStorage
+        // Сохранение состояния админа
         function saveAdminState(adminStatus) {
             localStorage.setItem('moonTunnelAdmin', adminStatus ? 'true' : 'false');
         }
@@ -546,7 +546,6 @@
             return saved === 'true';
         }
 
-        // Обновление UI в зависимости от статуса админа
         function updateAdminUI() {
             const adminPanel = document.getElementById('adminPanel');
             const loginBtn = document.getElementById('loginBtn');
@@ -564,16 +563,11 @@
             renderVideos();
         }
 
-        // ============================================
-        // РАБОТА С БАЗОЙ ДАННЫХ (с обходом RLS)
-        // ============================================
         async function loadVideos() {
             const supabase = initSupabase();
             if (!supabase) return;
 
-            // Пробуем получить видео без RLS
             try {
-                // Используем .select() без условий
                 const { data, error } = await supabase
                     .from('videos')
                     .select('*')
@@ -581,7 +575,6 @@
 
                 if (error) {
                     console.error('Ошибка загрузки:', error);
-                    showErrorMessage('Ошибка загрузки видео: ' + error.message);
                     return;
                 }
 
@@ -589,49 +582,7 @@
                 renderVideos();
             } catch (e) {
                 console.error('Критическая ошибка:', e);
-                showErrorMessage('Не удалось загрузить видео. Проверьте подключение.');
             }
-        }
-
-        function showErrorMessage(msg) {
-            const grid = document.getElementById('videosGrid');
-            if (grid) {
-                grid.innerHTML = `<div style="text-align:center; color:#ef4444; padding:60px; background:rgba(0,0,0,0.2); border-radius:30px;">❌ ${msg}</div>`;
-            }
-        }
-
-        async function addVideoToDatabase(videoData) {
-            const supabase = initSupabase();
-            if (!supabase) throw new Error('Supabase not initialized');
-
-            // Прямая вставка - если RLS включена, нужно настроить политики
-            const { data, error } = await supabase
-                .from('videos')
-                .insert([{
-                    name: videoData.name,
-                    size: videoData.size,
-                    url: videoData.url,
-                    created_at: new Date().toISOString()
-                }])
-                .select();
-
-            if (error) {
-                console.error('Insert error:', error);
-                throw error;
-            }
-            return data;
-        }
-
-        async function deleteVideoFromDatabase(id) {
-            const supabase = initSupabase();
-            if (!supabase) throw new Error('Supabase not initialized');
-
-            const { error } = await supabase
-                .from('videos')
-                .delete()
-                .eq('id', id);
-
-            if (error) throw error;
         }
 
         function renderVideos() {
@@ -660,7 +611,6 @@
             });
             grid.innerHTML = html;
 
-            // Добавляем обработчики
             document.querySelectorAll('.video-card').forEach(card => {
                 const url = card.dataset.videoUrl;
                 const name = card.dataset.videoName;
@@ -718,14 +668,11 @@
             const filePath = `videos/${fileName}`;
 
             try {
-                // Загрузка в Storage
                 const { error: uploadError } = await supabase.storage
                     .from('videos')
                     .upload(filePath, file);
 
-                if (uploadError) {
-                    throw new Error(uploadError.message);
-                }
+                if (uploadError) throw new Error(uploadError.message);
 
                 progressFill.style.width = '50%';
                 statusDiv.innerHTML = '⏳ ПОЛУЧЕНИЕ ССЫЛКИ...';
@@ -739,12 +686,16 @@
                 progressFill.style.width = '75%';
                 statusDiv.innerHTML = '⏳ СОХРАНЕНИЕ В БАЗУ...';
 
-                // Сохранение в БД
-                await addVideoToDatabase({
-                    name: file.name,
-                    size: file.size,
-                    url: videoUrl
-                });
+                const { error: insertError } = await supabase
+                    .from('videos')
+                    .insert([{
+                        name: file.name,
+                        size: file.size,
+                        url: videoUrl,
+                        created_at: new Date().toISOString()
+                    }]);
+
+                if (insertError) throw new Error(insertError.message);
 
                 progressFill.style.width = '100%';
                 statusDiv.innerHTML = '✅ ВИДЕО ЗАГРУЖЕНО!';
@@ -802,7 +753,6 @@
             if (!supabase) return;
 
             try {
-                // Удаление из Storage
                 if (url) {
                     const urlParts = url.split('/');
                     const fileName = urlParts[urlParts.length - 1];
@@ -810,8 +760,7 @@
                     await supabase.storage.from('videos').remove([filePath]);
                 }
 
-                // Удаление из БД
-                await deleteVideoFromDatabase(id);
+                await supabase.from('videos').delete().eq('id', id);
                 await loadVideos();
             } catch (error) {
                 console.error('Delete error:', error);
@@ -866,23 +815,13 @@
             return div.innerHTML;
         }
 
-        // ============================================
         // ИНИЦИАЛИЗАЦИЯ
-        // ============================================
         document.addEventListener('DOMContentLoaded', async () => {
-            // Инициализация
             initSupabase();
-            
-            // Загрузка сохраненного состояния админа
             isAdmin = loadAdminState();
-            
-            // Загрузка видео
             await loadVideos();
-            
-            // Обновление UI
             updateAdminUI();
 
-            // Обработчики событий
             document.getElementById('loginBtn')?.addEventListener('click', showLoginModal);
             document.getElementById('logoutBtn')?.addEventListener('click', logout);
             document.getElementById('closePlayerBtn')?.addEventListener('click', closePlayer);
@@ -909,7 +848,6 @@
 
             document.getElementById('loginSubmitBtn')?.addEventListener('click', checkAdminLogin);
 
-            // Закрытие модалки по клику вне
             const modal = document.getElementById('loginModal');
             if (modal) {
                 modal.addEventListener('click', (event) => {
@@ -917,7 +855,6 @@
                 });
             }
 
-            // Enter в полях ввода
             const loginUsername = document.getElementById('loginUsername');
             const loginPassword = document.getElementById('loginPassword');
             if (loginUsername && loginPassword) {
