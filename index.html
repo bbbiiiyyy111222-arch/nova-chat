@@ -3,63 +3,44 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>🦭 Тюлень-тест | 10 вопросов</title>
+    <title>🦭 ТЕСТ НА ТЮЛЕНЯ | 10 вопросов</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            user-select: none;
         }
-
         body {
+            background: linear-gradient(145deg, #1f6d8a, #0e4a6b);
+            font-family: 'Segoe UI', 'Comic Neue', sans-serif;
             min-height: 100vh;
-            background: linear-gradient(145deg, #1f6d8a 0%, #0e4a6b 100%);
-            font-family: 'Segoe UI', 'Comic Neue', system-ui, sans-serif;
             display: flex;
             justify-content: center;
             align-items: center;
             padding: 20px;
         }
-
-        /* Полный экран */
-        .fullscreen {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: inherit;
-            overflow-y: auto;
-            padding: 20px;
-        }
-
-        .card {
+        .container {
             max-width: 800px;
-            margin: 20px auto;
-            background: rgba(255, 250, 235, 0.97);
+            width: 100%;
+            background: rgba(255,250,235,0.97);
             border-radius: 60px;
             padding: 30px 25px;
             box-shadow: 0 25px 45px rgba(0,0,0,0.3);
-            transition: 0.2s;
         }
-
         h1 {
-            font-size: 2.4rem;
+            font-size: 2.2rem;
             text-align: center;
             color: #1e5a7a;
             display: flex;
             align-items: center;
             justify-content: center;
             gap: 12px;
-            flex-wrap: wrap;
         }
-
         .sub {
             text-align: center;
             color: #2c6e8f;
-            margin-bottom: 20px;
+            margin-bottom: 25px;
             border-bottom: 2px dashed #ffb347;
             display: inline-block;
             width: auto;
@@ -67,11 +48,6 @@
             margin-right: auto;
             padding-bottom: 6px;
         }
-
-        .input-group {
-            margin: 20px 0;
-        }
-
         input, button {
             width: 100%;
             padding: 14px;
@@ -79,51 +55,44 @@
             border-radius: 50px;
             border: none;
             outline: none;
+            margin-top: 10px;
         }
-
         input {
             background: #fff5e8;
             border: 1px solid #ffd5a8;
             text-align: center;
             font-weight: bold;
         }
-
         button {
             background: #f3a683;
             color: white;
             font-weight: bold;
             cursor: pointer;
             transition: 0.2s;
-            margin-top: 10px;
             box-shadow: 0 4px 0 #c26a48;
         }
-
         button:active {
             transform: translateY(2px);
             box-shadow: 0 1px 0 #c26a48;
         }
-
         .error {
             color: #e76f51;
             font-size: 0.85rem;
             text-align: center;
             margin-top: 10px;
         }
-
-        .question-box {
+        .question-card {
             background: #fffbf0;
             border-radius: 35px;
             padding: 18px;
             margin-bottom: 20px;
         }
-
         .question-text {
             font-weight: bold;
             font-size: 1.2rem;
             margin-bottom: 12px;
             color: #1e3b4a;
         }
-
         .option {
             background: #fff3e2;
             padding: 10px 16px;
@@ -133,54 +102,39 @@
             transition: 0.1s;
             border: 1px solid #ffdebc;
         }
-
         .option.selected {
             background: #ffd5a8;
             border-color: #f3a683;
             font-weight: bold;
         }
-
         .result-area {
             text-align: center;
-            font-size: 1.8rem;
+            font-size: 2rem;
             font-weight: bold;
             background: #ffefdb;
             border-radius: 50px;
             padding: 20px;
             margin: 20px 0;
         }
-
         .leaderboard {
             background: #fff1e0;
             border-radius: 40px;
             padding: 20px;
             margin-top: 25px;
         }
-
         .leaderboard h3 {
-            font-size: 1.5rem;
+            font-size: 1.4rem;
             margin-bottom: 15px;
             color: #1e5a7a;
         }
-
         .leaderboard ol {
             padding-left: 30px;
-            font-size: 1.1rem;
         }
-
         .leaderboard li {
             margin: 8px 0;
             border-bottom: 1px solid #ffd5a8;
             padding: 6px;
         }
-
-        .small-btn {
-            background: #7b9cac;
-            margin-top: 15px;
-            box-shadow: none;
-            font-size: 0.9rem;
-        }
-
         footer {
             text-align: center;
             margin-top: 20px;
@@ -190,317 +144,236 @@
     </style>
 </head>
 <body>
-<div class="fullscreen" id="app">
-    <div class="card" id="dynamicContent">
-        <!-- динамическое содержимое -->
-    </div>
-</div>
+<div class="container" id="app"></div>
 
 <script>
-    // ========== ЗАМЕНИ НА СВОИ ДАННЫЕ SUPABASE ==========
-    const SUPABASE_URL = 'https://твой-проект.supabase.co';
-    const SUPABASE_ANON_KEY = 'твой-anon-ключ';
-    // =================================================
+// ----- ВСТАВЬ СВОИ ДАННЫЕ -----
+const SUPABASE_URL = 'https://твой-проект.supabase.co';
+const SUPABASE_ANON_KEY = 'твой-anon-ключ';
+// -----------------------------
 
-    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+// Создаём клиент внутри скрипта, избегая глобального конфликта
+const _supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    // Глобальные переменные
-    let currentUser = null;      // { id, nickname }
-    let currentAnswers = [];     // массив выбранных индексов (0..3) на 10 вопросов
-    let submitted = false;       // прошёл ли тест
+// Вопросы (10 штук)
+const QUESTIONS = [
+    { text: "Как называется детёныш тюленя?", options: ["Щенок", "Бельк", "Тюленёнок", "Ластоног"], correct: 1 },
+    { text: "Чем питаются тюлени в основном?", options: ["Водорослями", "Планктоном", "Рыбой и моллюсками", "Пингвинами"], correct: 2 },
+    { text: "Какое из этих животных — настоящий тюлень?", options: ["Морж", "Морской лев", "Нерпа", "Калан"], correct: 2 },
+    { text: "Сколько примерно видов тюленей существует в мире?", options: ["5-10", "18-25", "30-35", "40-50"], correct: 1 },
+    { text: "Почему тюлени не мёрзнут в ледяной воде?", options: ["Быстрый метаболизм", "Толстый слой жира", "Шерсть отталкивает воду", "Постоянно двигаются"], correct: 1 },
+    { text: "Как тюлени спят в воде?", options: ["Лёжа на спине", "Вертикально", "С задержкой дыхания и всплывают", "Никогда не спят в воде"], correct: 2 },
+    { text: "Какое максимальное время под водой может провести тюлень?", options: ["5-7 минут", "10-12 минут", "20-30 минут", "до часа"], correct: 2 },
+    { text: "Где обитает самый крупный вид тюленя — морской слон?", options: ["Арктика", "Антарктика", "Тихий океан", "Балтийское море"], correct: 1 },
+    { text: "Что означает слово «тюлень» в сленге?", options: ["Медлительный человек", "Любитель рыбы", "Толстый и милый", "Неуклюжий, но добрый"], correct: 0 },
+    { text: "Как тюлени передвигаются на суше?", options: ["Прыжками", "Ползком, изгибаясь", "На задних ластах", "Скачут как кенгуру"], correct: 1 }
+];
 
-    // ========== ВОПРОСЫ (10 штук о тюленях) ==========
-    const questions = [
-        {
-            text: "Как называется детёныш тюленя?",
-            options: ["Щенок", "Бельк", "Тюленёнок", "Ластоног"],
-            correct: 1
-        },
-        {
-            text: "Чем питаются тюлени в основном?",
-            options: ["Водорослями", "Планктоном", "Рыбой и моллюсками", "Пингвинами"],
-            correct: 2
-        },
-        {
-            text: "Какое из этих животных — настоящий тюлень?",
-            options: ["Морж", "Морской лев", "Нерпа", "Калан"],
-            correct: 2
-        },
-        {
-            text: "Сколько примерно видов тюленей существует в мире?",
-            options: ["5-10", "18-25", "30-35", "40-50"],
-            correct: 1
-        },
-        {
-            text: "Почему тюлени не мёрзнут в ледяной воде?",
-            options: ["Быстрый метаболизм", "Толстый слой жира", "Шерсть отталкивает воду", "Постоянно двигаются"],
-            correct: 1
-        },
-        {
-            text: "Как тюлени спят в воде?",
-            options: ["Лёжа на спине", "Вертикально", "С задержкой дыхания и всплывают", "Никогда не спят в воде"],
-            correct: 2
-        },
-        {
-            text: "Какое максимальное время под водой может провести тюлень?",
-            options: ["5-7 минут", "10-12 минут", "20-30 минут", "до часа"],
-            correct: 2
-        },
-        {
-            text: "Где обитает самый крупный вид тюленя — морской слон?",
-            options: ["Арктика", "Антарктика", "Тихий океан", "Балтийское море"],
-            correct: 1
-        },
-        {
-            text: "Что означает слово «тюлень» в сленге?",
-            options: ["Медлительный человек", "Любитель рыбы", "Толстый и милый", "Неуклюжий, но добрый"],
-            correct: 0
-        },
-        {
-            text: "Как тюлени передвигаются на суше?",
-            options: ["Прыжками", "Ползком, изгибаясь", "На задних ластах", "Скачут как кенгуру"],
-            correct: 1
-        }
-    ];
+// Состояние приложения
+let state = {
+    user: null,           // { id, nickname }
+    answers: new Array(10).fill(null),
+    testFinished: false
+};
 
-    // ========== ОТРИСОВКА ИНТЕРФЕЙСА ==========
-    function render() {
-        const container = document.getElementById('dynamicContent');
-        if (!currentUser) {
-            // форма регистрации
-            container.innerHTML = `
-                <h1>🦭 ТЕСТ НА ТЮЛЕНЯ 🦭</h1>
-                <div class="sub">10 вопросов ● честно</div>
-                <div class="input-group">
-                    <input type="text" id="nickname" placeholder="ТВОЙ НИКНЕЙМ" maxlength="20" autocomplete="off">
-                    <button id="registerBtn">⚡ РЕГИСТРАЦИЯ / ВХОД</button>
-                    <div id="regError" class="error"></div>
-                </div>
-                <div class="leaderboard" id="leaderboardPreview"></div>
-                <footer>Уникальный ник — только один раз!<br>Твой результат сохранится в лидерборд</footer>
-            `;
-            document.getElementById('registerBtn').addEventListener('click', registerUser);
-            document.getElementById('nickname').addEventListener('keypress', (e) => {
-                if (e.key === 'Enter') registerUser();
+// ========== ОТРИСОВКА ==========
+function render() {
+    const app = document.getElementById('app');
+    if (!state.user) {
+        // Форма регистрации
+        app.innerHTML = `
+            <h1>🦭 ТЕСТ НА ТЮЛЕНЯ 🦭</h1>
+            <div class="sub">10 вопросов · уникальный ник</div>
+            <input type="text" id="nickname" placeholder="ТВОЙ НИКНЕЙМ" maxlength="20" autocomplete="off">
+            <button id="registerBtn">🚀 РЕГИСТРАЦИЯ / ВОЙТИ</button>
+            <div id="regError" class="error"></div>
+            <div class="leaderboard" id="leaderboardReg"></div>
+            <footer>Ник уникальный. Если ты уже есть — войдёшь, если нет — создадим.</footer>
+        `;
+        document.getElementById('registerBtn').onclick = registerOrLogin;
+        document.getElementById('nickname').onkeypress = (e) => { if(e.key === 'Enter') registerOrLogin(); };
+        loadLeaderboard('leaderboardReg');
+        return;
+    }
+
+    if (!state.testFinished) {
+        // Форма теста
+        let html = `<h1>🦭 ЗДРАВСТВУЙ, ${escapeHtml(state.user.nickname)}!</h1>
+                    <div class="sub">выбери ответы на 10 вопросов</div>`;
+        QUESTIONS.forEach((q, idx) => {
+            const selected = state.answers[idx] !== null ? state.answers[idx] : -1;
+            html += `<div class="question-card" data-qidx="${idx}">
+                        <div class="question-text">${idx+1}. ${q.text}</div>
+                        <div class="options">`;
+            q.options.forEach((opt, optIdx) => {
+                const selectedClass = (selected === optIdx) ? 'selected' : '';
+                html += `<div class="option ${selectedClass}" data-optidx="${optIdx}">${opt}</div>`;
             });
-            loadLeaderboard();
-        } 
-        else if (!submitted) {
-            // Тест — вопросы
-            let html = `<h1>🦭 ЗДРАВСТВУЙ, ${escapeHtml(currentUser.nickname)}!</h1>
-                        <div class="sub">выбери ответы, потом нажми «ЗАКОНЧИТЬ ТЕСТ»</div>`;
-            questions.forEach((q, idx) => {
-                const selectedIdx = currentAnswers[idx] ?? -1;
-                html += `<div class="question-box" data-qidx="${idx}">
-                            <div class="question-text">${idx+1}. ${q.text}</div>
-                            <div class="options">`;
-                q.options.forEach((opt, optIdx) => {
-                    const selectedClass = (selectedIdx === optIdx) ? 'selected' : '';
-                    html += `<div class="option ${selectedClass}" data-optidx="${optIdx}">${opt}</div>`;
-                });
-                html += `</div></div>`;
-            });
-            html += `<button id="submitTestBtn">✅ ЗАКОНЧИТЬ ТЕСТ (ПРОВЕРИТЬ)</button>
-                     <div id="testError" class="error"></div>
-                     <div class="leaderboard" id="leaderboardDuring"></div>
-                     <footer>Менять ответы можно до нажатия кнопки</footer>`;
-            container.innerHTML = html;
-
-            // Вешаем обработчики на варианты
-            document.querySelectorAll('.question-box').forEach(box => {
-                const qidx = parseInt(box.dataset.qidx);
-                box.querySelectorAll('.option').forEach(opt => {
-                    opt.addEventListener('click', () => {
-                        if (submitted) return;
-                        const optIdx = parseInt(opt.dataset.optidx);
-                        currentAnswers[qidx] = optIdx;
-                        // обновить визуально выделение
-                        box.querySelectorAll('.option').forEach(o => o.classList.remove('selected'));
-                        opt.classList.add('selected');
-                    });
-                });
-            });
-            document.getElementById('submitTestBtn').addEventListener('click', submitTest);
-            loadLeaderboard();
-        } 
-        else {
-            // результат уже показан, но перерисовываем для кнопки "Пройти заново"
-            const score = currentAnswers.filter((ans, idx) => ans === questions[idx].correct).length;
-            container.innerHTML = `
-                <h1>🦭 РЕЗУЛЬТАТ 🦭</h1>
-                <div class="result-area">${score} / 10</div>
-                <div id="verdict" style="text-align:center; font-size:1.2rem; margin-bottom:20px;">${getVerdict(score)}</div>
-                <button id="retryBtn">🔄 ПРОЙТИ ТЕСТ ЗАНОВО</button>
-                <div class="leaderboard" id="leaderboardAfter"></div>
-                <footer>Новый результат обновит твой лучший счёт в лидерборде</footer>
-            `;
-            document.getElementById('retryBtn').addEventListener('click', () => {
-                // Обнуляем ответы и флаг, перерисовываем тест
-                currentAnswers = new Array(questions.length).fill(null);
-                submitted = false;
-                render();
-            });
-            loadLeaderboard();
-        }
-    }
-
-    async function loadLeaderboard() {
-        // Получить лучший счёт для каждого ника
-        const { data, error } = await supabase
-            .from('seal_scores')
-            .select(`score, seal_users!inner (nickname)`)
-            .order('score', { ascending: false })
-            .limit(20);
-        
-        if (error) {
-            console.warn(error);
-            return;
-        }
-        // Группировка по нику с максимальным счётом (если несколько результатов)
-        const bestMap = new Map();
-        for (let row of data) {
-            const nick = row.seal_users.nickname;
-            const score = row.score;
-            if (!bestMap.has(nick) || bestMap.get(nick) < score) {
-                bestMap.set(nick, score);
-            }
-        }
-        const sorted = Array.from(bestMap.entries()).sort((a,b) => b[1] - a[1]);
-        let html = `<h3>🏆 ЛИДЕРБОРД (лучший счёт) 🏆</h3><ol>`;
-        for (let [nick, score] of sorted.slice(0, 10)) {
-            html += `<li><strong>${escapeHtml(nick)}</strong> — ${score}/10</li>`;
-        }
-        html += `</ol>`;
-        const leaderContainers = ['leaderboardPreview', 'leaderboardDuring', 'leaderboardAfter'];
-        for (let id of leaderContainers) {
-            const el = document.getElementById(id);
-            if (el) el.innerHTML = html;
-        }
-    }
-
-    async function registerUser() {
-        const nickname = document.getElementById('nickname').value.trim();
-        const errorDiv = document.getElementById('regError');
-        if (!nickname) {
-            errorDiv.innerText = '❌ Введи ник!';
-            return;
-        }
-        if (nickname.length > 20) {
-            errorDiv.innerText = '❌ Слишком длинный ник (макс 20)';
-            return;
-        }
-        // Проверим уникальность ника через существующих пользователей
-        const { data: existing, error: findErr } = await supabase
-            .from('seal_users')
-            .select('id, nickname')
-            .eq('nickname', nickname);
-        if (findErr) {
-            errorDiv.innerText = 'Ошибка сервера, попробуй позже';
-            return;
-        }
-        if (existing && existing.length > 0) {
-            errorDiv.innerText = '❌ Такой ник уже занят! Придумай другой.';
-            return;
-        }
-        // Создаём пользователя
-        const { data: newUser, error: insertErr } = await supabase
-            .from('seal_users')
-            .insert([{ nickname }])
-            .select()
-            .single();
-        if (insertErr) {
-            if (insertErr.code === '23505') errorDiv.innerText = '❌ Ник уже существует (конфликт)';
-            else errorDiv.innerText = '❌ Ошибка базы данных';
-            return;
-        }
-        currentUser = { id: newUser.id, nickname: newUser.nickname };
-        currentAnswers = new Array(questions.length).fill(null);
-        submitted = false;
-        render();
-    }
-
-    async function submitTest() {
-        if (submitted) return;
-        // Проверка, что на все вопросы даны ответы
-        const missing = currentAnswers.some(a => a === null);
-        if (missing) {
-            document.getElementById('testError').innerText = '❌ Ответь на все 10 вопросов!';
-            return;
-        }
-        const score = currentAnswers.filter((ans, idx) => ans === questions[idx].correct).length;
-        // Сохраняем результат в базу для этого пользователя
-        const { error: scoreErr } = await supabase
-            .from('seal_scores')
-            .insert([{ user_id: currentUser.id, score: score }]);
-        if (scoreErr) {
-            console.error(scoreErr);
-            document.getElementById('testError').innerText = '⚠️ Не удалось сохранить результат, но ты можешь увидеть счёт.';
-        }
-        submitted = true;
-        render();
-    }
-
-    function getVerdict(score) {
-        if (score >= 9) return "🌟 ЭТАЛОННЫЙ ТЮЛЕНЬ! 🦭 Ты знаешь всё о ластоногих!";
-        if (score >= 7) return "🐟 ХОРОШИЙ ТЮЛЕНЬ! Почти эксперт. Жирок в норме.";
-        if (score >= 5) return "🫧 СРЕДНИЙ ТЮЛЕНЬ — плаваешь, но ещё учишься нырять.";
-        return "🧸 ТЫ НЕ ТЮЛЕНЬ ... Возможно, ты пингвин или калан. Попробуй ещё!";
-    }
-
-    function escapeHtml(str) {
-        if (!str) return '';
-        return str.replace(/[&<>]/g, function(m) {
-            if (m === '&') return '&amp;';
-            if (m === '<') return '&lt;';
-            if (m === '>') return '&gt;';
-            return m;
+            html += `</div></div>`;
         });
+        html += `<button id="submitTestBtn">✅ ЗАКОНЧИТЬ ТЕСТ</button>
+                 <div id="testError" class="error"></div>
+                 <div class="leaderboard" id="leaderboardTest"></div>
+                 <footer>Можно менять ответы до нажатия кнопки</footer>`;
+        app.innerHTML = html;
+
+        // Обработчики выбора ответов
+        document.querySelectorAll('.question-card').forEach(card => {
+            const qIdx = parseInt(card.dataset.qidx);
+            card.querySelectorAll('.option').forEach(opt => {
+                opt.onclick = () => {
+                    if (state.testFinished) return;
+                    const optIdx = parseInt(opt.dataset.optidx);
+                    state.answers[qIdx] = optIdx;
+                    // визуально обновить
+                    card.querySelectorAll('.option').forEach(o => o.classList.remove('selected'));
+                    opt.classList.add('selected');
+                };
+            });
+        });
+        document.getElementById('submitTestBtn').onclick = submitTest;
+        loadLeaderboard('leaderboardTest');
+        return;
     }
 
-    // Старт: проверим, может есть сохранённый пользователь в localStorage
-    async function initFromStorage() {
-        const savedUserId = localStorage.getItem('seal_user_id');
-        const savedNick = localStorage.getItem('seal_nick');
-        if (savedUserId && savedNick) {
-            // проверим, существует ли он ещё в БД
-            const { data, error } = await supabase
-                .from('seal_users')
-                .select('id, nickname')
-                .eq('id', savedUserId)
-                .single();
-            if (!error && data && data.nickname === savedNick) {
-                currentUser = { id: data.id, nickname: data.nickname };
-                currentAnswers = new Array(questions.length).fill(null);
-                submitted = false;
-                render();
-                return;
-            }
-        }
+    // Результат
+    const score = calculateScore();
+    const verdict = getVerdict(score);
+    app.innerHTML = `
+        <h1>🦭 РЕЗУЛЬТАТ 🦭</h1>
+        <div class="result-area">${score} / 10</div>
+        <div style="text-align:center; font-size:1.2rem; margin-bottom:20px;">${verdict}</div>
+        <button id="retryBtn">🔄 ПРОЙТИ ЗАНОВО</button>
+        <div class="leaderboard" id="leaderboardResult"></div>
+        <footer>Новый результат обновит твой лучший счёт</footer>
+    `;
+    document.getElementById('retryBtn').onclick = () => {
+        state.answers = new Array(10).fill(null);
+        state.testFinished = false;
         render();
-    }
+    };
+    loadLeaderboard('leaderboardResult');
+}
 
-    // Сохраняем пользователя в localStorage при изменении currentUser
-    function watchUser() {
-        const originalRender = render;
-        window.render = originalRender;
-        // переопределим частично
-        const setUser = (user) => {
-            currentUser = user;
-            if (user) {
-                localStorage.setItem('seal_user_id', user.id);
-                localStorage.setItem('seal_nick', user.nickname);
-            } else {
-                localStorage.removeItem('seal_user_id');
-                localStorage.removeItem('seal_nick');
-            }
-            render();
-        };
-        window.setUser = setUser;
+// ========== РАБОТА С БАЗОЙ ==========
+async function registerOrLogin() {
+    const nickname = document.getElementById('nickname').value.trim();
+    const errorDiv = document.getElementById('regError');
+    if (!nickname) {
+        errorDiv.innerText = '❌ Введи ник!';
+        return;
     }
+    // Ищем пользователя
+    const { data: users, error: findErr } = await _supabase
+        .from('seal_users')
+        .select('id, nickname')
+        .eq('nickname', nickname);
+    if (findErr) {
+        errorDiv.innerText = 'Ошибка базы данных: ' + findErr.message;
+        return;
+    }
+    if (users && users.length > 0) {
+        // Вход существующего
+        state.user = { id: users[0].id, nickname: users[0].nickname };
+        state.answers = new Array(10).fill(null);
+        state.testFinished = false;
+        render();
+        return;
+    }
+    // Создаём нового
+    const { data: newUser, error: insertErr } = await _supabase
+        .from('seal_users')
+        .insert([{ nickname }])
+        .select()
+        .single();
+    if (insertErr) {
+        if (insertErr.code === '23505') errorDiv.innerText = '❌ Ник уже занят (одновременная регистрация)';
+        else errorDiv.innerText = '❌ Ошибка: ' + insertErr.message;
+        return;
+    }
+    state.user = { id: newUser.id, nickname: newUser.nickname };
+    state.answers = new Array(10).fill(null);
+    state.testFinished = false;
+    render();
+}
 
-    // Инициализация
-    initFromStorage();
-    watchUser();
+async function submitTest() {
+    if (state.testFinished) return;
+    // Проверка, что все вопросы отвечены
+    if (state.answers.some(a => a === null)) {
+        document.getElementById('testError').innerText = '❌ Ответь на все 10 вопросов!';
+        return;
+    }
+    const score = calculateScore();
+    // Сохраняем результат
+    const { error } = await _supabase
+        .from('seal_results')
+        .insert([{ user_id: state.user.id, score: score }]);
+    if (error) {
+        console.error(error);
+        document.getElementById('testError').innerText = '⚠️ Результат не сохранился, но счёт показан.';
+    }
+    state.testFinished = true;
+    render();
+}
+
+async function loadLeaderboard(containerId) {
+    const container = document.getElementById(containerId);
+    if (!container) return;
+    // Получаем лучший результат для каждого пользователя
+    const { data, error } = await _supabase
+        .from('seal_results')
+        .select(`score, seal_users!inner (nickname)`)
+        .order('score', { ascending: false });
+    if (error) {
+        container.innerHTML = '<div class="error">Не удалось загрузить лидерборд</div>';
+        return;
+    }
+    // Группировка по нику: максимум score
+    const bestMap = new Map();
+    for (let row of data) {
+        const nick = row.seal_users.nickname;
+        const scr = row.score;
+        if (!bestMap.has(nick) || bestMap.get(nick) < scr) {
+            bestMap.set(nick, scr);
+        }
+    }
+    const sorted = Array.from(bestMap.entries()).sort((a,b) => b[1] - a[1]);
+    let html = `<h3>🏆 ЛИДЕРБОРД (лучший счёт) 🏆</h3><ol>`;
+    for (let [nick, scr] of sorted.slice(0, 10)) {
+        html += `<li><strong>${escapeHtml(nick)}</strong> — ${scr}/10</li>`;
+    }
+    html += `</ol>`;
+    container.innerHTML = html;
+}
+
+function calculateScore() {
+    let correct = 0;
+    for (let i = 0; i < QUESTIONS.length; i++) {
+        if (state.answers[i] === QUESTIONS[i].correct) correct++;
+    }
+    return correct;
+}
+
+function getVerdict(score) {
+    if (score >= 9) return "🌟 ЭТАЛОННЫЙ ТЮЛЕНЬ! Ты знаешь всё о ластоногих!";
+    if (score >= 7) return "🐟 ХОРОШИЙ ТЮЛЕНЬ! Почти эксперт.";
+    if (score >= 5) return "🫧 СРЕДНИЙ ТЮЛЕНЬ — ещё учишься нырять.";
+    return "🧸 ТЫ НЕ ТЮЛЕНЬ... Возможно, ты пингвин. Попробуй ещё!";
+}
+
+function escapeHtml(str) {
+    if (!str) return '';
+    return str.replace(/[&<>]/g, function(m) {
+        if (m === '&') return '&amp;';
+        if (m === '<') return '&lt;';
+        if (m === '>') return '&gt;';
+        return m;
+    });
+}
+
+// Старт приложения
+render();
 </script>
 </body>
 </html>
