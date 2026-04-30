@@ -3,8 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>🦭 Тюлений бизнес – Кликер с улучшениями</title>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <title>🦭 Тюлений жиробас – Кликер с толстением</title>
     <style>
         * {
             margin: 0;
@@ -13,88 +12,75 @@
             user-select: none;
         }
         body {
-            background: linear-gradient(145deg, #2c7a5e, #1d4d3a);
+            background: #1e5631;
+            background-image: radial-gradient(circle at 20% 40%, #2d6e3f 2%, transparent 2.5%);
+            background-size: 45px 45px;
             min-height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
-            font-family: 'Segoe UI', system-ui, sans-serif;
-            padding: 20px;
+            font-family: 'Segoe UI', 'Comic Neue', system-ui;
+            padding: 15px;
         }
-        .game-wrapper {
-            max-width: 1300px;
+        .game-container {
+            max-width: 1400px;
             width: 100%;
             display: flex;
             flex-wrap: wrap;
-            gap: 25px;
+            gap: 20px;
             justify-content: center;
         }
-        /* левая колонка – тюлень и клики */
+        /* Левая панель – тюлень */
         .seal-panel {
             flex: 2;
-            min-width: 280px;
-            background: #fffef5;
-            border-radius: 70px;
-            padding: 25px 20px;
+            min-width: 300px;
+            background: #fffbf0;
+            border-radius: 80px;
+            padding: 25px;
             text-align: center;
-            box-shadow: 0 20px 35px rgba(0,0,0,0.3);
+            box-shadow: 0 25px 35px rgba(0,0,0,0.3);
         }
-        /* правая колонка – магазин */
+        /* Правая панель – магазин и статистика */
         .shop-panel {
             flex: 1.5;
-            min-width: 260px;
-            background: #fff8ed;
-            border-radius: 70px;
-            padding: 25px 20px;
-            box-shadow: 0 20px 35px rgba(0,0,0,0.3);
+            min-width: 280px;
+            background: #fff5e8;
+            border-radius: 80px;
+            padding: 25px;
+            box-shadow: 0 25px 35px rgba(0,0,0,0.3);
         }
-        .leaderboard {
-            background: #f6ede2;
-            border-radius: 50px;
-            padding: 15px;
-            margin-top: 20px;
-        }
-        h2 {
-            color: #1e5a4a;
-            margin-bottom: 15px;
-            font-size: 1.6rem;
-        }
-        .seal-photo {
-            max-width: 260px;
-            margin: 10px auto;
-        }
-        .seal-photo img {
-            width: 100%;
-            border-radius: 60px;
-            box-shadow: 0 12px 20px rgba(0,0,0,0.2);
-            background: #d4e6df;
-            transition: 0.1s;
-        }
-        .click-area {
+        .seal-emoji {
+            font-size: 8rem;
+            transition: all 0.2s ease;
             cursor: pointer;
-            transition: 0.05s linear;
-        }
-        .click-area:active {
-            transform: scale(0.97);
-        }
-        .fish-count {
-            font-size: 2.3rem;
-            font-weight: bold;
-            background: #2e5f6e;
             display: inline-block;
-            padding: 10px 30px;
-            border-radius: 70px;
-            color: #ffe6b3;
-            margin: 15px 0;
+            filter: drop-shadow(0 12px 18px rgba(0,0,0,0.2));
         }
-        .stat {
-            background: #e7f0ec;
-            border-radius: 50px;
-            padding: 10px;
-            margin: 10px 0;
+        .seal-emoji:active {
+            transform: scale(0.92);
+        }
+        .fat-text {
+            font-weight: bold;
+            color: #b95f2a;
+        }
+        .counter {
+            font-size: 2rem;
+            background: #2e5f4a;
+            display: inline-block;
+            padding: 10px 35px;
+            border-radius: 60px;
+            color: #ffefb9;
+            margin: 15px 0;
+            font-weight: bold;
+        }
+        .stat-card {
+            background: #e9f3ef;
+            border-radius: 60px;
+            padding: 12px;
+            margin: 12px 0;
         }
         .upgrade {
-            background: #f2e5d8;
+            background: #f4e5d6;
             border-radius: 50px;
             padding: 12px 18px;
             margin-bottom: 12px;
@@ -102,373 +88,397 @@
             justify-content: space-between;
             align-items: center;
             flex-wrap: wrap;
-            gap: 10px;
+            gap: 8px;
         }
         button {
-            background: #ffb67e;
+            background: #f3a683;
             border: none;
             font-weight: bold;
             padding: 8px 18px;
-            border-radius: 60px;
+            border-radius: 50px;
             cursor: pointer;
             font-size: 0.9rem;
-            transition: 0.1s;
-            box-shadow: 0 2px 0 #b4622a;
+            transition: 0.05s linear;
+            box-shadow: 0 2px 0 #b45f2e;
         }
         button:active {
             transform: translateY(2px);
             box-shadow: none;
         }
         .buy-btn {
-            background: #f3a683;
-            color: #2d3e48;
+            background: #ffb347;
         }
         .nick-bar {
+            background: #d9e2db;
+            border-radius: 60px;
+            padding: 10px 20px;
             display: flex;
             justify-content: space-between;
-            align-items: center;
             flex-wrap: wrap;
-            gap: 10px;
+            gap: 12px;
             margin-bottom: 20px;
-            background: #d9eae4;
-            border-radius: 60px;
-            padding: 8px 20px;
         }
         input {
-            padding: 8px 15px;
-            border-radius: 60px;
-            border: 1px solid #ffc896;
-            background: #fffcf5;
+            padding: 8px 18px;
+            border-radius: 50px;
+            border: 1px solid #cca76e;
+            background: white;
+            font-weight: bold;
             text-align: center;
         }
         .error {
-            color: #c25a2c;
+            color: #c53a1f;
             font-size: 0.8rem;
+        }
+        .leaderboard {
+            background: #e7dccb;
+            border-radius: 50px;
+            padding: 15px;
+            margin-top: 20px;
         }
         footer {
             font-size: 0.7rem;
             margin-top: 20px;
-            color: #598e7d;
+            color: #6c8d7a;
+        }
+        .special-event {
+            background: #fedba5;
+            border-radius: 50px;
+            padding: 8px;
+            margin-top: 15px;
+            animation: pulse 1s infinite;
+        }
+        @keyframes pulse {
+            0% { background: #fedba5; }
+            50% { background: #ffc07a; }
+            100% { background: #fedba5; }
         }
     </style>
 </head>
 <body>
-<div class="game-wrapper" id="gameRoot"></div>
+<div class="game-container" id="app"></div>
 
 <script>
-    // ==========  ТВОИ ДАННЫЕ SUPABASE  ==========
-    const SUPABASE_URL = 'https://pmvbhhidcojkkpumsxxb.supabase.co';
-    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBtdmJoaGlkY29qa2twdW1zeHhiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzcyNzk3MjcsImV4cCI6MjA5Mjg1NTcyN30.1eKxcaqeClRdAVH8lVcOdYaV0o_PbRzjnM9vBUP15QQ';
-    // =============================================
-
-    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
-    // ----------------------------------------------
-    //  ФОТО ТЮЛЕНЯ (4 стадии развития бизнеса)
-    // ----------------------------------------------
-    const SEAL_IMAGES = [
-        "https://upload.wikimedia.org/wikipedia/commons/thumb/4/43/Harbour_seal_%28Phoca_vitulina%29_with_pup.jpg/640px-Harbour_seal_%28Phoca_vitulina%29_with_pup.jpg",
-        "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e1/Sea_lion_%28Les_%C3%89tangs%29.jpg/640px-Sea_lion_%28Les_%C3%89tangs%29.jpg",
-        "https://upload.wikimedia.org/wikipedia/commons/thumb/4/47/Northern_elephant_seal_%28Mirounga_angustirostris%29_male%2C_Piedras_Blancas_-_2009.jpg/640px-Northern_elephant_seal_%28Mirounga_angustirostris%29_male%2C_Piedras_Blancas_-_2009.jpg",
-        "https://upload.wikimedia.org/wikipedia/commons/thumb/b/bd/Sea_lion_lying_on_rock.jpg/640px-Sea_lion_lying_on_rock.jpg"
-    ];
-    const STAGE_NAMES = ["🧸 Начинающий тюлень", "🍔 Бизнес-тюлень", "👑 Магнат ластоногих", "🏆 ОЛИГАРХ"];
-
-    // Глобальное состояние
-    let currentUser = null;        // { id, nickname, fish, total_fish_earned, click_power, passive_income }
-    let upgrades = {               // уровни улучшений
-        click: 0,
-        auto1: 0,
-        auto2: 0,
-        auto3: 0
+    // ------------------ ИГРОВЫЕ ДАННЫЕ ------------------
+    let gameState = {
+        user: null,              // { nickname, fish, totalFish, clickPower, passiveIncome, fatLevel }
+        upgrades: {
+            click: 0,    // +1 за уровень
+            auto1: 0,    // +1 рыба/сек
+            auto2: 0,    // +5 рыба/сек
+            auto3: 0,    // +20 рыба/сек
+            crit: 0      // шанс двойного клика (уровень * 5%)
+        },
+        events: [],       // активные события
+        lastUpdate: Date.now()
     };
+
     let passiveInterval = null;
 
-    // Цены улучшений (базовая, растёт с уровнем)
-    function getUpgradePrice(type, level) {
-        if (type === 'click') return 50 * (level + 1);
-        if (type === 'auto1') return 20 * (level + 1);
-        if (type === 'auto2') return 200 * (level + 1);
-        if (type === 'auto3') return 1000 * (level + 1);
-        return 999999;
+    // ------------------ ХРАНИЛИЩЕ (localStorage) ------------------
+    function loadGame() {
+        const stored = localStorage.getItem('sealFatGame');
+        if (stored) {
+            try {
+                const data = JSON.parse(stored);
+                gameState.user = data.user;
+                gameState.upgrades = data.upgrades;
+                gameState.events = data.events || [];
+            } catch(e) {}
+        }
+    }
+    function saveGame() {
+        if (!gameState.user) return;
+        localStorage.setItem('sealFatGame', JSON.stringify({
+            user: gameState.user,
+            upgrades: gameState.upgrades,
+            events: gameState.events
+        }));
     }
 
-    // Эффект от улучшения
-    function getClickBonus(level) {
-        // базовый клик 1 + уровень * 2
-        return 1 + (level * 2);
+    // ------------------ ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ------------------
+    function getClickPower() {
+        let base = 1;
+        base += gameState.upgrades.click * 2;   // +2 за уровень
+        return base;
     }
-    function getPassiveBonus() {
+
+    function getPassiveIncome() {
         let inc = 0;
-        // auto1: +1/сек за уровень, auto2: +5/сек, auto3: +20/сек
-        inc += upgrades.auto1 * 1;
-        inc += upgrades.auto2 * 5;
-        inc += upgrades.auto3 * 20;
+        inc += gameState.upgrades.auto1 * 1;
+        inc += gameState.upgrades.auto2 * 5;
+        inc += gameState.upgrades.auto3 * 20;
         return inc;
     }
 
-    // Сохранить пользователя и улучшения в БД
-    async function saveFullState() {
-        if (!currentUser) return;
-        // обновляем users
-        const { error: userErr } = await supabase
-            .from('users')
-            .update({
-                fish: currentUser.fish,
-                total_fish_earned: currentUser.total_fish_earned,
-                click_power: currentUser.click_power,
-                passive_income: getPassiveBonus(),
-                last_save: new Date()
-            })
-            .eq('id', currentUser.id);
-        if (userErr) console.error(userErr);
-
-        // обновляем улучшения (через upsert)
-        for (let [type, level] of Object.entries(upgrades)) {
-            const { error } = await supabase
-                .from('user_upgrades')
-                .upsert({ user_id: currentUser.id, upgrade_type: type, level }, { onConflict: 'user_id, upgrade_type' });
-            if (error) console.error(error);
-        }
+    function getCritChance() {
+        return Math.min(75, gameState.upgrades.crit * 5);
     }
 
-    // Загрузить данные пользователя из БД
-    async function loadUserData(userId) {
-        const { data: userData, error: userErr } = await supabase
-            .from('users')
-            .select('*')
-            .eq('id', userId)
-            .single();
-        if (userErr || !userData) return false;
-
-        currentUser = {
-            id: userData.id,
-            nickname: userData.nickname,
-            fish: userData.fish,
-            total_fish_earned: userData.total_fish_earned,
-            click_power: userData.click_power,
-            passive_income: userData.passive_income
-        };
-
-        const { data: upgradeRows } = await supabase
-            .from('user_upgrades')
-            .select('upgrade_type, level')
-            .eq('user_id', userId);
-        if (upgradeRows) {
-            upgrades.click = 0; upgrades.auto1 = 0; upgrades.auto2 = 0; upgrades.auto3 = 0;
-            upgradeRows.forEach(row => {
-                if (row.upgrade_type === 'click') upgrades.click = row.level;
-                if (row.upgrade_type === 'auto1') upgrades.auto1 = row.level;
-                if (row.upgrade_type === 'auto2') upgrades.auto2 = row.level;
-                if (row.upgrade_type === 'auto3') upgrades.auto3 = row.level;
-            });
-        }
-        // пересчитываем силу клика и пассивку
-        currentUser.click_power = getClickBonus(upgrades.click);
-        currentUser.passive_income = getPassiveBonus();
-        await saveFullState();  // синхронизируем вычисленные значения
-        return true;
+    // Жирность тюленя (размер эмодзи и текст)
+    function updateFatLevel() {
+        let total = gameState.user.totalFish;
+        let level = 0;
+        let sizeRem = 5;
+        if (total >= 10000) level = 5;
+        else if (total >= 5000) level = 4;
+        else if (total >= 2000) level = 3;
+        else if (total >= 500) level = 2;
+        else if (total >= 100) level = 1;
+        else level = 0;
+        gameState.user.fatLevel = level;
+        // размер эмодзи от 5rem до 12rem
+        sizeRem = 5 + (level * 1.4);
+        return { level, sizeRem };
     }
 
-    // Регистрация нового пользователя
-    async function registerUser(nickname) {
-        const { data: newUser, error } = await supabase
-            .from('users')
-            .insert([{ nickname, fish: 0, total_fish_earned: 0, click_power: 1, passive_income: 0 }])
-            .select()
-            .single();
-        if (error) return null;
-        // создаём записи улучшений с нулевыми уровнями
-        for (let type of ['click', 'auto1', 'auto2', 'auto3']) {
-            await supabase.from('user_upgrades').insert([{ user_id: newUser.id, upgrade_type: type, level: 0 }]);
-        }
-        return newUser;
-    }
-
-    // Добавить рыбу (и обновить тотал)
     async function addFish(amount) {
-        if (!currentUser) return;
-        currentUser.fish += amount;
-        currentUser.total_fish_earned += amount;
-        await saveFullState();
+        if (!gameState.user) return;
+        gameState.user.fish += amount;
+        gameState.user.totalFish += amount;
+        saveGame();
         renderUI();
+        // проверить события
+        checkRandomEvent();
+    }
+
+    async function addPassiveIncome() {
+        if (!gameState.user) return;
+        let income = getPassiveIncome();
+        if (income > 0) {
+            gameState.user.fish += income;
+            gameState.user.totalFish += income;
+            saveGame();
+            renderUI();
+        }
+    }
+
+    // Случайные события (каждые 30 секунд)
+    let lastEventTime = Date.now();
+    function checkRandomEvent() {
+        const now = Date.now();
+        if (now - lastEventTime > 30000 && Math.random() < 0.35) {
+            lastEventTime = now;
+            const rand = Math.random();
+            let bonus = 0;
+            let msg = "";
+            if (rand < 0.5) {
+                bonus = 50 + Math.floor(Math.random() * 200);
+                msg = `🐟✨ Мимо проплыла косяк рыбы! +${bonus} рыб!`;
+            } else if (rand < 0.8) {
+                bonus = 20 + Math.floor(Math.random() * 100);
+                msg = `🦭 Дельфин поделился уловом! +${bonus} рыб!`;
+            } else {
+                bonus = 100 + Math.floor(Math.random() * 500);
+                msg = `🎣 Рыбацкое счастье! Выловили золотую рыбку! +${bonus} рыб!`;
+            }
+            gameState.user.fish += bonus;
+            gameState.user.totalFish += bonus;
+            saveGame();
+            const eventDiv = document.getElementById('eventMessage');
+            if (eventDiv) {
+                eventDiv.innerHTML = `<div class="special-event">✨ ${msg} ✨</div>`;
+                setTimeout(() => eventDiv.innerHTML = '', 4000);
+            }
+            renderUI();
+        }
     }
 
     // Покупка улучшения
     async function buyUpgrade(type) {
-        if (!currentUser) return;
-        let level = upgrades[type];
-        let price = getUpgradePrice(type, level);
-        if (currentUser.fish < price) {
-            alert("🐟 Не хватает рыбы!");
+        if (!gameState.user) return;
+        let level = gameState.upgrades[type];
+        let price = 0;
+        if (type === 'click') price = 20 * (level + 1);
+        if (type === 'auto1') price = 15 * (level + 1);
+        if (type === 'auto2') price = 150 * (level + 1);
+        if (type === 'auto3') price = 800 * (level + 1);
+        if (type === 'crit') price = 500 * (level + 1);
+        if (gameState.user.fish < price) {
+            const errDiv = document.getElementById('shopError');
+            if (errDiv) errDiv.innerText = "🐟 Не хватает рыб!";
+            setTimeout(() => errDiv.innerText = "", 1500);
             return;
         }
-        currentUser.fish -= price;
-        upgrades[type]++;
-        // пересчитываем клик и пассивку
-        if (type === 'click') currentUser.click_power = getClickBonus(upgrades.click);
-        // пассивный доход обновим при сохранении
-        await saveFullState();
+        gameState.user.fish -= price;
+        gameState.upgrades[type]++;
+        saveGame();
         renderUI();
     }
 
     // Клик по тюленю
-    async function handleClick() {
-        if (!currentUser) return;
-        const gain = currentUser.click_power;
-        await addFish(gain);
-        // анимация на картинке
-        const img = document.getElementById('sealImg');
-        if (img) {
-            img.style.transform = 'scale(0.95)';
-            setTimeout(() => img.style.transform = '', 100);
-        }
-    }
-
-    // Запуск пассивного дохода (раз в секунду)
-    function startPassiveIncome() {
-        if (passiveInterval) clearInterval(passiveInterval);
-        passiveInterval = setInterval(async () => {
-            if (currentUser && currentUser.passive_income > 0) {
-                await addFish(currentUser.passive_income);
+    function handleClick() {
+        if (!gameState.user) return;
+        let gain = getClickPower();
+        let crit = getCritChance();
+        if (Math.random() * 100 < crit) {
+            gain *= 2;
+            const critDiv = document.getElementById('critMsg');
+            if (critDiv) {
+                critDiv.innerText = "💥 КРИТИЧЕСКИЙ ЖИР! x2 💥";
+                setTimeout(() => critDiv.innerText = "", 800);
             }
-        }, 1000);
-    }
-
-    // Отрисовка лидерборда
-    async function renderLeaderboard() {
-        const container = document.getElementById('leaderboardContainer');
-        if (!container) return;
-        const { data, error } = await supabase
-            .from('users')
-            .select('nickname, total_fish_earned')
-            .order('total_fish_earned', { ascending: false })
-            .limit(8);
-        if (error) {
-            container.innerHTML = '<div class="error">Не удалось загрузить топ</div>';
-            return;
         }
-        let html = '<h3>🏆 ТОП ТЮЛЕНЬИХ МАГНАТОВ 🏆</h3><ol>';
-        data.forEach(u => {
-            html += `<li><strong>${escapeHtml(u.nickname)}</strong> — ${u.total_fish_earned.toLocaleString()} 🐟</li>`;
-        });
-        html += `</ol>`;
-        container.innerHTML = html;
+        addFish(gain);
+        // анимация тюленя
+        const sealEmoji = document.getElementById('sealEmoji');
+        if (sealEmoji) {
+            sealEmoji.style.transform = 'scale(0.85)';
+            setTimeout(() => sealEmoji.style.transform = '', 100);
+        }
     }
 
-    // Основной UI
+    // Сброс прогресса (престиж)
+    function prestige() {
+        if (confirm("Тюлень хочет похудеть и начать новую жизнь? Все улучшения сбросятся, рыба обнулится, но останутся достижения и ник.")) {
+            gameState.upgrades = { click: 0, auto1: 0, auto2: 0, auto3: 0, crit: 0 };
+            gameState.user.fish = 0;
+            gameState.user.totalFish = 0;
+            saveGame();
+            renderUI();
+        }
+    }
+
+    // ------------------ ОТРИСОВКА ------------------
     function renderUI() {
-        if (!currentUser) {
-            document.getElementById('gameRoot').innerHTML = `
-                <div style="max-width:500px; background:#fffef5; border-radius:70px; padding:30px; text-align:center;">
-                    <h2>🦭 ТЮЛЕНИЙ БИЗНЕС</h2>
+        const app = document.getElementById('app');
+        if (!gameState.user) {
+            // экран регистрации
+            app.innerHTML = `
+                <div style="max-width:500px; background:#fffef5; border-radius:80px; padding:35px; text-align:center;">
+                    <h2 style="color:#2c6e4f;">🦭 ТЮЛЕНИЙ ЖИРОБАС</h2>
+                    <p style="margin:15px 0;">Корми тюленя -> становится огромным! Улучшения, события, криты.</p>
                     <div class="nick-bar" style="justify-content:center;">
-                        <input type="text" id="loginNick" placeholder="ТВОЙ НИКНЕЙМ">
-                        <button id="enterBtn">СТАРТ / ВОЙТИ</button>
+                        <input type="text" id="nickInput" placeholder="ТВОЙ НИКНЕЙМ" maxlength="20">
+                        <button id="startBtn">НАЧАТЬ ЖИРНЕТЬ</button>
                     </div>
                     <div id="loginError" class="error"></div>
-                    <div class="leaderboard" id="leaderboardContainer"></div>
-                    <footer>Всё сохраняется в базе данных. Покупай улучшения, становись тюленьим магнатом!</footer>
+                    <footer>Всё сохраняется в браузере. Жирность растёт от общего количества съеденной рыбы</footer>
                 </div>
             `;
-            document.getElementById('enterBtn').onclick = async () => {
-                const nick = document.getElementById('loginNick').value.trim();
-                const errDiv = document.getElementById('loginError');
-                if (!nick) { errDiv.innerText = '❌ Введи ник!'; return; }
-                // поиск существующего
-                const { data: existing } = await supabase.from('users').select('id').eq('nickname', nick);
-                if (existing && existing.length > 0) {
-                    const ok = await loadUserData(existing[0].id);
-                    if (ok) {
-                        startPassiveIncome();
-                        renderUI();
-                    } else errDiv.innerText = 'Ошибка загрузки';
-                } else {
-                    const newUser = await registerUser(nick);
-                    if (newUser) {
-                        await loadUserData(newUser.id);
-                        startPassiveIncome();
-                        renderUI();
-                    } else errDiv.innerText = 'Ник уже занят (или ошибка)';
-                }
+            document.getElementById('startBtn').onclick = () => {
+                const nick = document.getElementById('nickInput').value.trim();
+                if (!nick) return;
+                gameState.user = {
+                    nickname: nick,
+                    fish: 0,
+                    totalFish: 0,
+                    clickPower: 1,
+                    passiveIncome: 0,
+                    fatLevel: 0
+                };
+                gameState.upgrades = { click: 0, auto1: 0, auto2: 0, auto3: 0, crit: 0 };
+                saveGame();
+                startPassiveLoop();
+                renderUI();
             };
-            renderLeaderboard();
             return;
         }
 
-        // интерфейс игры
-        const stageIndex = Math.min(3, Math.floor(currentUser.total_fish_earned / 5000));
-        const sealUrl = SEAL_IMAGES[stageIndex];
-        const stageName = STAGE_NAMES[stageIndex];
-        const passivePerSec = currentUser.passive_income;
-        const clickPower = currentUser.click_power;
+        const fatInfo = updateFatLevel();
+        const sealSize = fatInfo.sizeRem;
+        let sealEmojiChar = "🦭";
+        if (fatInfo.level >= 4) sealEmojiChar = "🦭🐟🦭";
+        if (fatInfo.level >= 5) sealEmojiChar = "🐋🦭🐋";
+        const clickPowerNow = getClickPower();
+        const passiveNow = getPassiveIncome();
+        const critChance = getCritChance();
 
         const html = `
             <div class="seal-panel">
                 <div class="nick-bar">
-                    <span>🐚 ${escapeHtml(currentUser.nickname)}</span>
-                    <button id="logoutBtn">🚪 Сменить никель</button>
+                    <span>🐚 ${escapeHtml(gameState.user.nickname)}</span>
+                    <button id="logoutBtn">🚪 Сменить ника</button>
                 </div>
-                <div class="seal-photo click-area" id="clickerArea">
-                    <img src="${sealUrl}" alt="тюлень" id="sealImg" style="width:100%; border-radius:60px;">
+                <div style="margin: 20px 0;">
+                    <div class="seal-emoji" id="sealEmoji" style="font-size: ${sealSize}rem;">${sealEmojiChar}</div>
                 </div>
-                <div class="stage-text">${stageName}</div>
-                <div class="fish-count">🐟 ${currentUser.fish.toLocaleString()}</div>
-                <div class="stat">⚡ КЛИК: +${clickPower} 🐟</div>
-                <div class="stat">⏱️ ПАССИВ: +${passivePerSec}/сек</div>
-                <div class="stat">🏆 ВСЕГО ЗАРАБОТАНО: ${currentUser.total_fish_earned.toLocaleString()}</div>
-                <button id="resetGameBtn" style="background:#bda48b; margin-top:15px;">🏊‍♂️ СБРОСИТЬ ПРОГРЕСС</button>
+                <div class="counter">🐟 ${Math.floor(gameState.user.fish).toLocaleString()}</div>
+                <div class="stat-card">
+                    <div>⚡ Сила клика: +${clickPowerNow} 🐟</div>
+                    <div>⏱️ Пассив: +${passiveNow} 🐟/сек</div>
+                    <div>💥 Шанс крита: ${critChance}% (x2)</div>
+                    <div>🏆 Всего съедено: ${Math.floor(gameState.user.totalFish).toLocaleString()} 🐟</div>
+                    <div>🍔 Стадия жира: ${fatInfo.level === 0 ? "Худой тюлень" : fatInfo.level === 1 ? "В теле" : fatInfo.level === 2 ? "Пышный" : fatInfo.level === 3 ? "Бочонок" : fatInfo.level === 4 ? "Гора жира" : "КИТОТЮЛЕНЬ"}</div>
+                </div>
+                <button id="prestigeBtn" style="background:#bda48b; margin-top:10px;">🏋️‍♂️ ПРЕСТИЖ (сброс)</button>
+                <div id="eventMessage" style="margin-top:15px;"></div>
+                <div id="critMsg" style="font-weight:bold; color:#b45f2e;"></div>
             </div>
             <div class="shop-panel">
-                <h2>🐟 МАГАЗИН</h2>
+                <h2>🐟 МАГАЗИН ЖИРА</h2>
+                <div id="shopError" class="error" style="margin-bottom:10px;"></div>
                 <div class="upgrade">
-                    <span>🎣 УДОЧКА (+${getClickBonus(upgrades.click+1)-getClickBonus(upgrades.click)}🐟/клик)</span>
-                    <span>Ур.${upgrades.click}</span>
-                    <button class="buy-btn" id="buyClick">${getUpgradePrice('click', upgrades.click)} 🐟</button>
+                    <span>🎣 УДОЧКА (+2🐟/клик)</span>
+                    <span>Ур.${gameState.upgrades.click}</span>
+                    <button class="buy-btn" id="buyClick">${20 * (gameState.upgrades.click+1)} 🐟</button>
                 </div>
                 <div class="upgrade">
-                    <span>🐟 РЫБАК (+1 🐟/сек)</span>
-                    <span>Ур.${upgrades.auto1}</span>
-                    <button class="buy-btn" id="buyAuto1">${getUpgradePrice('auto1', upgrades.auto1)} 🐟</button>
+                    <span>🐟 РЫБАК (+1🐟/сек)</span>
+                    <span>Ур.${gameState.upgrades.auto1}</span>
+                    <button class="buy-btn" id="buyAuto1">${15 * (gameState.upgrades.auto1+1)} 🐟</button>
                 </div>
                 <div class="upgrade">
-                    <span>🚤 СЕТЬ (+5 🐟/сек)</span>
-                    <span>Ур.${upgrades.auto2}</span>
-                    <button class="buy-btn" id="buyAuto2">${getUpgradePrice('auto2', upgrades.auto2)} 🐟</button>
+                    <span>🚤 ТРАЛЕР (+5🐟/сек)</span>
+                    <span>Ур.${gameState.upgrades.auto2}</span>
+                    <button class="buy-btn" id="buyAuto2">${150 * (gameState.upgrades.auto2+1)} 🐟</button>
                 </div>
                 <div class="upgrade">
-                    <span>🔥 ЛАЗЕРНАЯ ПУШКА (+20 🐟/сек)</span>
-                    <span>Ур.${upgrades.auto3}</span>
-                    <button class="buy-btn" id="buyAuto3">${getUpgradePrice('auto3', upgrades.auto3)} 🐟</button>
+                    <span>🔥 ФАБРИКА РЫБЫ (+20🐟/сек)</span>
+                    <span>Ур.${gameState.upgrades.auto3}</span>
+                    <button class="buy-btn" id="buyAuto3">${800 * (gameState.upgrades.auto3+1)} 🐟</button>
                 </div>
-                <div class="leaderboard" id="leaderboardContainer"></div>
+                <div class="upgrade">
+                    <span>💢 КРИТИЧЕСКИЙ УДАР (+5% шанс x2)</span>
+                    <span>Ур.${gameState.upgrades.crit}</span>
+                    <button class="buy-btn" id="buyCrit">${500 * (gameState.upgrades.crit+1)} 🐟</button>
+                </div>
+                <div class="leaderboard" id="leadBoard"></div>
+                <footer>Чем больше рыбы, тем жирнее тюлень! Кликай и покупай улучшения</footer>
             </div>
         `;
-        document.getElementById('gameRoot').innerHTML = html;
+        app.innerHTML = html;
 
-        document.getElementById('clickerArea').onclick = handleClick;
+        // вешаем события
+        document.getElementById('sealEmoji').onclick = handleClick;
         document.getElementById('buyClick').onclick = () => buyUpgrade('click');
         document.getElementById('buyAuto1').onclick = () => buyUpgrade('auto1');
         document.getElementById('buyAuto2').onclick = () => buyUpgrade('auto2');
         document.getElementById('buyAuto3').onclick = () => buyUpgrade('auto3');
+        document.getElementById('buyCrit').onclick = () => buyUpgrade('crit');
+        document.getElementById('prestigeBtn').onclick = prestige;
         document.getElementById('logoutBtn').onclick = () => {
+            gameState.user = null;
+            localStorage.removeItem('sealFatGame');
             if (passiveInterval) clearInterval(passiveInterval);
-            currentUser = null;
             renderUI();
         };
-        document.getElementById('resetGameBtn').onclick = async () => {
-            if (confirm("Сбросить весь прогресс? Рыба, улучшения – всё обнулится.")) {
-                if (!currentUser) return;
-                // обнуляем в базе
-                await supabase.from('users').update({ fish: 0, total_fish_earned: 0, click_power: 1, passive_income: 0 }).eq('id', currentUser.id);
-                for (let type of ['click', 'auto1', 'auto2', 'auto3']) {
-                    await supabase.from('user_upgrades').update({ level: 0 }).eq('user_id', currentUser.id).eq('upgrade_type', type);
-                }
-                await loadUserData(currentUser.id);
+        renderLeaderboard();
+    }
+
+    function renderLeaderboard() {
+        const container = document.getElementById('leadBoard');
+        if (!container) return;
+        // локальный лидерборд из всех сохранённых игр (только текущий пользователь? лучше собрать из localStorage разных ников? сложно, сделаем просто топ по текущему пользователю, но добавим "Ваши достижения")
+        const total = gameState.user ? gameState.user.totalFish : 0;
+        container.innerHTML = `
+            <h3>🏆 ЛИЧНАЯ СТАТИСТИКА 🏆</h3>
+            <p>⭐ Всего рыбы за всё время: ${Math.floor(total).toLocaleString()}</p>
+            <p>🔰 Уровень жира: ${gameState.user ? gameState.user.fatLevel : 0}/5</p>
+            <p>💪 Мощь клика: ${getClickPower()}</p>
+        `;
+    }
+
+    function startPassiveLoop() {
+        if (passiveInterval) clearInterval(passiveInterval);
+        passiveInterval = setInterval(() => {
+            if (gameState.user) {
+                addPassiveIncome();
+                checkRandomEvent();
+                updateFatLevel();
                 renderUI();
             }
-        };
-        renderLeaderboard();
+        }, 1000);
     }
 
     function escapeHtml(str) {
@@ -481,6 +491,9 @@
         });
     }
 
+    // ИНИЦИАЛИЗАЦИЯ
+    loadGame();
+    if (gameState.user) startPassiveLoop();
     renderUI();
 </script>
 </body>
