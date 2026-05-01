@@ -3,8 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>🦭 SEAL CLICKER | Античит + топ</title>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <title>🦭 SEAL CLICKER | Античит + престиж</title>
     <style>
         * {
             margin: 0;
@@ -16,13 +15,13 @@
             background: #1e6b3e;
             font-family: 'Segoe UI', system-ui, sans-serif;
             min-height: 100vh;
-            padding: 20px;
             display: flex;
             justify-content: center;
             align-items: center;
+            padding: 20px;
         }
         .game-card {
-            max-width: 600px;
+            max-width: 550px;
             width: 100%;
             background: #fffef5;
             border-radius: 60px;
@@ -100,8 +99,8 @@
         .upgrade {
             background: #faefe2;
             border-radius: 50px;
-            padding: 10px;
-            margin-bottom: 10px;
+            padding: 12px;
+            margin-bottom: 12px;
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -113,36 +112,31 @@
             padding: 12px;
             margin: 15px 0;
             display: flex;
-            gap: 8px;
+            gap: 10px;
             flex-wrap: wrap;
             align-items: center;
         }
         .anticheat-panel input {
-            flex: 1;
-            padding: 6px;
-            border-radius: 40px;
+            flex: 2;
+            padding: 8px;
+            border-radius: 50px;
             border: 1px solid #cca86b;
         }
         .warning {
             background: #f9e6e6;
             color: #c7254e;
             border-radius: 40px;
-            padding: 6px;
+            padding: 8px;
             text-align: center;
             font-size: 0.8rem;
-            margin-top: 8px;
-        }
-        .leaderboard-btn {
-            background: #ffb347;
-            width: 100%;
-            margin-top: 15px;
-        }
-        .prestige-btn {
-            background: #b48c60;
-            color: white;
-            width: 100%;
             margin-top: 10px;
         }
+        .leaderboard-btn, .prestige-btn {
+            width: 100%;
+            margin-top: 10px;
+            background: #ffb347;
+        }
+        .prestige-btn { background: #b48c60; color: white; }
         .achievements {
             background: #f7efdd;
             border-radius: 40px;
@@ -153,7 +147,7 @@
         }
         .achievement {
             font-size: 0.75rem;
-            padding: 4px 8px;
+            padding: 5px 8px;
             margin: 4px 0;
             border-radius: 30px;
             background: #fff3e0;
@@ -188,12 +182,7 @@
 <div class="game-card" id="app"></div>
 
 <script>
-    // ==================== SUPABASE (твои ключи) ====================
-    const SUPABASE_URL = 'https://pmvbhhidcojkkpumsxxb.supabase.co';
-    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBtdmJoaGlkY29qa2twdW1zeHhiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzcyNzk3MjcsImV4cCI6MjA5Mjg1NTcyN30.1eKxcaqeClRdAVH8lVcOdYaV0o_PbRzjnM9vBUP15QQ';
-    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
-    // -------------------- Игровое состояние --------------------
+    // ==================== ИГРОВОЕ СОСТОЯНИЕ (localStorage) ====================
     let game = {
         nickname: null,
         fish: 0,
@@ -240,7 +229,7 @@
                 showToast(`🏆 Достижение: ${ach.name}! +${ach.reward} рыб`);
             }
         }
-        if (changed) saveGameToCloud();
+        if (changed) saveGame();
     }
 
     // -------------------- Игровые расчёты --------------------
@@ -253,15 +242,13 @@
         return game.upgrades.autoClicker * 1;
     }
 
-    // Добавление рыбы
-    async function addFish(amount, fromClick = false) {
+    function addFish(amount, fromClick = false) {
         if (!game.nickname) return;
         game.fish += amount;
         game.totalFish += amount;
         if (fromClick) game.stats.totalClicks++;
-        await saveGameToCloud();
+        saveGame();
         checkAchievements();
-        updateLeaderboard();
         renderUI();
     }
 
@@ -283,17 +270,17 @@
         if (game.clickTimestamps.length > 18) {
             game.anticheatBlockedUntil = now + 8000;
             game.clickTimestamps = [];
-            showToast("⚠️ Слишком быстро! Античит блокирует клики.");
+            showToast("⚠️ Слишком быстро! Античит блокирует клики на 8 секунд.");
             renderUI();
             return false;
         }
         return true;
     }
 
-    async function disableAnticheat(password) {
+    function disableAnticheat(password) {
         if (password === "seal") {
             game.anticheatDisabled = true;
-            await saveGameToCloud();
+            saveGame();
             showToast("✅ Защита от авто-клика отключена навсегда!");
             renderUI();
         } else {
@@ -302,12 +289,12 @@
     }
 
     // -------------------- Престиж --------------------
-    async function doPrestige() {
+    function doPrestige() {
         if (game.totalFish < 5000) {
             showToast("Нужно 5000 рыб для престижа!");
             return;
         }
-        if (confirm("Престиж: сбросить рыбу и улучшения, но получить +50% к силе клика?")) {
+        if (confirm("Престиж: сбросить рыбу и улучшения, но получить +50% к силе клика навсегда?")) {
             let bonus = parseInt(localStorage.getItem('prestigeBonus') || 0);
             bonus += 50;
             localStorage.setItem('prestigeBonus', bonus);
@@ -315,16 +302,15 @@
             game.totalFish = 0;
             game.upgrades = { clickPower: 0, autoClicker: 0 };
             game.stats.prestigeCount++;
-            await saveGameToCloud();
+            saveGame();
             checkAchievements();
-            updateLeaderboard();
             renderUI();
             showToast("🌟 Престиж! +50% к силе клика.");
         }
     }
 
     // -------------------- Покупка улучшений --------------------
-    async function buyUpgrade(upgradeId, basePrice, name) {
+    function buyUpgrade(upgradeId, basePrice, name) {
         if (!game.nickname) return;
         let level = game.upgrades[upgradeId];
         let price = Math.floor(basePrice * (level + 1));
@@ -334,32 +320,31 @@
         }
         game.fish -= price;
         game.upgrades[upgradeId]++;
-        await saveGameToCloud();
+        saveGame();
         checkAchievements();
         renderUI();
         showToast(`🎉 ${name} улучшен до ${game.upgrades[upgradeId]} уровня!`);
     }
 
-    // -------------------- Supabase: сохранение и лидерборд --------------------
-    async function saveGameToCloud() {
+    // -------------------- Сохранение / загрузка (localStorage) --------------------
+    function saveGame() {
         if (!game.nickname) return;
-        const data = {
+        const saveData = {
             nickname: game.nickname,
             fish: game.fish,
-            total_fish: game.totalFish,
+            totalFish: game.totalFish,
             upgrades: game.upgrades,
-            achievements: game.achievements,
             stats: game.stats,
-            anticheat_disabled: game.anticheatDisabled,
-            updated_at: new Date(),
+            achievements: game.achievements,
+            anticheatDisabled: game.anticheatDisabled,
         };
-        await supabase.from('user_data').upsert(data, { onConflict: 'nickname' });
-        await supabase.from('leaderboard').upsert({ nickname: game.nickname, total_fish: game.totalFish, updated_at: new Date() }, { onConflict: 'nickname' });
+        localStorage.setItem('sealGameSave', JSON.stringify(saveData));
     }
 
-    async function loadGameFromCloud(nickname) {
-        const { data, error } = await supabase.from('user_data').select('*').eq('nickname', nickname).maybeSingle();
-        if (error || !data) {
+    function loadGame(nickname) {
+        const raw = localStorage.getItem('sealGameSave');
+        if (!raw) {
+            // новый пользователь
             game.nickname = nickname;
             game.fish = 0;
             game.totalFish = 0;
@@ -368,35 +353,64 @@
             game.achievements = {};
             game.anticheatDisabled = false;
             initAchievements();
-            await saveGameToCloud();
+            saveGame();
             return;
         }
-        game.nickname = data.nickname;
-        game.fish = data.fish;
-        game.totalFish = data.total_fish;
-        game.upgrades = data.upgrades || { clickPower: 0, autoClicker: 0 };
-        game.achievements = data.achievements || {};
-        game.stats = data.stats || { totalClicks: 0, prestigeCount: 0 };
-        game.anticheatDisabled = data.anticheat_disabled || false;
-        initAchievements();
+        try {
+            const data = JSON.parse(raw);
+            if (data.nickname === nickname) {
+                game = { ...game, ...data };
+            } else {
+                // новый ник – новый прогресс
+                game.nickname = nickname;
+                game.fish = 0;
+                game.totalFish = 0;
+                game.upgrades = { clickPower: 0, autoClicker: 0 };
+                game.stats = { totalClicks: 0, prestigeCount: 0 };
+                game.achievements = {};
+                game.anticheatDisabled = false;
+            }
+            initAchievements();
+        } catch(e) {
+            game.nickname = nickname;
+            game.fish = 0;
+            game.totalFish = 0;
+            game.upgrades = { clickPower: 0, autoClicker: 0 };
+            game.stats = { totalClicks: 0, prestigeCount: 0 };
+            game.achievements = {};
+            game.anticheatDisabled = false;
+            initAchievements();
+        }
+        saveGame();
     }
 
-    async function updateLeaderboard() {
-        if (!game.nickname) return;
-        await supabase.from('leaderboard').upsert({ nickname: game.nickname, total_fish: game.totalFish, updated_at: new Date() }, { onConflict: 'nickname' });
+    // -------------------- Лидерборд (локальный, на основе localStorage) --------------------
+    function getLocalLeaderboard() {
+        let allSaves = [];
+        for (let i = 0; i < localStorage.length; i++) {
+            const key = localStorage.key(i);
+            if (key === 'sealGameSave') {
+                try {
+                    const data = JSON.parse(localStorage.getItem(key));
+                    if (data && data.nickname) {
+                        allSaves.push({ nickname: data.nickname, totalFish: data.totalFish });
+                    }
+                } catch(e) {}
+            }
+        }
+        // также добавляем текущего, если его нет
+        if (game.nickname && !allSaves.find(s => s.nickname === game.nickname)) {
+            allSaves.push({ nickname: game.nickname, totalFish: game.totalFish });
+        }
+        allSaves.sort((a,b) => b.totalFish - a.totalFish);
+        return allSaves.slice(0, 15);
     }
 
-    async function fetchLeaderboard() {
-        const { data, error } = await supabase.from('leaderboard').select('nickname, total_fish').order('total_fish', { ascending: false }).limit(15);
-        if (error) return [];
-        return data;
-    }
-
-    async function showLeaderboardModal() {
-        const leaders = await fetchLeaderboard();
-        let msg = "🏆 ГЛОБАЛЬНЫЙ ТОП 🏆\n";
+    function showLeaderboardModal() {
+        const leaders = getLocalLeaderboard();
+        let msg = "🏆 ГЛОБАЛЬНЫЙ ТОП (localStorage) 🏆\n";
         leaders.forEach((u, i) => {
-            msg += `${i+1}. ${u.nickname} — ${u.total_fish.toLocaleString()} 🐟\n`;
+            msg += `${i+1}. ${u.nickname} — ${u.totalFish.toLocaleString()} 🐟\n`;
         });
         alert(msg);
     }
@@ -412,12 +426,12 @@
                     <button id="startBtn">НАЧАТЬ</button>
                 </div>
                 <button id="leaderboardBtn" class="leaderboard-btn">🏆 Глобальный топ</button>
-                <footer>Введи ник – прогресс сохранится в облаке.</footer>
+                <footer>Введи ник – прогресс сохранится в браузере.</footer>
             `;
-            document.getElementById('startBtn').onclick = async () => {
+            document.getElementById('startBtn').onclick = () => {
                 const nick = document.getElementById('nickInput').value.trim();
                 if (!nick) return;
-                await loadGameFromCloud(nick);
+                loadGame(nick);
                 startGameLoop();
                 renderUI();
             };
@@ -478,7 +492,7 @@
                 <strong>🏅 ДОСТИЖЕНИЯ (${achievementsList.filter(a => game.achievements[a.id]).length}/${achievementsList.length})</strong>
                 ${achievementsHtml}
             </div>
-            <footer>Автосохранение в облаке. Античит отключается паролем "seal".</footer>
+            <footer>Автосохранение в браузере. Античит отключается паролем "seal".</footer>
         `;
 
         // События
@@ -541,12 +555,10 @@
     let passiveInterval = null;
     function startGameLoop() {
         if (passiveInterval) clearInterval(passiveInterval);
-        passiveInterval = setInterval(async () => {
+        passiveInterval = setInterval(() => {
             if (game.nickname) {
                 let income = getPassiveIncome();
-                if (income > 0) {
-                    await addFish(income, false);
-                }
+                if (income > 0) addFish(income, false);
             }
         }, 1000);
     }
