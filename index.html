@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>Тюленьи бои | ХП + эффекты</title>
+    <title>Тюленьи бои | Автокликер + Бои</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         * {
@@ -15,25 +15,21 @@
         body {
             background: #1e6b3e;
             font-family: 'Segoe UI', system-ui, sans-serif;
-            min-height: 100vh;
+            padding: 20px;
             display: flex;
             justify-content: center;
             align-items: center;
-            padding: 20px;
+            min-height: 100vh;
         }
-        .game-card {
-            max-width: 900px;
+        .game-container {
+            max-width: 1000px;
             width: 100%;
             background: #fffef5;
             border-radius: 60px;
             padding: 25px;
             box-shadow: 0 20px 30px rgba(0,0,0,0.3);
         }
-        h1 {
-            text-align: center;
-            color: #1c6948;
-            margin-bottom: 20px;
-        }
+        h1 { text-align: center; color: #1c6948; margin-bottom: 20px; }
         .auth-panel {
             background: #e9f3ed;
             border-radius: 60px;
@@ -48,9 +44,9 @@
             padding: 10px;
             border-radius: 50px;
             border: 1px solid #ffc896;
+            background: #fffcf5;
             text-align: center;
             font-weight: bold;
-            background: #fffcf5;
         }
         button {
             background: #ffb347;
@@ -59,54 +55,30 @@
             border-radius: 50px;
             font-weight: bold;
             cursor: pointer;
-            transition: 0.05s linear;
             color: white;
+            transition: 0.05s linear;
         }
-        button:active {
-            transform: scale(0.97);
-        }
-        .battle-area {
-            background: #f0ecdf;
-            border-radius: 50px;
-            padding: 20px;
-            margin: 20px 0;
-            text-align: center;
-        }
-        .hp-bar {
-            background: #ccc;
-            border-radius: 20px;
-            height: 20px;
-            overflow: hidden;
-            margin: 10px 0;
-        }
-        .hp-fill {
-            background: #ff6b6b;
-            height: 100%;
-            width: 100%;
-            transition: width 0.2s;
-        }
+        button:active { transform: scale(0.97); }
         .seal-area {
             text-align: center;
             cursor: pointer;
-            margin: 15px 0;
+            margin: 20px 0;
         }
         .seal-emoji {
             font-size: 6rem;
             display: inline-block;
             transition: 0.07s;
         }
-        .click-effect {
-            transform: scale(0.9);
-        }
+        .click-effect { transform: scale(0.9); }
         .resource {
             background: #2a5c48;
             color: #FFE5B4;
             font-size: 1.8rem;
-            font-weight: bold;
             text-align: center;
             padding: 10px;
             border-radius: 60px;
             margin: 15px 0;
+            font-weight: bold;
         }
         .flex {
             display: flex;
@@ -132,6 +104,53 @@
             justify-content: space-between;
             align-items: center;
             flex-wrap: wrap;
+        }
+        /* Модальное окно боя */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0,0,0,0.8);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        .modal-content {
+            background: #fffef5;
+            border-radius: 60px;
+            padding: 25px;
+            max-width: 500px;
+            width: 90%;
+            text-align: center;
+        }
+        .close-modal {
+            float: right;
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+        .boss-hp-bar {
+            background: #ccc;
+            border-radius: 20px;
+            height: 20px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+        .boss-hp-fill {
+            background: #ff6b6b;
+            height: 100%;
+            width: 100%;
+            transition: width 0.2s;
+        }
+        .battle-log {
+            background: #f0ecdf;
+            border-radius: 30px;
+            padding: 10px;
+            margin: 15px 0;
+            max-height: 200px;
+            overflow-y: auto;
+            font-size: 0.8rem;
+            text-align: left;
         }
         .toast {
             position: fixed;
@@ -159,39 +178,35 @@
         .role-badge {
             padding: 2px 8px;
             border-radius: 20px;
-            font-size: 0.7rem;
             background: #ffb347;
             color: white;
-        }
-        .effect-text {
-            font-weight: bold;
-            animation: pulse 0.3s;
-        }
-        @keyframes pulse {
-            0% { opacity: 0; transform: scale(0.8); }
-            100% { opacity: 1; transform: scale(1); }
+            font-size: 0.7rem;
         }
     </style>
 </head>
 <body>
-<div class="game-card" id="app"></div>
+<div class="game-container" id="app"></div>
 
 <script>
-    // Уникальное имя для клиента Supabase
+    // ---------- SUPABASE (уникальное имя) ----------
     const _SUPABASE_URL = 'https://pmvbhhidcojkkpumsxxb.supabase.co';
     const _SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBtdmJoaGlkY29qa2twdW1zeHhiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzcyNzk3MjcsImV4cCI6MjA5Mjg1NTcyN30.1eKxcaqeClRdAVH8lVcOdYaV0o_PbRzjnM9vBUP15QQ';
     const supabaseClient = window.supabase.createClient(_SUPABASE_URL, _SUPABASE_ANON_KEY);
 
-    // Состояние
     let currentUser = null;
     let useEmoji = false;
-    let syncInterval = null;
+    let syncInterval = null, autoClickerInterval = null;
     let anticheatBlockedUntil = 0, clickTimestamps = [];
-    let lastEffect = ""; // для всплывающих эффектов
+
+    // Босс (глобальный)
+    let boss = { hp: 200, max_hp: 200, attack: 15, defense: 8, level: 1 };
+
+    // Лог боя (для модального окна)
+    let battleLog = [];
 
     // Вспомогательные функции
     function showToast(msg) {
-        const t = document.createElement('div');
+        let t = document.createElement('div');
         t.className = 'toast';
         t.innerText = msg;
         document.body.appendChild(t);
@@ -210,6 +225,7 @@
             crit_chance: currentUser.crit_chance,
             fish: currentUser.fish,
             total_fish: currentUser.total_fish,
+            auto_level: currentUser.auto_level,
             prestige_bonus: currentUser.prestige_bonus,
             anticheat_disabled: currentUser.anticheat_disabled,
             role: currentUser.role,
@@ -233,6 +249,7 @@
             hp: 100, max_hp: 100,
             attack: 10, defense: 5, crit_chance: 10,
             fish: 0, total_fish: 0,
+            auto_level: 0,
             prestige_bonus: 0, anticheat_disabled: false, role: 'player',
             stats: { wins: 0, losses: 0, boss_kills: 0 },
         };
@@ -242,16 +259,44 @@
         return true;
     }
 
-    // Игровые формулы
+    // ---------- Игровые механики ----------
     function getClickPower() {
         let base = 1;
         let prestige = currentUser.prestige_bonus || 0;
-        return Math.floor(1 * (1 + prestige / 100));
+        return Math.floor(base * (1 + prestige / 100));
     }
 
-    // Покупка улучшений (рыба → характеристики)
+    // Автокликер (пассивный доход рыбы)
+    function startAutoClicker() {
+        if (autoClickerInterval) clearInterval(autoClickerInterval);
+        autoClickerInterval = setInterval(async () => {
+            if (currentUser && currentUser.auto_level > 0) {
+                let gain = currentUser.auto_level;
+                currentUser.fish += gain;
+                currentUser.total_fish += gain;
+                await saveUser();
+                // Не перерисовываем каждый раз, только если нужно – для экономии ресурсов
+                renderUI();
+                showToast(`➕ Автокликер: +${gain} рыбы`);
+            }
+        }, 1000);
+    }
+
+    // Улучшение автокликера
+    async function buyAutoClicker() {
+        let price = 50 * (currentUser.auto_level + 1);
+        if (currentUser.fish < price) { showToast("❌ Не хватает рыбы"); return; }
+        currentUser.fish -= price;
+        currentUser.auto_level++;
+        await saveUser();
+        showToast(`🤖 Автокликер уровень ${currentUser.auto_level} (+${currentUser.auto_level} рыбы/сек)`);
+        renderUI();
+    }
+
+    // Улучшение характеристик
     async function buyStat(stat, basePrice, increase, name) {
-        let price = basePrice * (currentUser[stat] - (stat === 'attack' ? 10 : stat === 'defense' ? 5 : 10) + 1);
+        let level = stat === 'attack' ? currentUser.attack - 10 : (stat === 'defense' ? currentUser.defense - 5 : (currentUser.crit_chance - 10) / 5);
+        let price = basePrice * (level + 1);
         if (currentUser.fish < price) { showToast("❌ Не хватает рыбы"); return; }
         currentUser.fish -= price;
         currentUser[stat] += increase;
@@ -260,66 +305,8 @@
         renderUI();
     }
 
-    // Бой с боссом (PvE)
-    let boss = { hp: 200, max_hp: 200, attack: 15, defense: 8, level: 1 };
-    async function attackBoss() {
-        if (!currentUser) return;
-        if (currentUser.hp <= 0) {
-            showToast("❌ Вы мертвы! Восстановите здоровье за рыбу.");
-            return;
-        }
-        // Игрок атакует
-        let playerDamage = Math.max(1, currentUser.attack - boss.defense + Math.floor(Math.random() * 5));
-        let isCrit = Math.random() * 100 < currentUser.crit_chance;
-        if (isCrit) {
-            playerDamage = Math.floor(playerDamage * 1.5);
-            lastEffect = "КРИТ!";
-        } else {
-            lastEffect = "Удар!";
-        }
-        boss.hp -= playerDamage;
-        let log = `Вы нанесли ${playerDamage} урона!`;
-        if (boss.hp <= 0) {
-            let reward = 100 * boss.level;
-            currentUser.fish += reward;
-            currentUser.total_fish += reward;
-            currentUser.stats.wins++;
-            currentUser.stats.boss_kills++;
-            boss.level++;
-            boss.max_hp = Math.floor(200 + boss.level * 30);
-            boss.hp = boss.max_hp;
-            boss.attack = 15 + boss.level * 2;
-            boss.defense = 8 + Math.floor(boss.level / 2);
-            await saveUser();
-            showToast(`🎉 Босс повержен! +${reward} рыбы, уровень босса ${boss.level}`);
-            log += " Босс повержен!";
-        } else {
-            // Босс контратакует
-            let bossDamage = Math.max(1, boss.attack - currentUser.defense + Math.floor(Math.random() * 6));
-            let isBlock = Math.random() * 100 < 15; // 15% шанс блока
-            if (isBlock) {
-                bossDamage = Math.floor(bossDamage / 2);
-                log += " Вы заблокировали часть урона!";
-                lastEffect = "БЛОК!";
-            } else {
-                lastEffect = "ПОЛУЧЕН УРОН!";
-            }
-            currentUser.hp -= bossDamage;
-            if (currentUser.hp < 0) currentUser.hp = 0;
-            log += ` Босс нанёс ${bossDamage} урона.`;
-            if (currentUser.hp <= 0) {
-                currentUser.stats.losses++;
-                log += " Вас победили!";
-            }
-            await saveUser();
-        }
-        showToast(log);
-        renderUI();
-    }
-
-    // Восстановление здоровья
+    // Лечение
     async function heal() {
-        if (!currentUser) return;
         let price = 20 * (Math.floor((currentUser.max_hp - currentUser.hp) / 10) + 1);
         if (currentUser.fish < price) { showToast("❌ Не хватает рыбы"); return; }
         currentUser.fish -= price;
@@ -329,59 +316,134 @@
         renderUI();
     }
 
+    // Бой (открывает модальное окно)
+    function openBattleModal() {
+        if (!currentUser) return;
+        if (currentUser.hp <= 0) {
+            showToast("❌ Вы мертвы! Восстановите здоровье.");
+            return;
+        }
+        battleLog = [];
+        renderBattleModal();
+    }
+
+    async function performAttack() {
+        if (!currentUser) return;
+        if (currentUser.hp <= 0) {
+            battleLog.push("❌ Вы мертвы, нельзя атаковать!");
+            renderBattleModal();
+            return;
+        }
+        // Атака игрока
+        let playerDamage = Math.max(1, currentUser.attack - boss.defense + Math.floor(Math.random() * 6));
+        let isCrit = Math.random() * 100 < currentUser.crit_chance;
+        if (isCrit) {
+            playerDamage = Math.floor(playerDamage * 1.5);
+            battleLog.push(`🔥 КРИТ! Вы нанесли ${playerDamage} урона!`);
+        } else {
+            battleLog.push(`⚔️ Вы нанесли ${playerDamage} урона.`);
+        }
+        boss.hp -= playerDamage;
+
+        if (boss.hp <= 0) {
+            // Победа
+            let reward = 100 * boss.level;
+            currentUser.fish += reward;
+            currentUser.total_fish += reward;
+            currentUser.stats.wins++;
+            currentUser.stats.boss_kills++;
+            await saveUser();
+            battleLog.push(`🎉 ПОБЕДА! Вы получили ${reward} рыбы!`);
+            // Увеличиваем босса
+            boss.level++;
+            boss.max_hp = Math.floor(200 + boss.level * 30);
+            boss.hp = boss.max_hp;
+            boss.attack = 15 + boss.level * 2;
+            boss.defense = 8 + Math.floor(boss.level / 2);
+            battleLog.push(`👾 Босс повышен до уровня ${boss.level}!`);
+            renderUI();
+            renderBattleModal();
+            return;
+        }
+
+        // Контратака босса
+        let bossDamage = Math.max(1, boss.attack - currentUser.defense + Math.floor(Math.random() * 6));
+        let isBlock = Math.random() * 100 < 15; // 15% блок
+        if (isBlock) {
+            bossDamage = Math.floor(bossDamage / 2);
+            battleLog.push(`🛡️ Блок! Вы уменьшили урон до ${bossDamage}.`);
+        } else {
+            battleLog.push(`💔 Босс нанёс ${bossDamage} урона.`);
+        }
+        currentUser.hp -= bossDamage;
+        if (currentUser.hp < 0) currentUser.hp = 0;
+        await saveUser();
+
+        if (currentUser.hp <= 0) {
+            currentUser.stats.losses++;
+            await saveUser();
+            battleLog.push(`💀 Вас победили! Восстановите здоровье за рыбу.`);
+            renderUI();
+            renderBattleModal();
+            return;
+        }
+        renderUI();
+        renderBattleModal();
+    }
+
+    function renderBattleModal() {
+        let modal = document.getElementById('battleModal');
+        if (!modal) {
+            modal = document.createElement('div');
+            modal.id = 'battleModal';
+            modal.className = 'modal';
+            document.body.appendChild(modal);
+        }
+        const s = (e, t) => useEmoji ? e : t;
+        const bossHpPercent = (boss.hp / boss.max_hp) * 100;
+        modal.innerHTML = `
+            <div class="modal-content">
+                <span class="close-modal" id="closeBattleBtn">&times;</span>
+                <h3>${s('👾','БОСС')} Уровень ${boss.level}</h3>
+                <div class="boss-hp-bar"><div class="boss-hp-fill" style="width:${bossHpPercent}%"></div></div>
+                <div><strong>💰 Награда за победу: ${100 * boss.level} рыбы</strong></div>
+                <div class="battle-log" id="battleLogDiv">
+                    ${battleLog.map(log => `<div>${log}</div>`).join('')}
+                </div>
+                <button id="attackInModalBtn">⚔️ АТАКОВАТЬ</button>
+                <button id="healInModalBtn">❤️ Лечиться (за рыбу)</button>
+            </div>
+        `;
+        modal.style.display = 'flex';
+        document.getElementById('closeBattleBtn').onclick = () => modal.style.display = 'none';
+        document.getElementById('attackInModalBtn').onclick = () => performAttack();
+        document.getElementById('healInModalBtn').onclick = async () => {
+            await heal();
+            renderBattleModal();
+        };
+        modal.onclick = (e) => { if (e.target === modal) modal.style.display = 'none'; };
+        // прокрутка лога вниз
+        const logDiv = document.getElementById('battleLogDiv');
+        if (logDiv) logDiv.scrollTop = logDiv.scrollHeight;
+    }
+
     // Престиж
     async function doPrestige() {
         if (currentUser.total_fish < 5000) { showToast("Нужно 5000 рыб"); return; }
-        if (confirm("Престиж: сбросить рыбу и характеристики, получить +50% к силе клика и +5 ко всем характеристикам?")) {
+        if (confirm("Престиж: сбросить рыбу и улучшения, получить +50% к силе клика и +5 ко всем характеристикам?")) {
             currentUser.prestige_bonus = (currentUser.prestige_bonus || 0) + 50;
             currentUser.fish = 0;
             currentUser.total_fish = 0;
             currentUser.attack = 10 + 5;
             currentUser.defense = 5 + 5;
             currentUser.crit_chance = 10 + 5;
+            currentUser.auto_level = 0;
             currentUser.hp = 100;
             currentUser.max_hp = 100;
             await saveUser();
             showToast("🌟 Престиж! +50% к силе клика, +5 к атаке, защите и криту");
             renderUI();
         }
-    }
-
-    // Анти-автоклик
-    function isBlocked() {
-        if (currentUser?.anticheat_disabled) return false;
-        if (Date.now() < anticheatBlockedUntil) return true;
-        return false;
-    }
-    function registerClick() {
-        if (!currentUser) return false;
-        if (currentUser.anticheat_disabled) return true;
-        if (isBlocked()) { showToast("⛔ Блокировка 8 сек"); return false; }
-        const now = Date.now();
-        clickTimestamps.push(now);
-        while (clickTimestamps.length && clickTimestamps[0] < now - 1000) clickTimestamps.shift();
-        if (clickTimestamps.length > 18) {
-            anticheatBlockedUntil = now + 8000;
-            clickTimestamps = [];
-            showToast("⚠️ Слишком быстро! Блокировка 8 сек");
-            renderUI(); return false;
-        }
-        return true;
-    }
-
-    async function clickForFish() {
-        if (!registerClick()) return;
-        let gain = getClickPower();
-        currentUser.fish += gain;
-        currentUser.total_fish += gain;
-        await saveUser();
-        const seal = document.getElementById('sealEmoji');
-        if (seal) {
-            seal.classList.add('click-effect');
-            setTimeout(() => seal.classList.remove('click-effect'), 100);
-        }
-        renderUI();
-        showToast(`+${gain} рыбы`);
     }
 
     // Админ-панель
@@ -420,7 +482,7 @@
         alert(msg);
     }
 
-    // Регистрация / логин
+    // Регистрация / логин / выход
     async function handleRegister() {
         let nick = document.getElementById('regNick').value.trim();
         let pass = document.getElementById('regPass').value;
@@ -445,13 +507,50 @@
     function logout() {
         currentUser = null;
         if (syncInterval) clearInterval(syncInterval);
+        if (autoClickerInterval) clearInterval(autoClickerInterval);
         localStorage.removeItem('seal_user');
         renderUI();
     }
 
+    // Античит
+    function isBlocked() {
+        if (currentUser?.anticheat_disabled) return false;
+        if (Date.now() < anticheatBlockedUntil) return true;
+        return false;
+    }
+    function registerClick() {
+        if (!currentUser) return false;
+        if (currentUser.anticheat_disabled) return true;
+        if (isBlocked()) { showToast("⛔ Блокировка 8 сек"); return false; }
+        const now = Date.now();
+        clickTimestamps.push(now);
+        while (clickTimestamps.length && clickTimestamps[0] < now - 1000) clickTimestamps.shift();
+        if (clickTimestamps.length > 18) {
+            anticheatBlockedUntil = now + 8000;
+            clickTimestamps = [];
+            showToast("⚠️ Слишком быстро! Блокировка 8 сек");
+            renderUI(); return false;
+        }
+        return true;
+    }
+    async function clickForFish() {
+        if (!registerClick()) return;
+        let gain = getClickPower();
+        currentUser.fish += gain;
+        currentUser.total_fish += gain;
+        await saveUser();
+        const seal = document.getElementById('sealEmoji');
+        if (seal) {
+            seal.classList.add('click-effect');
+            setTimeout(() => seal.classList.remove('click-effect'), 100);
+        }
+        renderUI();
+        showToast(`+${gain} рыбы`);
+    }
+
     function toggleStyle() { useEmoji = !useEmoji; renderUI(); }
 
-    // Авто-синхронизация
+    // Синхронизация и автосохранение
     function startSync() {
         if (syncInterval) clearInterval(syncInterval);
         syncInterval = setInterval(async () => {
@@ -464,14 +563,15 @@
                 }
             }
         }, 3000);
+        startAutoClicker();
     }
 
-    // Отрисовка
+    // Отрисовка интерфейса
     function renderUI() {
         const root = document.getElementById('app');
         if (!currentUser) {
             root.innerHTML = `
-                <h1>🐟 Тюленьи бои (ХП + эффекты)</h1>
+                <h1>🐟 Тюленьи бои (автокликер + бои)</h1>
                 <div class="auth-panel">
                     <input id="regNick" class="nick-input" placeholder="Ник">
                     <input id="regPass" class="pass-input" type="password" placeholder="Пароль">
@@ -498,7 +598,6 @@
         const total = Math.floor(currentUser.total_fish);
         const prestigeBonus = currentUser.prestige_bonus || 0;
         const playerHpPercent = (currentUser.hp / currentUser.max_hp) * 100;
-        const bossHpPercent = (boss.hp / boss.max_hp) * 100;
 
         root.innerHTML = `
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
@@ -516,33 +615,33 @@
                 <div class="stat-card">⚔️ Атака: ${currentUser.attack}</div>
                 <div class="stat-card">🛡️ Защита: ${currentUser.defense}</div>
                 <div class="stat-card">💥 Крит: ${currentUser.crit_chance}%</div>
-            </div>
-            <div class="battle-area">
-                <h3>${s('👾','[БОСС]')} Ур.${boss.level}</h3>
-                <div class="hp-bar"><div class="hp-fill" style="width:${bossHpPercent}%"></div></div>
-                <button id="attackBtn">⚔️ АТАКОВАТЬ</button>
-                <div class="effect-text" style="margin-top:8px;">${lastEffect}</div>
+                <div class="stat-card">🤖 Авто: ${currentUser.auto_level} (${currentUser.auto_level} рыбы/сек)</div>
             </div>
             <div class="flex">
-                <button id="healBtn">❤️ Лечиться (рыба)</button>
+                <button id="healBtn">❤️ Лечиться</button>
                 <button id="upgradeAttackBtn">⚔️ +Атака (${20*(currentUser.attack-9)} 🐟)</button>
                 <button id="upgradeDefenseBtn">🛡️ +Защита (${20*(currentUser.defense-4)} 🐟)</button>
-                <button id="upgradeCritBtn">💥 +Крит (${30*(currentUser.crit_chance-9)} 🐟)</button>
+                <button id="upgradeCritBtn">💥 +Крит (${30*((currentUser.crit_chance-10)/5+1)} 🐟)</button>
+                <button id="upgradeAutoBtn">🤖 +Автокликер (${50*(currentUser.auto_level+1)} 🐟)</button>
+            </div>
+            <div class="flex">
+                <button id="battleBtn">⚔️ БОЙ С БОССОМ</button>
                 <button id="prestigeBtn">🏅 Престиж</button>
                 <button id="adminBtn">👑 Админ</button>
                 <button id="leaderBtn">🏆 Топ</button>
                 <button id="styleBtn">${useEmoji ? '📄 Текст' : '😀 Смайлы'}</button>
             </div>
-            <footer>После боя здоровье не восстанавливается автоматически. Лечись рыбой!</footer>
+            <footer>Автокликер работает в фоне. Здоровье не восстанавливается автоматически – лечись рыбой. Админ-пароль: seal123</footer>
         `;
 
         document.getElementById('clickZone').onclick = clickForFish;
         document.getElementById('logoutBtn').onclick = logout;
-        document.getElementById('attackBtn').onclick = attackBoss;
         document.getElementById('healBtn').onclick = heal;
         document.getElementById('upgradeAttackBtn').onclick = () => buyStat('attack', 20, 1, 'Атака');
         document.getElementById('upgradeDefenseBtn').onclick = () => buyStat('defense', 20, 1, 'Защита');
         document.getElementById('upgradeCritBtn').onclick = () => buyStat('crit_chance', 30, 5, 'Шанс крита');
+        document.getElementById('upgradeAutoBtn').onclick = buyAutoClicker;
+        document.getElementById('battleBtn').onclick = openBattleModal;
         document.getElementById('prestigeBtn').onclick = doPrestige;
         document.getElementById('adminBtn').onclick = adminPanel;
         document.getElementById('leaderBtn').onclick = showLeaderboard;
