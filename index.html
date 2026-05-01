@@ -49,10 +49,9 @@
 <div class="game-card" id="app"></div>
 
 <script>
-    // ==================== SUPABASE (твои ключи) ====================
-    const SUPABASE_URL = 'https://pmvbhhidcojkkpumsxxb.supabase.co';
-    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBtdmJoaGlkY29qa2twdW1zeHhiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzcyNzk3MjcsImV4cCI6MjA5Mjg1NTcyN30.1eKxcaqeClRdAVH8lVcOdYaV0o_PbRzjnM9vBUP15QQ';
-    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+   const SUPABASE_URL = 'https://pmvbhhidcojkkpumsxxb.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...';
+const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
     // ==================== Глобальное состояние ====================
     let currentUser = null;       // объект с данными пользователя из БД
