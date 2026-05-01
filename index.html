@@ -3,55 +3,185 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>Тюленья империя | Смайлы/Текст</title>
+    <title>Тюлений кликер | Стабильно</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; user-select: none; }
-        body { background: #1e6b3e; font-family: 'Segoe UI', system-ui; min-height: 100vh; display: flex; justify-content: center; align-items: center; padding: 20px; }
-        .game-card { max-width: 1400px; width: 100%; background: #fffef5; border-radius: 60px; padding: 25px; box-shadow: 0 20px 30px rgba(0,0,0,0.3); }
-        h1 { text-align: center; color: #1c6948; margin-bottom: 20px; }
-        .flex { display: flex; gap: 15px; flex-wrap: wrap; margin: 15px 0; }
-        .panel { background: #f0ecdf; border-radius: 40px; padding: 15px; flex: 1; }
-        .seal-area { text-align: center; cursor: pointer; margin: 20px 0; }
-        .seal-emoji { font-size: 7rem; display: inline-block; transition: 0.07s; }
-        .click-effect { transform: scale(0.9); }
-        .fish-counter { background: #2a5c48; color: #FFE5B4; font-size: 2rem; font-weight: bold; text-align: center; padding: 12px; border-radius: 60px; margin: 15px 0; }
-        .stat-grid { display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap; margin: 15px 0; }
-        .stat { background: #e3f0ea; flex: 1; border-radius: 40px; padding: 8px; text-align: center; font-weight: bold; }
-        .upgrade { background: #faefe2; border-radius: 50px; padding: 10px 15px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; }
-        .warning { background: #f9e6e6; color: #c7254e; border-radius: 40px; padding: 8px; text-align: center; font-size: 0.8rem; margin-top: 10px; }
-        .boss-panel { background: #f0e5d8; border-radius: 50px; padding: 15px; margin-top: 15px; text-align: center; }
-        .boss-health { height: 20px; background: #ccc; border-radius: 20px; overflow: hidden; margin: 10px 0; }
-        .boss-fill { height: 100%; background: #ff6b6b; width: 100%; transition: width 0.2s; }
-        .toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: #2b241cee; color: #ffeaaf; padding: 8px 20px; border-radius: 60px; animation: fadeOut 2s forwards; z-index: 1001; }
-        @keyframes fadeOut { 0% { opacity: 1; bottom: 0; } 80% { opacity: 1; } 100% { opacity: 0; visibility: hidden; } }
-        footer { text-align: center; font-size: 0.7rem; margin-top: 20px; color: #6e8f7a; }
-        .role-badge { padding: 2px 8px; border-radius: 20px; font-size: 0.7rem; font-weight: bold; display: inline-block; }
-        .role-player { background: #a0c4ff; }
-        .role-developer { background: #ffb347; color: white; }
-        .role-seal { background: #6b8e23; color: white; }
-        input, select { padding: 5px 10px; border-radius: 30px; border: 1px solid #c0a070; background: #fffcf5; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            user-select: none;
+        }
+        body {
+            background: #1e6b3e;
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        .game-card {
+            max-width: 1000px;
+            width: 100%;
+            background: #fffef5;
+            border-radius: 60px;
+            padding: 25px;
+            box-shadow: 0 20px 30px rgba(0,0,0,0.3);
+        }
+        h1 {
+            text-align: center;
+            color: #1c6948;
+            margin-bottom: 20px;
+        }
+        .nick-panel {
+            background: #e9f3ed;
+            border-radius: 60px;
+            padding: 15px;
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        .nick-input, .pass-input {
+            flex: 2;
+            padding: 10px;
+            border-radius: 50px;
+            border: 1px solid #ffc896;
+            text-align: center;
+            font-weight: bold;
+            background: #fffcf5;
+        }
+        button {
+            background: #ffb347;
+            border: none;
+            padding: 8px 18px;
+            border-radius: 50px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.05s linear;
+            color: white;
+        }
+        button:active {
+            transform: scale(0.97);
+        }
+        .seal-area {
+            text-align: center;
+            cursor: pointer;
+            margin: 20px 0;
+        }
+        .seal-emoji {
+            font-size: 7rem;
+            display: inline-block;
+            transition: 0.07s;
+        }
+        .click-effect {
+            transform: scale(0.9);
+        }
+        .fish-counter {
+            background: #2a5c48;
+            color: #FFE5B4;
+            font-size: 2rem;
+            font-weight: bold;
+            text-align: center;
+            padding: 12px;
+            border-radius: 60px;
+            margin: 15px 0;
+        }
+        .stat-grid {
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin: 15px 0;
+        }
+        .stat {
+            background: #e3f0ea;
+            flex: 1;
+            border-radius: 40px;
+            padding: 8px;
+            text-align: center;
+            font-weight: bold;
+            color: #1c6948;
+        }
+        .upgrade {
+            background: #faefe2;
+            border-radius: 50px;
+            padding: 10px 15px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        .action-buttons {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin: 15px 0;
+        }
+        .action-buttons button {
+            flex: 1;
+            font-size: 0.8rem;
+        }
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #2b241cee;
+            color: #ffeaaf;
+            padding: 8px 20px;
+            border-radius: 60px;
+            animation: fadeOut 2s forwards;
+            z-index: 1001;
+        }
+        @keyframes fadeOut {
+            0% { opacity: 1; bottom: 0; }
+            80% { opacity: 1; }
+            100% { opacity: 0; visibility: hidden; }
+        }
+        footer {
+            text-align: center;
+            font-size: 0.7rem;
+            margin-top: 20px;
+            color: #7e9a7a;
+        }
+        .role-badge {
+            padding: 2px 8px;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            font-weight: bold;
+            background: #a0c4ff;
+        }
     </style>
 </head>
 <body>
 <div class="game-card" id="app"></div>
 
 <script>
-(function() {
-    // ==================== SUPABASE (единственное объявление) ====================
+    // Единственное глобальное объявление Supabase
     const SUPABASE_URL = 'https://pmvbhhidcojkkpumsxxb.supabase.co';
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBtdmJoaGlkY29qa2twdW1zeHhiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzcyNzk3MjcsImV4cCI6MjA5Mjg1NTcyN30.1eKxcaqeClRdAVH8lVcOdYaV0o_PbRzjnM9vBUP15QQ';
-    const _supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    // -------------------- Состояние --------------------
+    // Состояние
     let currentUser = null;
-    let useEmoji = false;   // текст по умолчанию (без квадратов)
-    let syncInterval = null, passiveInterval = null;
-    let bossData = { health: 1000, max_health: 1000, level: 1 };
-    let anticheatBlockedUntil = 0, clickTimestamps = [];
+    let useEmoji = false;   // false = текст, true = смайлы
+    let passiveInterval = null;
+    let syncInterval = null;
 
-    // -------------------- Вспомогательные функции сохранения --------------------
-    async function saveUser() {
+    // Вспомогательные функции
+    function showToast(msg) {
+        const t = document.createElement('div');
+        t.className = 'toast';
+        t.innerText = msg;
+        document.body.appendChild(t);
+        setTimeout(() => t.remove(), 2000);
+    }
+
+    async function saveUserToDB() {
         if (!currentUser) return;
         const data = {
             nickname: currentUser.nickname,
@@ -61,389 +191,133 @@
             click_power_level: currentUser.click_power_level,
             auto_level: currentUser.auto_level,
             crit_level: currentUser.crit_level,
-            click_mult_level: currentUser.click_mult_level,
-            passive_mult_level: currentUser.passive_mult_level,
-            event_bonus_level: currentUser.event_bonus_level,
-            bank_level: currentUser.bank_level,
-            vampire_level: currentUser.vampire_level,
             prestige_bonus: currentUser.prestige_bonus,
             anticheat_disabled: currentUser.anticheat_disabled,
             role: currentUser.role,
-            clan: currentUser.clan,
-            daily_last: currentUser.daily_last,
             stats: currentUser.stats,
             achievements: currentUser.achievements,
-            avatar: currentUser.avatar,
-            skin: currentUser.skin,
         };
-        await _supabase.from('users').upsert(data, { onConflict: 'nickname' });
-        await _supabase.from('leaderboard').upsert({ nickname: currentUser.nickname, total_fish: currentUser.total_fish });
+        await supabase.from('users').upsert(data, { onConflict: 'nickname' });
+        await supabase.from('leaderboard').upsert({ nickname: currentUser.nickname, total_fish: currentUser.total_fish });
     }
 
-    async function loadUser(nick, pass) {
-        const { data } = await _supabase.from('users').select('*').eq('nickname', nick).maybeSingle();
-        if (!data || data.password !== pass) return null;
+    async function loadUserFromDB(nick, pass) {
+        const { data, error } = await supabase.from('users').select('*').eq('nickname', nick).maybeSingle();
+        if (error || !data || data.password !== pass) return null;
         return data;
     }
 
-    async function registerUser(nick, pass) {
-        const { data: existing } = await _supabase.from('users').select('nickname').eq('nickname', nick);
+    async function register(nick, pass) {
+        const { data: existing } = await supabase.from('users').select('nickname').eq('nickname', nick);
         if (existing && existing.length) { showToast("Ник уже занят"); return false; }
         const newUser = {
             nickname: nick, password: pass,
             fish: 0, total_fish: 0,
             click_power_level: 0, auto_level: 0, crit_level: 0,
-            click_mult_level: 0, passive_mult_level: 0, event_bonus_level: 0,
-            bank_level: 0, vampire_level: 0,
             prestige_bonus: 0, anticheat_disabled: false, role: 'player',
-            clan: null, daily_last: new Date(0).toISOString(),
-            stats: { totalClicks: 0, prestigeCount: 0, wins: 0, losses: 0, clanContrib: 0 },
-            achievements: {}, avatar: null, skin: 0,
+            stats: { totalClicks: 0, prestigeCount: 0 },
+            achievements: {},
         };
-        const { error } = await _supabase.from('users').insert(newUser);
-        if (error) { showToast("Ошибка: " + error.message); return false; }
-        await _supabase.from('leaderboard').insert({ nickname: nick, total_fish: 0 });
+        const { error } = await supabase.from('users').insert(newUser);
+        if (error) { showToast("Ошибка регистрации"); return false; }
+        await supabase.from('leaderboard').insert({ nickname: nick, total_fish: 0 });
         currentUser = newUser;
         currentUser.nickname = nick;
         currentUser.password = pass;
         return true;
     }
 
-    // -------------------- Игровые расчёты --------------------
+    // Игровые формулы
     function getClickPower() {
         let base = 1 + (currentUser.click_power_level || 0) * 2;
-        let mult = 1 + (currentUser.click_mult_level || 0) * 0.03;
         let prestige = currentUser.prestige_bonus || 0;
-        return Math.floor(base * mult * (1 + prestige / 100));
+        return Math.floor(base * (1 + prestige / 100));
     }
     function getPassiveIncome() {
-        let inc = (currentUser.auto_level || 0) * 1;
-        let mult = 1 + (currentUser.passive_mult_level || 0) * 0.02;
-        return Math.floor(inc * mult);
+        return (currentUser.auto_level || 0) * 1;
     }
-    function getCritChance() { return Math.min(70, (currentUser.crit_level || 0) * 5); }
-    function getEventBonus() { return 1 + (currentUser.event_bonus_level || 0) * 0.1; }
-    function getBankBonus() { return (currentUser.bank_level || 0) * 0.005; }
-    function getVampireBonus() { return (currentUser.vampire_level || 0) * 1; }
-    function getAttack() { return 5 + (currentUser.click_power_level || 0) + (currentUser.vampire_level || 0); }
+    function getCritChance() {
+        return Math.min(70, (currentUser.crit_level || 0) * 5);
+    }
 
     async function addFish(amount, fromClick = false) {
         if (!currentUser) return;
-        let final = amount;
-        if (fromClick && getBankBonus() > 0) {
-            final += Math.floor(currentUser.total_fish * getBankBonus());
-        }
-        currentUser.fish += final;
-        currentUser.total_fish += final;
-        if (fromClick) currentUser.stats.totalClicks = (currentUser.stats.totalClicks || 0) + 1;
-        await saveUser();
-        checkAchievements();
-        // если есть клан, обновляем вклад
-        if (currentUser.clan) {
-            let clanData = await _supabase.from('clans').select('*').eq('name', currentUser.clan).single();
-            if (clanData.data) {
-                let newTotal = (clanData.data.total_fish || 0) + final;
-                await _supabase.from('clans').update({ total_fish: newTotal }).eq('name', currentUser.clan);
-            }
-        }
-        renderUI();
+        currentUser.fish += amount;
+        currentUser.total_fish += amount;
+        if (fromClick) currentUser.stats.totalClicks += 1;
+        await saveUserToDB();
+        renderUI(); // обновляем интерфейс мгновенно
     }
 
-    // -------------------- Античит --------------------
-    function isBlocked() {
-        if (currentUser?.anticheat_disabled) return false;
-        if (Date.now() < anticheatBlockedUntil) return true;
-        return false;
-    }
-    function registerClick() {
-        if (!currentUser) return false;
-        if (currentUser.anticheat_disabled) return true;
-        if (isBlocked()) { showToast("⛔ Античит: блокировка 8 сек"); return false; }
-        const now = Date.now();
-        clickTimestamps.push(now);
-        while (clickTimestamps.length && clickTimestamps[0] < now - 1000) clickTimestamps.shift();
-        if (clickTimestamps.length > 18) {
-            anticheatBlockedUntil = now + 8000;
-            clickTimestamps = [];
-            showToast("⚠️ Слишком быстро! Блокировка 8 сек.");
-            renderUI();
-            return false;
-        }
-        return true;
-    }
-
-    // -------------------- Достижения (60+) --------------------
-    const achievementsList = (() => {
-        const list = [];
-        for (let i = 1; i <= 20; i++) {
-            let target = 100 * Math.pow(1.6, i-1);
-            list.push({ id: `total_${i}`, name: `${Math.floor(target).toLocaleString()} рыб`, cond: (d) => d.total_fish >= target, reward: Math.floor(target * 0.1) });
-        }
-        for (let i = 1; i <= 15; i++) {
-            let clicks = 50 * Math.pow(2, i-1);
-            list.push({ id: `clicks_${i}`, name: `${Math.floor(clicks).toLocaleString()} кликов`, cond: (d) => (d.stats?.totalClicks || 0) >= clicks, reward: Math.floor(clicks * 0.2) });
-        }
-        for (let i = 1; i <= 5; i++) {
-            list.push({ id: `wins_${i}`, name: `${i*5} побед`, cond: (d) => (d.stats?.wins || 0) >= i*5, reward: 100 * i });
-        }
-        for (let i = 1; i <= 10; i++) {
-            list.push({ id: `clickPower_${i}`, name: `Сила клика ${i}`, cond: (d) => (d.click_power_level || 0) >= i, reward: 50 * i });
-            list.push({ id: `auto_${i}`, name: `Автокликер ${i}`, cond: (d) => (d.auto_level || 0) >= i, reward: 60 * i });
-        }
-        for (let i = 1; i <= 5; i++) {
-            list.push({ id: `crit_${i}`, name: `Крит ${i}`, cond: (d) => (d.crit_level || 0) >= i, reward: 80 * i });
-        }
-        for (let i = 1; i <= 5; i++) {
-            list.push({ id: `bank_${i}`, name: `Банк ${i}`, cond: (d) => (d.bank_level || 0) >= i, reward: 150 * i });
-        }
-        for (let i = 1; i <= 5; i++) {
-            list.push({ id: `vampire_${i}`, name: `Вампиризм ${i}`, cond: (d) => (d.vampire_level || 0) >= i, reward: 200 * i });
-        }
-        return list.slice(0, 80);
-    })();
-
-    function checkAchievements() {
-        if (!currentUser.achievements) currentUser.achievements = {};
-        let changed = false;
-        for (let ach of achievementsList) {
-            if (!currentUser.achievements[ach.id] && ach.cond(currentUser)) {
-                currentUser.achievements[ach.id] = true;
-                currentUser.fish += ach.reward;
-                currentUser.total_fish += ach.reward;
-                changed = true;
-                showToast(`🏆 ${ach.name}! +${ach.reward} рыб`);
-            }
-        }
-        if (changed) saveUser();
-    }
-
-    // -------------------- Босс --------------------
-    async function loadBoss() {
-        const { data } = await _supabase.from('boss').select('*').eq('id', 1).single();
-        if (data) bossData = { health: data.health, max_health: data.max_health, level: data.level };
-    }
-    async function attackBoss() {
-        if (!currentUser) return;
-        let damage = getAttack();
-        let newHealth = bossData.health - damage;
-        if (newHealth <= 0) {
-            let reward = 500 * bossData.level;
-            await addFish(reward, false);
-            showToast(`Босс повержен! +${reward} рыб! Уровень босса повышен.`);
-            newHealth = Math.floor(bossData.max_health * 1.2);
-            await _supabase.from('boss').update({ health: newHealth, max_health: newHealth, level: bossData.level + 1 }).eq('id', 1);
-            await loadBoss();
-        } else {
-            await _supabase.from('boss').update({ health: newHealth }).eq('id', 1);
-            bossData.health = newHealth;
-        }
-        renderUI();
-    }
-
-    // -------------------- PvP --------------------
-    async function pvpAttack(targetNick) {
-        if (!currentUser) return;
-        const { data: target } = await _supabase.from('users').select('*').eq('nickname', targetNick).single();
-        if (!target) { showToast("Игрок не найден"); return; }
-        let myAttack = getAttack();
-        let targetDefense = target.crit_level || 0;
-        let damage = Math.max(1, myAttack - targetDefense);
-        let targetHealth = target.health || 20;
-        let newHealth = targetHealth - damage;
-        if (newHealth <= 0) {
-            let reward = Math.floor(100 * (target.total_fish / 1000 || 1));
-            await addFish(reward, false);
-            currentUser.stats.wins = (currentUser.stats.wins || 0) + 1;
-            await saveUser();
-            showToast(`Вы победили ${targetNick}! +${reward} рыб`);
-            await _supabase.from('users').update({ health: 20 + (target.auto_level || 0) * 2 }).eq('nickname', targetNick);
-        } else {
-            await _supabase.from('users').update({ health: newHealth }).eq('nickname', targetNick);
-            showToast(`Вы атаковали ${targetNick}, у него осталось ${newHealth} HP`);
-        }
-        renderUI();
-    }
-
-    // -------------------- Покупка улучшений --------------------
     async function buyUpgrade(upgradeId, basePrice, name) {
         let level = currentUser[upgradeId] || 0;
-        let price = Math.floor(basePrice * (level + 1));
-        if (currentUser.fish < price) { showToast(`❌ Нужно ${price} рыб`); return; }
+        let price = basePrice * (level + 1);
+        if (currentUser.fish < price) { showToast("❌ Не хватает рыбы!"); return; }
         currentUser.fish -= price;
         currentUser[upgradeId] = level + 1;
-        await saveUser();
-        checkAchievements();
+        await saveUserToDB();
         renderUI();
-        showToast(`🎉 ${name} → ур.${currentUser[upgradeId]}`);
+        showToast(`🎉 ${name} → уровень ${currentUser[upgradeId]}`);
     }
 
-    // -------------------- Престиж --------------------
     async function doPrestige() {
-        if (currentUser.total_fish < 5000) { showToast("Нужно 5000 рыб"); return; }
-        if (confirm("Престиж: сбросить рыбу и улучшения, получить +50% к силе клика?")) {
+        if (currentUser.total_fish < 5000) { showToast("Нужно 5000 общей рыбы"); return; }
+        if (confirm("Сбросить прогресс и получить +50% к силе клика?")) {
             currentUser.prestige_bonus = (currentUser.prestige_bonus || 0) + 50;
             currentUser.fish = 0;
             currentUser.total_fish = 0;
             currentUser.click_power_level = 0;
             currentUser.auto_level = 0;
             currentUser.crit_level = 0;
-            currentUser.click_mult_level = 0;
-            currentUser.passive_mult_level = 0;
-            currentUser.event_bonus_level = 0;
-            currentUser.bank_level = 0;
-            currentUser.vampire_level = 0;
-            currentUser.stats.prestigeCount = (currentUser.stats.prestigeCount || 0) + 1;
-            await saveUser();
-            checkAchievements();
+            currentUser.stats.prestigeCount += 1;
+            await saveUserToDB();
             renderUI();
             showToast("🌟 Престиж! +50% к силе клика");
         }
     }
 
-    // -------------------- Ежедневная награда --------------------
-    async function claimDaily() {
-        let today = new Date().toDateString();
-        let last = currentUser.daily_last ? new Date(currentUser.daily_last).toDateString() : null;
-        if (last === today) { showToast("Вы уже получали ежедневную награду сегодня!"); return; }
-        let reward = 200 + Math.floor(currentUser.total_fish * 0.02);
-        currentUser.fish += reward;
-        currentUser.total_fish += reward;
-        currentUser.daily_last = new Date().toISOString();
-        await saveUser();
-        showToast(`Ежедневная награда: +${reward} рыб!`);
-        renderUI();
-    }
-
-    // -------------------- Кланы --------------------
-    async function createClan() {
-        let name = prompt("Название клана (латиница/цифры):");
-        if (!name) return;
-        let { data: existing } = await _supabase.from('clans').select('name').eq('name', name);
-        if (existing && existing.length) { showToast("Клан уже существует"); return; }
-        await _supabase.from('clans').insert({ name: name, leader: currentUser.nickname, members: [currentUser.nickname], total_fish: 0 });
-        currentUser.clan = name;
-        await saveUser();
-        showToast(`Клан "${name}" создан!`);
-        renderUI();
-    }
-    async function joinClan() {
-        let name = prompt("Название клана для вступления:");
-        if (!name) return;
-        let { data: clan } = await _supabase.from('clans').select('*').eq('name', name).single();
-        if (!clan) { showToast("Клан не найден"); return; }
-        let members = clan.members || [];
-        if (members.includes(currentUser.nickname)) { showToast("Вы уже в клане"); return; }
-        members.push(currentUser.nickname);
-        await _supabase.from('clans').update({ members: members }).eq('name', name);
-        currentUser.clan = name;
-        await saveUser();
-        showToast(`Вы вступили в клан "${name}"`);
-        renderUI();
-    }
-    async function showClanInfo() {
-        if (!currentUser.clan) { showToast("Вы не в клане"); return; }
-        let { data: clan } = await _supabase.from('clans').select('*').eq('name', currentUser.clan).single();
-        if (!clan) return;
-        let msg = `Клан: ${clan.name}\nЛидер: ${clan.leader}\nУчастники: ${(clan.members || []).join(', ')}\nОбщая рыба: ${clan.total_fish}`;
-        alert(msg);
-    }
-
-    // -------------------- Скины --------------------
-    const skins = [
-        { id: 0, name: "Обычный тюлень", emoji: "🦭", price: 0 },
-        { id: 1, name: "Тюлень в очках", emoji: "🦭👓", price: 500 },
-        { id: 2, name: "Король тюленей", emoji: "🦭👑", price: 2000 },
-        { id: 3, name: "Тюлень-пират", emoji: "🦭🏴‍☠️", price: 5000 },
-    ];
-    async function buySkin(skinId) {
-        let skin = skins.find(s => s.id === skinId);
-        if (!skin) return;
-        if (currentUser.skin === skinId) { showToast("У вас уже этот скин"); return; }
-        if (skin.price > 0 && currentUser.fish < skin.price) { showToast("Не хватает рыбы"); return; }
-        if (skin.price > 0) {
-            currentUser.fish -= skin.price;
-            await saveUser();
-        }
-        currentUser.skin = skinId;
-        await saveUser();
-        showToast(`Скин "${skin.name}" активирован!`);
-        renderUI();
-    }
-
-    // -------------------- Админ-панель --------------------
-    async function showAdminPanel() {
-        let pass = prompt("Пароль администратора:");
+    // Админ-панель (выдача рыбы)
+    async function adminGiveFish() {
+        const pass = prompt("Пароль администратора:");
         if (pass !== 'seal123') { showToast("Неверный пароль"); return; }
-        let action = prompt("1 - выдать рыбу\n2 - выдать уровни\n3 - сменить роль\n4 - сбросить античит");
-        if (action === '1') {
-            let nick = prompt("Ник игрока:");
-            if (!nick) return;
-            let amount = parseInt(prompt("Количество рыбы:"));
-            if (isNaN(amount)) return;
-            let { data: target } = await _supabase.from('users').select('*').eq('nickname', nick).single();
-            if (!target) { showToast("Игрок не найден"); return; }
-            target.fish += amount;
-            target.total_fish += amount;
-            await _supabase.from('users').update({ fish: target.fish, total_fish: target.total_fish }).eq('nickname', nick);
-            await _supabase.from('leaderboard').upsert({ nickname: nick, total_fish: target.total_fish });
-            showToast(`Выдано ${amount} рыбы игроку ${nick}`);
-            if (currentUser.nickname === nick) {
-                currentUser.fish = target.fish;
-                currentUser.total_fish = target.total_fish;
-                renderUI();
-            }
-        } else if (action === '2') {
-            let nick = prompt("Ник игрока:");
-            if (!nick) return;
-            let up = prompt("Улучшение (click_power_level, auto_level, crit_level):");
-            let levels = parseInt(prompt("Количество уровней:"));
-            if (!up || isNaN(levels)) return;
-            let { data: target } = await _supabase.from('users').select('*').eq('nickname', nick).single();
-            if (!target) { showToast("Игрок не найден"); return; }
-            target[up] = (target[up] || 0) + levels;
-            await _supabase.from('users').update({ [up]: target[up] }).eq('nickname', nick);
-            showToast(`Выдано ${levels} уровней ${up} игроку ${nick}`);
-            if (currentUser.nickname === nick) {
-                currentUser[up] = target[up];
-                renderUI();
-            }
-        } else if (action === '3') {
-            let nick = prompt("Ник игрока:");
-            if (!nick) return;
-            let role = prompt("Роль (player, developer, seal):");
-            if (!role) return;
-            await _supabase.from('users').update({ role: role }).eq('nickname', nick);
-            showToast(`Роль ${nick} изменена на ${role}`);
-            if (currentUser.nickname === nick) {
-                currentUser.role = role;
-                renderUI();
-            }
-        } else if (action === '4') {
-            await _supabase.from('users').update({ anticheat_disabled: false }).neq('nickname', '');
-            showToast("Античит сброшен для всех");
+        const nick = prompt("Ник игрока:");
+        if (!nick) return;
+        const amount = parseInt(prompt("Количество рыбы:"));
+        if (isNaN(amount)) return;
+        const { data: target, error } = await supabase.from('users').select('*').eq('nickname', nick).single();
+        if (error || !target) { showToast("Игрок не найден"); return; }
+        target.fish += amount;
+        target.total_fish += amount;
+        await supabase.from('users').update({ fish: target.fish, total_fish: target.total_fish }).eq('nickname', nick);
+        await supabase.from('leaderboard').upsert({ nickname: nick, total_fish: target.total_fish });
+        showToast(`Выдано ${amount} рыбы игроку ${nick}`);
+        if (currentUser && currentUser.nickname === nick) {
+            currentUser.fish = target.fish;
+            currentUser.total_fish = target.total_fish;
+            renderUI();
         }
     }
 
-    // -------------------- Лидерборд и список игроков --------------------
+    // Лидерборд и список игроков
     async function showLeaderboard() {
-        const { data } = await _supabase.from('leaderboard').select('nickname, total_fish').order('total_fish', { ascending: false }).limit(20);
+        const { data } = await supabase.from('leaderboard').select('nickname, total_fish').order('total_fish', { ascending: false }).limit(20);
         let msg = "🏆 ГЛОБАЛЬНЫЙ ТОП 🏆\n";
-        data.forEach((u,i) => msg += `${i+1}. ${u.nickname} — ${u.total_fish} 🐟\n`);
+        data.forEach((u, i) => msg += `${i+1}. ${u.nickname} — ${u.total_fish} 🐟\n`);
         alert(msg);
     }
     async function showPlayers() {
-        const { data } = await _supabase.from('users').select('nickname, total_fish, role, clan');
+        const { data } = await supabase.from('users').select('nickname, total_fish, role');
         let msg = "👥 ВСЕ ИГРОКИ 👥\n";
-        data.forEach(p => msg += `${p.nickname} [${p.role}] ${p.clan ? `(клан:${p.clan})` : ''} — ${p.total_fish} 🐟\n`);
+        data.forEach(p => msg += `${p.nickname} [${p.role}] — ${p.total_fish} 🐟\n`);
         alert(msg);
     }
 
-    // -------------------- Регистрация / логин / выход --------------------
+    // Регистрация / логин / выход
     async function handleRegister() {
         const nick = document.getElementById('regNick').value.trim();
         const pass = document.getElementById('regPass').value;
         if (!nick || !pass) { showToast("Введите ник и пароль"); return; }
-        const ok = await registerUser(nick, pass);
+        const ok = await register(nick, pass);
         if (ok) {
             localStorage.setItem('seal_user', JSON.stringify({ nickname: nick, password: pass }));
             startGameLoops();
@@ -454,7 +328,7 @@
         const nick = document.getElementById('loginNick').value.trim();
         const pass = document.getElementById('loginPass').value;
         if (!nick || !pass) { showToast("Введите ник и пароль"); return; }
-        const data = await loadUser(nick, pass);
+        const data = await loadUserFromDB(nick, pass);
         if (!data) { showToast("Неверный ник или пароль"); return; }
         currentUser = data;
         localStorage.setItem('seal_user', JSON.stringify({ nickname: nick, password: pass }));
@@ -463,126 +337,99 @@
     }
     function logout() {
         currentUser = null;
-        localStorage.removeItem('seal_user');
-        if (syncInterval) clearInterval(syncInterval);
         if (passiveInterval) clearInterval(passiveInterval);
+        if (syncInterval) clearInterval(syncInterval);
+        localStorage.removeItem('seal_user');
         renderUI();
     }
 
-    // -------------------- Переключение стиля --------------------
+    // Переключение стиля
     function toggleStyle() {
         useEmoji = !useEmoji;
         renderUI();
     }
 
-    // -------------------- UI рендеринг --------------------
+    // Рендер UI
     function renderUI() {
         const root = document.getElementById('app');
         if (!currentUser) {
             root.innerHTML = `
-                <h1>Тюленья империя</h1>
-                <div class="nick-panel" style="background:#e9f3ed; border-radius:60px; padding:15px; display:flex; gap:10px; flex-wrap:wrap;">
-                    <input type="text" id="regNick" placeholder="Ник" class="nick-input" style="flex:2; padding:10px; border-radius:50px;">
-                    <input type="password" id="regPass" placeholder="Пароль" class="pass-input" style="flex:2; padding:10px; border-radius:50px;">
-                    <button id="registerBtn" style="background:#ffb347; border:none; padding:8px 18px; border-radius:50px;">ЗАРЕГИСТРИРОВАТЬСЯ</button>
+                <h1>🐟 Тюлений кликер</h1>
+                <div class="nick-panel">
+                    <input type="text" id="regNick" class="nick-input" placeholder="Ник" maxlength="20">
+                    <input type="password" id="regPass" class="pass-input" placeholder="Пароль">
+                    <button id="registerBtn">ЗАРЕГИСТРИРОВАТЬСЯ</button>
                 </div>
-                <div class="nick-panel" style="background:#e9f3ed; border-radius:60px; padding:15px; display:flex; gap:10px; flex-wrap:wrap;">
-                    <input type="text" id="loginNick" placeholder="Ник" class="nick-input" style="flex:2; padding:10px; border-radius:50px;">
-                    <input type="password" id="loginPass" placeholder="Пароль" class="pass-input" style="flex:2; padding:10px; border-radius:50px;">
-                    <button id="loginBtn" style="background:#ffb347; border:none; padding:8px 18px; border-radius:50px;">ВОЙТИ</button>
+                <div class="nick-panel">
+                    <input type="text" id="loginNick" class="nick-input" placeholder="Ник">
+                    <input type="password" id="loginPass" class="pass-input" placeholder="Пароль">
+                    <button id="loginBtn">ВОЙТИ</button>
                 </div>
-                <div class="flex">
-                    <button onclick="showLeaderboard()">🏆 Топ</button>
-                    <button onclick="showPlayers()">👥 Игроки</button>
+                <div class="action-buttons">
+                    <button id="leaderboardBtn">🏆 Топ</button>
+                    <button id="playersBtn">👥 Игроки</button>
                 </div>
                 <footer>Создайте аккаунт или войдите</footer>
             `;
             document.getElementById('registerBtn').onclick = handleRegister;
             document.getElementById('loginBtn').onclick = handleLogin;
+            document.getElementById('leaderboardBtn').onclick = showLeaderboard;
+            document.getElementById('playersBtn').onclick = showPlayers;
             return;
         }
 
         const s = (emoji, text) => useEmoji ? emoji : text;
-        const currentSkin = skins.find(sk => sk.id === currentUser.skin) || skins[0];
         const fish = Math.floor(currentUser.fish);
         const total = Math.floor(currentUser.total_fish);
         const clickPower = getClickPower();
         const passive = getPassiveIncome();
         const critChance = getCritChance();
-        const eventBonus = getEventBonus();
-        const bankBonus = (getBankBonus() * 100).toFixed(1);
-        const vampireBonus = getVampireBonus();
         const prestigeBonus = currentUser.prestige_bonus || 0;
-        const role = currentUser.role || 'player';
 
         root.innerHTML = `
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; flex-wrap:wrap; gap:10px;">
-                <div>${currentSkin.emoji} ${currentUser.nickname} <span class="role-badge role-${role}">${role}</span> ${currentUser.clan ? `[Клан: ${currentUser.clan}]` : ''}</div>
+                <div>${s('🦭', '[ТЮЛЕНЬ]')} ${currentUser.nickname} <span class="role-badge">${currentUser.role}</span></div>
                 <div>⭐ Престиж +${prestigeBonus}%</div>
-                <button onclick="logout()">Выйти</button>
+                <button id="logoutBtn">Выйти</button>
             </div>
             <div class="seal-area" id="clickZone">
-                <div class="seal-emoji" id="sealEmoji">${currentSkin.emoji}</div>
+                <div class="seal-emoji" id="sealEmoji">${s('🦭', '[ТЮЛЕНЬ]')}</div>
                 <div>${s('👆 нажми на тюленя', '[КЛИК]')}</div>
             </div>
-            <div class="fish-counter">${s('🐟','[РЫБА]')} ${fish.toLocaleString()}</div>
-            <div class="flex">
-                <div class="panel">
-                    💪 Сила: +${clickPower}<br>
-                    ⏱ Пассив: +${passive}/сек<br>
-                    💥 Крит: ${critChance}%<br>
-                    🎁 События: +${Math.round((eventBonus-1)*100)}%<br>
-                    🏦 Банк: +${bankBonus}%<br>
-                    🧛 Вампиризм: +${vampireBonus} к атаке
-                </div>
-                <div class="panel">
-                    🏆 Всего: ${total.toLocaleString()}<br>
-                    🖱 Кликов: ${currentUser.stats?.totalClicks || 0}<br>
-                    🏅 Побед: ${currentUser.stats?.wins || 0}<br>
-                    🎁 Ежедневная: <button onclick="claimDaily()">Получить</button>
-                </div>
+            <div class="fish-counter">${s('🐟', '[РЫБА]')} ${fish.toLocaleString()}</div>
+            <div class="stat-grid">
+                <div class="stat">💪 Сила: +${clickPower}</div>
+                <div class="stat">⏱ Пассив: +${passive}/сек</div>
+                <div class="stat">💥 Крит: ${critChance}%</div>
             </div>
-            <div class="boss-panel">
-                <h3>${s('👾','БОСС')} Ур.${bossData.level} (HP: ${bossData.health}/${bossData.max_health})</h3>
-                <div class="boss-health"><div class="boss-fill" style="width:${(bossData.health / bossData.max_health) * 100}%"></div></div>
-                <button onclick="attackBoss()">Атаковать босса</button>
+            <div class="stat-grid">
+                <div class="stat">🏆 Всего: ${total.toLocaleString()}</div>
+                <div class="stat">🖱 Кликов: ${currentUser.stats.totalClicks}</div>
             </div>
-            <div class="flex">
-                <div class="panel">
-                    <strong>Улучшения</strong><br>
-                    <button onclick="buyUpgrade('click_power_level',20,'Сила клика')">🐟 Острый зуб (${20*(currentUser.click_power_level+1)})</button><br>
-                    <button onclick="buyUpgrade('auto_level',25,'Автокликер')">⏱ Автокормушка (${25*(currentUser.auto_level+1)})</button><br>
-                    <button onclick="buyUpgrade('crit_level',80,'Крит')">⚡ Крит (${80*(currentUser.crit_level+1)})</button><br>
-                    <button onclick="buyUpgrade('click_mult_level',500,'Множитель клика')">📈 Множитель клика (${500*(currentUser.click_mult_level+1)})</button><br>
-                    <button onclick="buyUpgrade('passive_mult_level',700,'Множитель пассива')">📈 Множитель пассива (${700*(currentUser.passive_mult_level+1)})</button><br>
-                    <button onclick="buyUpgrade('event_bonus_level',300,'Бонус событий')">🎁 Бонус событий (${300*(currentUser.event_bonus_level+1)})</button><br>
-                    <button onclick="buyUpgrade('bank_level',200,'Банк')">🏦 Банк (${200*(currentUser.bank_level+1)})</button><br>
-                    <button onclick="buyUpgrade('vampire_level',400,'Вампиризм')">🧛 Вампиризм (${400*(currentUser.vampire_level+1)})</button><br>
-                    <button onclick="doPrestige()">🏅 Престиж</button>
-                </div>
-                <div class="panel">
-                    <strong>PvP</strong><br>
-                    <input type="text" id="pvpTarget" placeholder="Ник противника"><br>
-                    <button id="pvpBtn">Атаковать</button>
-                    <hr>
-                    <strong>Клан</strong><br>
-                    <button onclick="createClan()">Создать клан</button>
-                    <button onclick="joinClan()">Вступить в клан</button>
-                    <button onclick="showClanInfo()">Информация о клане</button>
-                    <hr>
-                    <strong>Скины</strong><br>
-                    ${skins.map(sk => `<button onclick="buySkin(${sk.id})">${sk.emoji} ${sk.name} (${sk.price}🐟)</button>`).join('<br>')}
-                    <hr>
-                    <button onclick="showPlayers()">👥 Игроки</button>
-                    <button onclick="showLeaderboard()">🏆 Топ</button>
-                    <button onclick="showAdminPanel()">👑 Админ</button>
-                    <button onclick="toggleStyle()">${useEmoji ? '📄 Текст' : '😀 Смайлы'}</button>
-                </div>
+            <div class="upgrade">
+                <div>🐟 Сила клика (ур.${currentUser.click_power_level})</div>
+                <button id="buyClickBtn">${20 * (currentUser.click_power_level + 1)} 🐟</button>
             </div>
-            <footer>Автосохранение, синхронизация каждые 3 сек. Админ-пароль: seal123</footer>
+            <div class="upgrade">
+                <div>⏱ Автокликер (ур.${currentUser.auto_level})</div>
+                <button id="buyAutoBtn">${25 * (currentUser.auto_level + 1)} 🐟</button>
+            </div>
+            <div class="upgrade">
+                <div>⚡ Крит-удар (ур.${currentUser.crit_level})</div>
+                <button id="buyCritBtn">${80 * (currentUser.crit_level + 1)} 🐟</button>
+            </div>
+            <div class="action-buttons">
+                <button id="prestigeBtn">🏅 Престиж</button>
+                <button id="adminBtn">👑 Админ</button>
+                <button id="leaderboardBtn">🏆 Топ</button>
+                <button id="playersBtn">👥 Игроки</button>
+                <button id="styleBtn">${useEmoji ? '📄 Текст' : '😀 Смайлы'}</button>
+            </div>
+            <footer>Автосохранение, синхронизация каждые 3 сек</footer>
         `;
+
+        // Привязываем обработчики (все через addEventListener, избегая глобальных onclick)
         document.getElementById('clickZone').onclick = async () => {
-            if (!registerClick()) return;
             let gain = getClickPower();
             if (Math.random() * 100 < getCritChance()) gain *= 2;
             await addFish(gain, true);
@@ -592,13 +439,18 @@
                 setTimeout(() => seal.classList.remove('click-effect'), 100);
             }
         };
-        document.getElementById('pvpBtn').onclick = () => {
-            let target = document.getElementById('pvpTarget').value.trim();
-            if (target) pvpAttack(target);
-        };
+        document.getElementById('logoutBtn').onclick = logout;
+        document.getElementById('buyClickBtn').onclick = () => buyUpgrade('click_power_level', 20, 'Сила клика');
+        document.getElementById('buyAutoBtn').onclick = () => buyUpgrade('auto_level', 25, 'Автокликер');
+        document.getElementById('buyCritBtn').onclick = () => buyUpgrade('crit_level', 80, 'Крит-удар');
+        document.getElementById('prestigeBtn').onclick = doPrestige;
+        document.getElementById('adminBtn').onclick = adminGiveFish;
+        document.getElementById('leaderboardBtn').onclick = showLeaderboard;
+        document.getElementById('playersBtn').onclick = showPlayers;
+        document.getElementById('styleBtn').onclick = toggleStyle;
     }
 
-    // -------------------- Фоновые циклы --------------------
+    // Фоновые циклы: пассивный доход и синхронизация
     async function startGameLoops() {
         if (passiveInterval) clearInterval(passiveInterval);
         if (syncInterval) clearInterval(syncInterval);
@@ -610,48 +462,29 @@
         }, 1000);
         syncInterval = setInterval(async () => {
             if (currentUser) {
-                const { data } = await _supabase.from('users').select('*').eq('nickname', currentUser.nickname).single();
+                const { data } = await supabase.from('users').select('*').eq('nickname', currentUser.nickname).single();
                 if (data && (data.fish !== currentUser.fish || data.total_fish !== currentUser.total_fish)) {
                     currentUser = data;
                     renderUI();
                     showToast("🔄 Данные обновлены");
                 }
-                await loadBoss();
-                renderUI();
             }
         }, 3000);
-        await loadBoss();
-        renderUI();
     }
 
-    // -------------------- Инициализация --------------------
+    // Инициализация сессии
     (async () => {
         const saved = localStorage.getItem('seal_user');
         if (saved) {
             const { nickname, password } = JSON.parse(saved);
-            const data = await loadUser(nickname, password);
+            const data = await loadUserFromDB(nickname, password);
             if (data) {
                 currentUser = data;
                 startGameLoops();
             }
         }
         renderUI();
-        // делаем функции глобальными для кнопок onclick, чтобы они работали
-        window.showLeaderboard = showLeaderboard;
-        window.showPlayers = showPlayers;
-        window.createClan = createClan;
-        window.joinClan = joinClan;
-        window.showClanInfo = showClanInfo;
-        window.buySkin = buySkin;
-        window.showAdminPanel = showAdminPanel;
-        window.toggleStyle = toggleStyle;
-        window.claimDaily = claimDaily;
-        window.attackBoss = attackBoss;
-        window.buyUpgrade = buyUpgrade;
-        window.doPrestige = doPrestige;
-        window.pvpAttack = pvpAttack;
     })();
-})();
 </script>
 </body>
 </html>
