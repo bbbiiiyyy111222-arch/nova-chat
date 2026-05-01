@@ -5,260 +5,79 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
     <title>🦭 SEAL CLICKER | Регистрация + админ</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            user-select: none;
-        }
-        body {
-            background: #1e6b3e;
-            font-family: 'Segoe UI', system-ui, sans-serif;
-            min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
-        }
-        .game-card {
-            max-width: 800px;
-            width: 100%;
-            background: #fffef5;
-            border-radius: 60px;
-            padding: 25px;
-            box-shadow: 0 20px 30px rgba(0,0,0,0.3);
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; user-select: none; }
+        body { background: #1e6b3e; font-family: 'Segoe UI', system-ui; min-height: 100vh; display: flex; justify-content: center; align-items: center; padding: 20px; }
+        .game-card { max-width: 800px; width: 100%; background: #fffef5; border-radius: 60px; padding: 25px; box-shadow: 0 20px 30px rgba(0,0,0,0.3); }
         h1 { text-align: center; color: #1c6948; margin-bottom: 20px; }
-        .nick-panel {
-            background: #e9f3ed;
-            border-radius: 60px;
-            padding: 15px;
-            display: flex;
-            gap: 10px;
-            margin-bottom: 20px;
-            flex-wrap: wrap;
-        }
-        .nick-input, .pass-input {
-            flex: 2;
-            padding: 10px;
-            border-radius: 50px;
-            border: 1px solid #ffc896;
-            text-align: center;
-            font-weight: bold;
-        }
-        button {
-            background: #ffb347;
-            border: none;
-            padding: 8px 18px;
-            border-radius: 50px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: 0.05s linear;
-        }
+        .nick-panel { background: #e9f3ed; border-radius: 60px; padding: 15px; display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
+        .nick-input, .pass-input { flex: 2; padding: 10px; border-radius: 50px; border: 1px solid #ffc896; text-align: center; font-weight: bold; }
+        button { background: #ffb347; border: none; padding: 8px 18px; border-radius: 50px; font-weight: bold; cursor: pointer; transition: 0.05s linear; }
         button:active { transform: scale(0.97); }
         .seal-area { text-align: center; cursor: pointer; margin: 20px 0; }
         .seal-emoji { font-size: 8rem; display: inline-block; transition: 0.07s; }
         .click-effect { transform: scale(0.9); }
-        .fish-counter {
-            background: #2a5c48;
-            color: #FFE5B4;
-            font-size: 2rem;
-            font-weight: bold;
-            text-align: center;
-            padding: 12px;
-            border-radius: 60px;
-            margin: 15px 0;
-        }
-        .stat-grid {
-            display: flex;
-            justify-content: space-between;
-            gap: 10px;
-            flex-wrap: wrap;
-            margin: 15px 0;
-        }
-        .stat {
-            background: #e3f0ea;
-            flex: 1;
-            border-radius: 40px;
-            padding: 8px;
-            text-align: center;
-            font-weight: bold;
-        }
-        .upgrade {
-            background: #faefe2;
-            border-radius: 50px;
-            padding: 10px 15px;
-            margin-bottom: 10px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 8px;
-        }
+        .fish-counter { background: #2a5c48; color: #FFE5B4; font-size: 2rem; font-weight: bold; text-align: center; padding: 12px; border-radius: 60px; margin: 15px 0; }
+        .stat-grid { display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap; margin: 15px 0; }
+        .stat { background: #e3f0ea; flex: 1; border-radius: 40px; padding: 8px; text-align: center; font-weight: bold; }
+        .upgrade { background: #faefe2; border-radius: 50px; padding: 10px 15px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; }
         .upgrade-info { flex: 2; }
-        .help-icon {
-            background: #ffb347;
-            border-radius: 50%;
-            width: 24px;
-            height: 24px;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: bold;
-            cursor: pointer;
-            margin-left: 8px;
-        }
-        .warning {
-            background: #f9e6e6;
-            color: #c7254e;
-            border-radius: 40px;
-            padding: 8px;
-            text-align: center;
-            font-size: 0.8rem;
-            margin-top: 10px;
-        }
-        .action-buttons {
-            display: flex;
-            gap: 8px;
-            flex-wrap: wrap;
-            margin: 15px 0;
-        }
+        .help-icon { background: #ffb347; border-radius: 50%; width: 24px; height: 24px; display: inline-flex; align-items: center; justify-content: center; font-weight: bold; cursor: pointer; margin-left: 8px; }
+        .warning { background: #f9e6e6; color: #c7254e; border-radius: 40px; padding: 8px; text-align: center; font-size: 0.8rem; margin-top: 10px; }
+        .action-buttons { display: flex; gap: 8px; flex-wrap: wrap; margin: 15px 0; }
         .action-buttons button { flex: 1; font-size: 0.8rem; padding: 6px; }
-        .achievements {
-            background: #f7efdd;
-            border-radius: 40px;
-            padding: 12px;
-            margin-top: 20px;
-            max-height: 250px;
-            overflow-y: auto;
-        }
-        .achievement {
-            font-size: 0.75rem;
-            padding: 4px 8px;
-            margin: 4px 0;
-            border-radius: 30px;
-            background: #fff3e0;
-        }
+        .achievements { background: #f7efdd; border-radius: 40px; padding: 12px; margin-top: 20px; max-height: 250px; overflow-y: auto; }
+        .achievement { font-size: 0.75rem; padding: 4px 8px; margin: 4px 0; border-radius: 30px; background: #fff3e0; }
         .achievement.unlocked { background: #ffe0b5; font-weight: bold; }
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
-            background: rgba(0,0,0,0.7);
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
-        }
-        .modal-content {
-            background: #fffef5;
-            border-radius: 60px;
-            padding: 25px;
-            max-width: 500px;
-            width: 90%;
-            max-height: 80vh;
-            overflow-y: auto;
-        }
-        .close-modal {
-            float: right;
-            font-size: 1.5rem;
-            cursor: pointer;
-        }
-        .toast {
-            position: fixed;
-            bottom: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: #2b241cee;
-            color: #ffeaaf;
-            padding: 8px 20px;
-            border-radius: 60px;
-            animation: fadeOut 2s forwards;
-            z-index: 1001;
-            font-size: 0.9rem;
-        }
-        @keyframes fadeOut {
-            0% { opacity: 1; bottom: 0; }
-            80% { opacity: 1; }
-            100% { opacity: 0; visibility: hidden; }
-        }
-        footer {
-            font-size: 0.7rem;
-            text-align: center;
-            margin-top: 20px;
-            color: #6e8f7a;
-        }
-        .player-list {
-            max-height: 300px;
-            overflow-y: auto;
-        }
-        .player-item {
-            padding: 8px;
-            border-bottom: 1px solid #ddd;
-            cursor: pointer;
-        }
-        .player-item:hover { background: #f0e5d8; }
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); justify-content: center; align-items: center; z-index: 1000; }
+        .modal-content { background: #fffef5; border-radius: 60px; padding: 25px; max-width: 500px; width: 90%; max-height: 80vh; overflow-y: auto; }
+        .close-modal { float: right; font-size: 1.5rem; cursor: pointer; }
+        .toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: #2b241cee; color: #ffeaaf; padding: 8px 20px; border-radius: 60px; animation: fadeOut 2s forwards; z-index: 1001; font-size: 0.9rem; }
+        @keyframes fadeOut { 0% { opacity: 1; bottom: 0; } 80% { opacity: 1; } 100% { opacity: 0; visibility: hidden; } }
+        footer { font-size: 0.7rem; text-align: center; margin-top: 20px; color: #6e8f7a; }
     </style>
 </head>
 <body>
 <div class="game-card" id="app"></div>
 
 <script>
-    // ==================== ХРАНИЛИЩЕ (localStorage) ====================
-    let accounts = {};
+    // -------------------- ХРАНИЛИЩЕ --------------------
+    let accounts = {};          // { nickname: { password, fish, totalFish, upgrades, stats, achievements, anticheatDisabled, anticheatBlockedUntil, clickTimestamps, prestigeBonus } }
     let currentUser = null;
     let passiveInterval = null, eventInterval = null;
 
-    function loadAccounts() {
+    function loadData() {
         const raw = localStorage.getItem('seal_accounts');
-        if (raw) {
-            try { accounts = JSON.parse(raw); } catch(e) { accounts = {}; }
-        } else { accounts = {}; }
+        if (raw) try { accounts = JSON.parse(raw); } catch(e) { accounts = {}; }
+        else accounts = {};
+        const savedUser = localStorage.getItem('seal_current_user');
+        if (savedUser && accounts[savedUser]) currentUser = savedUser;
+        else currentUser = null;
     }
-    function saveAccounts() {
+    function saveData() {
         localStorage.setItem('seal_accounts', JSON.stringify(accounts));
-    }
-    function saveSession(nickname) {
-        if (nickname) localStorage.setItem('seal_current_user', nickname);
+        if (currentUser) localStorage.setItem('seal_current_user', currentUser);
         else localStorage.removeItem('seal_current_user');
     }
-    function loadSession() {
-        const nick = localStorage.getItem('seal_current_user');
-        if (nick && accounts[nick]) {
-            currentUser = nick;
-            return true;
-        }
-        return false;
-    }
-    function getUserData() {
-        if (!currentUser) return null;
-        return accounts[currentUser];
-    }
-    function saveUserData() {
-        if (currentUser && accounts[currentUser]) {
-            accounts[currentUser].updatedAt = Date.now();
-            saveAccounts();
-            renderUI(); // обновляем интерфейс без перезагрузки
-        }
-    }
+    function getUser() { return currentUser ? accounts[currentUser] : null; }
+    function saveUser() { if (currentUser) saveData(); }
 
-    // ========== ДОСТИЖЕНИЯ ==========
+    // -------------------- ДОСТИЖЕНИЯ (генерация) --------------------
     function generateAchievements() {
         const list = [];
         for (let i = 1; i <= 20; i++) {
             let target = 100 * Math.pow(1.6, i-1);
-            list.push({ id: `total_${i}`, name: `${Math.floor(target).toLocaleString()} рыб`, cond: (data) => data.totalFish >= target, reward: Math.floor(target * 0.1) });
+            list.push({ id: `total_${i}`, name: `${Math.floor(target).toLocaleString()} рыб`, cond: (d) => d.totalFish >= target, reward: Math.floor(target * 0.1) });
         }
         for (let i = 1; i <= 15; i++) {
             let clicks = 50 * Math.pow(2, i-1);
-            list.push({ id: `clicks_${i}`, name: `${Math.floor(clicks).toLocaleString()} кликов`, cond: (data) => data.stats.totalClicks >= clicks, reward: Math.floor(clicks * 0.2) });
+            list.push({ id: `clicks_${i}`, name: `${Math.floor(clicks).toLocaleString()} кликов`, cond: (d) => d.stats.totalClicks >= clicks, reward: Math.floor(clicks * 0.2) });
         }
         for (let i = 1; i <= 10; i++) {
-            list.push({ id: `clickPower_${i}`, name: `Сила клика ${i}`, cond: (data) => data.upgrades.clickPower >= i, reward: 50 * i });
-            list.push({ id: `auto_${i}`, name: `Автокликер ${i}`, cond: (data) => data.upgrades.autoClicker >= i, reward: 60 * i });
+            list.push({ id: `clickPower_${i}`, name: `Сила клика ${i}`, cond: (d) => d.upgrades.clickPower >= i, reward: 50 * i });
+            list.push({ id: `auto_${i}`, name: `Автокликер ${i}`, cond: (d) => d.upgrades.autoClicker >= i, reward: 60 * i });
         }
         for (let i = 1; i <= 5; i++) {
-            list.push({ id: `crit_${i}`, name: `Крит ${i}`, cond: (data) => data.upgrades.crit >= i, reward: 80 * i });
+            list.push({ id: `crit_${i}`, name: `Крит ${i}`, cond: (d) => d.upgrades.crit >= i, reward: 80 * i });
         }
         return list.slice(0, 60);
     }
@@ -266,11 +85,8 @@
 
     function initAchievements(data) {
         if (!data.achievements) data.achievements = {};
-        achievementsList.forEach(ach => {
-            if (data.achievements[ach.id] === undefined) data.achievements[ach.id] = false;
-        });
+        achievementsList.forEach(ach => { if (data.achievements[ach.id] === undefined) data.achievements[ach.id] = false; });
     }
-
     function checkAchievements(data) {
         let changed = false;
         for (let ach of achievementsList) {
@@ -282,10 +98,10 @@
                 showToast(`🏆 ${ach.name}! +${ach.reward} рыб`);
             }
         }
-        if (changed) saveUserData();
+        if (changed) saveUser();
     }
 
-    // ========== ИГРОВЫЕ РАСЧЁТЫ ==========
+    // -------------------- ИГРОВЫЕ ФУНКЦИИ --------------------
     function getClickPower(data) {
         let base = 1 + data.upgrades.clickPower * 2;
         let mult = 1 + data.upgrades.clickMult * 0.03;
@@ -302,64 +118,91 @@
 
     function addFish(amount, fromClick = false) {
         if (!currentUser) return;
-        let data = getUserData();
-        let final = amount;
-        data.fish += final;
-        data.totalFish += final;
+        let data = getUser();
+        data.fish += amount;
+        data.totalFish += amount;
         if (fromClick) data.stats.totalClicks++;
-        saveUserData();
+        saveUser();
         checkAchievements(data);
         renderUI();
     }
 
-    // ========== АНТИЧИТ ==========
-    function isAnticheatBlocked(data) {
+    // -------------------- АНТИЧИТ --------------------
+    function isBlocked(data) {
         if (data.anticheatDisabled) return false;
         if (Date.now() < (data.anticheatBlockedUntil || 0)) return true;
         return false;
     }
     function registerClick() {
-        let data = getUserData();
+        let data = getUser();
         if (!data) return false;
-        if (isAnticheatBlocked(data)) {
-            showToast("⛔ Античит: блокировка 8 сек");
-            return false;
-        }
+        if (isBlocked(data)) { showToast("⛔ Античит: блокировка 8 сек"); return false; }
         const now = Date.now();
         if (!data.clickTimestamps) data.clickTimestamps = [];
         data.clickTimestamps.push(now);
         while (data.clickTimestamps.length && data.clickTimestamps[0] < now - 1000) data.clickTimestamps.shift();
-        if (data.clickTimestamps.length > 18 && !data.anticheatDisabled) {
+        if (data.clickTimestamps.length > 18) {
             data.anticheatBlockedUntil = now + 8000;
             data.clickTimestamps = [];
             showToast("⚠️ Слишком быстро! Блокировка на 8 секунд.");
-            saveUserData();
+            saveUser();
             renderUI();
             return false;
         }
         return true;
     }
     function disableAnticheat(password) {
-        let data = getUserData();
-        if (!data) return false;
-        if (password === "seal") {
+        let data = getUser();
+        if (!data) return;
+        if (password === 'seal') {
             data.anticheatDisabled = true;
-            saveUserData();
+            saveUser();
             showToast("✅ Защита отключена.");
             renderUI();
-            return true;
-        } else { showToast("❌ Неверный пароль!"); return false; }
+        } else showToast("❌ Неверный пароль!");
     }
     function enableAnticheat() {
-        let data = getUserData();
-        if (!data) return;
-        data.anticheatDisabled = false;
-        saveUserData();
-        showToast("🛡️ Защита включена.");
-        renderUI();
+        let data = getUser();
+        if (data) {
+            data.anticheatDisabled = false;
+            saveUser();
+            showToast("🛡️ Защита включена.");
+            renderUI();
+        }
     }
 
-    // ========== АДМИН-ПАНЕЛЬ (пароль seal123) без перезагрузки ==========
+    // -------------------- ПОКУПКА УЛУЧШЕНИЙ --------------------
+    function buyUpgrade(id, basePrice, name) {
+        let data = getUser();
+        let level = data.upgrades[id];
+        let price = Math.floor(basePrice * (level + 1));
+        if (data.fish < price) { showToast(`❌ Нужно ${price} рыб`); return; }
+        data.fish -= price;
+        data.upgrades[id]++;
+        saveUser();
+        checkAchievements(data);
+        renderUI();
+        showToast(`🎉 ${name} → ур.${data.upgrades[id]}`);
+    }
+
+    // -------------------- ПРЕСТИЖ --------------------
+    function doPrestige() {
+        let data = getUser();
+        if (data.totalFish < 5000) { showToast("Нужно 5000 общей рыбы"); return; }
+        if (confirm("Престиж: сбросить рыбу и улучшения, получить +50% к силе клика?")) {
+            data.prestigeBonus = (data.prestigeBonus || 0) + 50;
+            data.fish = 0;
+            data.totalFish = 0;
+            data.upgrades = { clickPower:0, autoClicker:0, crit:0, clickMult:0, passiveMult:0, eventBonus:0 };
+            data.stats.prestigeCount = (data.stats.prestigeCount || 0) + 1;
+            saveUser();
+            checkAchievements(data);
+            renderUI();
+            showToast("🌟 Престиж! +50% к силе клика.");
+        }
+    }
+
+    // -------------------- АДМИН-ПАНЕЛЬ (работает) --------------------
     function showAdminModal() {
         const modalHtml = `
             <div class="modal-content">
@@ -370,7 +213,8 @@
                 <div id="adminControls" style="display:none; margin-top:15px;">
                     <h4>Выдать ресурсы игроку (по нику):</h4>
                     <input type="text" id="targetNick" placeholder="Ник игрока" style="width:100%; margin-bottom:8px;">
-                    <input type="number" id="giveFish" placeholder="Рыба"> <button id="giveFishBtn">Выдать рыбу</button><br><br>
+                    <input type="number" id="giveFish" placeholder="Рыба" style="width:100%; margin-bottom:8px;">
+                    <button id="giveFishBtn">Выдать рыбу</button><br><br>
                     <select id="upgradeSelect">
                         <option value="clickPower">Сила клика</option>
                         <option value="autoClicker">Автокликер</option>
@@ -379,44 +223,51 @@
                         <option value="passiveMult">Множитель пассива</option>
                         <option value="eventBonus">Бонус событий</option>
                     </select>
-                    <input type="number" id="giveLevels" placeholder="Уровней"> <button id="giveUpgradeBtn">Выдать уровни</button><br><br>
+                    <input type="number" id="giveLevels" placeholder="Уровней">
+                    <button id="giveUpgradeBtn">Выдать уровни</button><br><br>
                     <button id="resetDataBtn" style="background:#c7254e;">⚠️ СБРОСИТЬ ВСЕ ДАННЫЕ</button>
                 </div>
             </div>
         `;
-        const modal = createModal(modalHtml);
-        const adminLoginBtn = modal.querySelector('#adminLoginBtn');
-        const adminControls = modal.querySelector('#adminControls');
-        adminLoginBtn.onclick = () => {
+        const modal = document.createElement('div');
+        modal.className = 'modal';
+        modal.innerHTML = modalHtml;
+        document.body.appendChild(modal);
+        modal.style.display = 'flex';
+        modal.querySelector('.close-modal').onclick = () => modal.remove();
+        modal.onclick = (e) => { if (e.target === modal) modal.remove(); };
+
+        const loginBtn = modal.querySelector('#adminLoginBtn');
+        loginBtn.onclick = () => {
             const pass = modal.querySelector('#adminPass').value;
             if (pass === 'seal123') {
-                adminControls.style.display = 'block';
-                adminLoginBtn.disabled = true;
+                modal.querySelector('#adminControls').style.display = 'block';
+                loginBtn.disabled = true;
             } else showToast("Неверный пароль!");
         };
         modal.querySelector('#giveFishBtn').onclick = () => {
-            const targetNick = modal.querySelector('#targetNick').value.trim();
+            const nick = modal.querySelector('#targetNick').value.trim();
             const amount = parseInt(modal.querySelector('#giveFish').value);
-            if (!targetNick || isNaN(amount)) { showToast("Введите ник и количество"); return; }
-            const targetData = accounts[targetNick];
-            if (!targetData) { showToast("Игрок не найден"); return; }
-            targetData.fish += amount;
-            targetData.totalFish += amount;
-            saveAccounts();
-            showToast(`Выдано ${amount} рыбы игроку ${targetNick}`);
-            if (currentUser === targetNick) renderUI(); // обновляем, если админ выдал себе
+            if (!nick || isNaN(amount)) { showToast("Введите ник и количество"); return; }
+            const target = accounts[nick];
+            if (!target) { showToast("Игрок не найден"); return; }
+            target.fish += amount;
+            target.totalFish += amount;
+            saveData();
+            showToast(`Выдано ${amount} рыбы игроку ${nick}`);
+            if (currentUser === nick) renderUI();
         };
         modal.querySelector('#giveUpgradeBtn').onclick = () => {
-            const targetNick = modal.querySelector('#targetNick').value.trim();
+            const nick = modal.querySelector('#targetNick').value.trim();
             const up = modal.querySelector('#upgradeSelect').value;
             const levels = parseInt(modal.querySelector('#giveLevels').value);
-            if (!targetNick || isNaN(levels)) { showToast("Введите ник и количество уровней"); return; }
-            const targetData = accounts[targetNick];
-            if (!targetData) { showToast("Игрок не найден"); return; }
-            targetData.upgrades[up] = (targetData.upgrades[up] || 0) + levels;
-            saveAccounts();
-            showToast(`Улучшение ${up} +${levels} для ${targetNick}`);
-            if (currentUser === targetNick) renderUI();
+            if (!nick || isNaN(levels)) { showToast("Введите ник и количество уровней"); return; }
+            const target = accounts[nick];
+            if (!target) { showToast("Игрок не найден"); return; }
+            target.upgrades[up] = (target.upgrades[up] || 0) + levels;
+            saveData();
+            showToast(`Улучшение ${up} +${levels} для ${nick}`);
+            if (currentUser === nick) renderUI();
         };
         modal.querySelector('#resetDataBtn').onclick = () => {
             if (confirm("Очистить ВСЕ данные? Все пользователи потеряют прогресс!")) {
@@ -426,9 +277,9 @@
         };
     }
 
-    // ========== ПРОФИЛЬ (смена ника) ==========
+    // -------------------- ПРОФИЛЬ (смена ника) --------------------
     function showProfileModal() {
-        const data = getUserData();
+        const data = getUser();
         const modalHtml = `
             <div class="modal-content">
                 <span class="close-modal">&times;</span>
@@ -439,12 +290,18 @@
                 <p>Престиж: +${data.prestigeBonus || 0}%</p>
                 <hr>
                 <h4>Сменить ник</h4>
-                <input type="text" id="newNick" placeholder="Новый ник" style="width:100%; margin:8px 0;">
+                <input type="text" id="newNick" placeholder="Новый ник" style="width:100%; margin:8px 0;" maxlength="20">
                 <input type="password" id="confirmPass" placeholder="Ваш пароль" style="width:100%; margin:8px 0;">
                 <button id="changeNickBtn">Сменить ник</button>
             </div>
         `;
-        const modal = createModal(modalHtml);
+        const modal = document.createElement('div');
+        modal.className = 'modal';
+        modal.innerHTML = modalHtml;
+        document.body.appendChild(modal);
+        modal.style.display = 'flex';
+        modal.querySelector('.close-modal').onclick = () => modal.remove();
+        modal.onclick = (e) => { if (e.target === modal) modal.remove(); };
         modal.querySelector('#changeNickBtn').onclick = () => {
             const newNick = modal.querySelector('#newNick').value.trim();
             const pass = modal.querySelector('#confirmPass').value;
@@ -454,61 +311,29 @@
             accounts[newNick] = { ...data };
             delete accounts[currentUser];
             currentUser = newNick;
-            saveAccounts();
-            saveSession(currentUser);
+            saveData();
             showToast("Ник изменён!");
             modal.remove();
             renderUI();
         };
     }
 
-    // ========== ЛИДЕРБОРД ==========
-    function showLeaderboardModal() {
+    // -------------------- ЛИДЕРБОРД (работает) --------------------
+    function showLeaderboard() {
         const sorted = Object.entries(accounts)
-            .map(([nick, data]) => ({ nick, totalFish: data.totalFish }))
-            .sort((a,b) => b.totalFish - a.totalFish)
+            .map(([nick, d]) => ({ nick, total: d.totalFish }))
+            .sort((a,b) => b.total - a.total)
             .slice(0, 20);
         let msg = "🏆 ГЛОБАЛЬНЫЙ ТОП 🏆\n";
-        sorted.forEach((u, i) => msg += `${i+1}. ${u.nick} — ${u.totalFish.toLocaleString()} 🐟\n`);
+        sorted.forEach((u, i) => msg += `${i+1}. ${u.nick} — ${u.total.toLocaleString()} 🐟\n`);
         alert(msg);
     }
 
-    // ========== ПРЕСТИЖ ==========
-    function doPrestige() {
-        let data = getUserData();
-        if (data.totalFish < 5000) { showToast("Нужно 5000 общей рыбы"); return; }
-        if (confirm("Престиж: сбросить рыбу и улучшения, получить +50% к силе клика?")) {
-            data.prestigeBonus = (data.prestigeBonus || 0) + 50;
-            data.fish = 0;
-            data.totalFish = 0;
-            data.upgrades = { clickPower:0, autoClicker:0, crit:0, clickMult:0, passiveMult:0, eventBonus:0 };
-            data.stats.prestigeCount = (data.stats.prestigeCount || 0) + 1;
-            saveUserData();
-            checkAchievements(data);
-            renderUI();
-            showToast("🌟 Престиж! +50% к силе клика.");
-        }
-    }
-
-    // ========== ПОКУПКА УЛУЧШЕНИЙ ==========
-    function buyUpgrade(id, basePrice, name) {
-        let data = getUserData();
-        let level = data.upgrades[id];
-        let price = Math.floor(basePrice * (level + 1));
-        if (data.fish < price) { showToast(`❌ Нужно ${price} рыб`); return; }
-        data.fish -= price;
-        data.upgrades[id]++;
-        saveUserData();
-        checkAchievements(data);
-        renderUI();
-        showToast(`🎉 ${name} → ур.${data.upgrades[id]}`);
-    }
-
-    // ========== РЕГИСТРАЦИЯ / ЛОГИН ==========
-    function register(nickname, password) {
-        if (accounts[nickname]) { showToast("Ник уже занят"); return false; }
-        accounts[nickname] = {
-            password: password,
+    // -------------------- РЕГИСТРАЦИЯ / ЛОГИН --------------------
+    function register(nick, pass) {
+        if (accounts[nick]) { showToast("Ник уже занят"); return false; }
+        accounts[nick] = {
+            password: pass,
             fish: 0,
             totalFish: 0,
             upgrades: { clickPower:0, autoClicker:0, crit:0, clickMult:0, passiveMult:0, eventBonus:0 },
@@ -519,85 +344,34 @@
             clickTimestamps: [],
             prestigeBonus: 0,
         };
-        initAchievements(accounts[nickname]);
-        saveAccounts();
-        currentUser = nickname;
-        saveSession(currentUser);
-        showToast("Регистрация успешна! Автовход.");
+        initAchievements(accounts[nick]);
+        saveData();
+        currentUser = nick;
+        saveData();
+        showToast("Регистрация успешна!");
         renderUI();
-        startGameLoop();
+        startLoops();
         return true;
     }
-    function login(nickname, password) {
-        const data = accounts[nickname];
-        if (!data || data.password !== password) { showToast("Неверный ник или пароль"); return false; }
-        currentUser = nickname;
-        saveSession(currentUser);
+    function login(nick, pass) {
+        const user = accounts[nick];
+        if (!user || user.password !== pass) { showToast("Неверный ник или пароль"); return false; }
+        currentUser = nick;
+        saveData();
         showToast("Вход выполнен");
         renderUI();
-        startGameLoop();
+        startLoops();
         return true;
     }
     function logout() {
         currentUser = null;
-        saveSession(null);
+        saveData();
         renderUI();
         if (passiveInterval) clearInterval(passiveInterval);
         if (eventInterval) clearInterval(eventInterval);
     }
 
-    // ========== ОТКЛЮЧЕНИЕ АНТИЧИТА ==========
-    function showDisableAnticheatModal() {
-        const modalHtml = `
-            <div class="modal-content">
-                <span class="close-modal">&times;</span>
-                <h3>Отключение защиты от авто-клика</h3>
-                <input type="password" id="anticheatPass" placeholder="Пароль" style="width:100%; margin:10px 0;">
-                <button id="confirmDisableBtn">Отключить</button>
-            </div>
-        `;
-        const modal = createModal(modalHtml);
-        modal.querySelector('#confirmDisableBtn').onclick = () => {
-            const pass = modal.querySelector('#anticheatPass').value;
-            disableAnticheat(pass);
-            modal.remove();
-        };
-    }
-
-    // ========== ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ==========
-    function showToast(msg) {
-        const toast = document.createElement('div');
-        toast.className = 'toast';
-        toast.innerText = msg;
-        document.body.appendChild(toast);
-        setTimeout(() => toast.remove(), 2500);
-    }
-    function escapeHtml(str) { return str.replace(/[&<>]/g, m => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;' }[m])); }
-    function createModal(html) {
-        const modal = document.createElement('div');
-        modal.className = 'modal';
-        modal.innerHTML = html;
-        document.body.appendChild(modal);
-        modal.style.display = 'flex';
-        modal.querySelector('.close-modal').onclick = () => modal.remove();
-        modal.onclick = (e) => { if (e.target === modal) modal.remove(); };
-        return modal;
-    }
-    function playSound(freq, duration) {
-        let audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        if (!audioCtx) return;
-        const osc = audioCtx.createOscillator();
-        const gain = audioCtx.createGain();
-        osc.connect(gain);
-        gain.connect(audioCtx.destination);
-        osc.frequency.value = freq;
-        gain.gain.value = 0.05;
-        osc.start();
-        gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + duration);
-        osc.stop(audioCtx.currentTime + duration);
-    }
-
-    // ========== UI ОТРИСОВКА ==========
+    // -------------------- UI ОТРИСОВКА --------------------
     function renderUI() {
         const root = document.getElementById('app');
         if (!currentUser) {
@@ -617,28 +391,28 @@
                 <footer>Создайте аккаунт или войдите</footer>
             `;
             document.getElementById('registerBtn').onclick = () => {
-                const nick = document.getElementById('regNick').value.trim();
-                const pass = document.getElementById('regPass').value;
-                if (!nick || !pass) { showToast("Введите ник и пароль"); return; }
-                register(nick, pass);
+                const n = document.getElementById('regNick').value.trim();
+                const p = document.getElementById('regPass').value;
+                if (n && p) register(n, p);
+                else showToast("Введите ник и пароль");
             };
             document.getElementById('loginBtn').onclick = () => {
-                const nick = document.getElementById('loginNick').value.trim();
-                const pass = document.getElementById('loginPass').value;
-                if (!nick || !pass) { showToast("Введите ник и пароль"); return; }
-                login(nick, pass);
+                const n = document.getElementById('loginNick').value.trim();
+                const p = document.getElementById('loginPass').value;
+                if (n && p) login(n, p);
+                else showToast("Введите ник и пароль");
             };
-            document.getElementById('leaderboardBtn').onclick = showLeaderboardModal;
+            document.getElementById('leaderboardBtn').onclick = showLeaderboard;
             return;
         }
 
-        const data = getUserData();
+        const data = getUser();
         const fish = Math.floor(data.fish);
         const total = Math.floor(data.totalFish);
         const clickPower = getClickPower(data);
         const passive = getPassiveIncome(data);
         const critChance = getCritChance(data);
-        const blocked = isAnticheatBlocked(data);
+        const blocked = isBlocked(data);
         const unlockCount = achievementsList.filter(a => data.achievements[a.id]).length;
 
         const upgradesList = [
@@ -709,31 +483,35 @@
                 <strong>🏅 ДОСТИЖЕНИЯ (${unlockCount}/${achievementsList.length})</strong>
                 <div style="max-height:200px; overflow-y:auto;">${achievementsHtml}</div>
             </div>
-            <footer>Все данные в браузере. Админ-пароль: ***. Отключение защиты: ***</footer>
+            <footer>Автосохранение. Админ-пароль: ***. Отключение защиты: ***</footer>
         `;
 
-        // Обработчики событий
+        // Обработчики
         document.getElementById('clickZone').onclick = () => {
             if (!registerClick()) return;
-            let gain = getClickPower(getUserData());
-            if (Math.random() < getCritChance(getUserData())/100) gain *= 2;
+            let gain = getClickPower(getUser());
+            if (Math.random() < getCritChance(getUser())/100) gain *= 2;
             addFish(gain, true);
             const seal = document.getElementById('sealEmoji');
             if (seal) {
                 seal.classList.add('click-effect');
                 setTimeout(() => seal.classList.remove('click-effect'), 100);
-                playSound(600, 0.08);
+                playSound();
             }
         };
-        document.getElementById('logoutBtn').onclick = () => { logout(); };
+        document.getElementById('logoutBtn').onclick = () => logout();
         if (!data.anticheatDisabled) {
-            document.getElementById('disableAnticheatBtn').onclick = showDisableAnticheatModal;
+            document.getElementById('disableAnticheatBtn').onclick = () => {
+                const pwd = prompt("Введите пароль для отключения защиты:");
+                if (pwd === 'seal') disableAnticheat(pwd);
+                else showToast("Неверный пароль");
+            };
         } else {
             document.getElementById('enableAnticheatBtn').onclick = enableAnticheat;
         }
         document.getElementById('adminPanelBtn').onclick = showAdminModal;
         document.getElementById('profileBtn').onclick = showProfileModal;
-        document.getElementById('leaderboardBtn').onclick = showLeaderboardModal;
+        document.getElementById('leaderboardBtn').onclick = showLeaderboard;
         document.getElementById('prestigeBtn').onclick = doPrestige;
         document.querySelectorAll('.buy-btn').forEach(btn => {
             const id = btn.dataset.upgrade;
@@ -746,7 +524,7 @@
         });
     }
 
-    function showHelp(upgradeId) {
+    function showHelp(id) {
         const helps = {
             clickPower: "🐟 Острый зуб: +2 рыбы за клик за уровень.",
             autoClicker: "⏱️ Автокормушка: +1 рыба/сек за уровень.",
@@ -755,41 +533,62 @@
             passiveMult: "📈 Множитель пассива: +2% к пассивному доходу за уровень.",
             eventBonus: "🎁 Бонус событий: +10% к наградам событий за уровень.",
         };
-        alert(helps[upgradeId] || "Улучшение увеличивает доход.");
+        alert(helps[id] || "Улучшение увеличивает доход.");
     }
 
-    // ========== ИГРОВОЙ ЦИКЛ ==========
-    function startGameLoop() {
+    function playSound() {
+        let ctx = new (window.AudioContext || window.webkitAudioContext)();
+        if (!ctx) return;
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.frequency.value = 600;
+        gain.gain.value = 0.05;
+        osc.start();
+        gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.2);
+        osc.stop(ctx.currentTime + 0.2);
+    }
+
+    function showToast(msg) {
+        const t = document.createElement('div');
+        t.className = 'toast';
+        t.innerText = msg;
+        document.body.appendChild(t);
+        setTimeout(() => t.remove(), 2000);
+    }
+    function escapeHtml(str) { return str.replace(/[&<>]/g, m => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;' }[m])); }
+
+    // -------------------- ИГРОВЫЕ ЦИКЛЫ --------------------
+    function startLoops() {
         if (passiveInterval) clearInterval(passiveInterval);
         if (eventInterval) clearInterval(eventInterval);
         passiveInterval = setInterval(() => {
             if (currentUser) {
-                let data = getUserData();
-                let inc = getPassiveIncome(data);
+                let d = getUser();
+                let inc = getPassiveIncome(d);
                 if (inc > 0) addFish(inc, false);
             }
         }, 1000);
         eventInterval = setInterval(() => {
             if (currentUser && Math.random() < 0.4) {
-                let data = getUserData();
+                let d = getUser();
                 const events = [
                     { msg: "🐟 Косяк рыбы! +50", gain: 50 },
                     { msg: "💎 Золотая рыбка! +200", gain: 200 },
                     { msg: "🎣 Рыбак поделился +30", gain: 30 },
                 ];
                 const ev = events[Math.floor(Math.random() * events.length)];
-                let gain = ev.gain * getEventBonus(data);
+                let gain = ev.gain * getEventBonus(d);
                 addFish(gain, false);
                 showToast(ev.msg + " " + Math.floor(gain) + " рыб!");
             }
         }, 25000);
     }
 
-    // ========== ИНИЦИАЛИЗАЦИЯ ==========
-    loadAccounts();
-    if (loadSession()) {
-        startGameLoop();
-    }
+    // -------------------- СТАРТ --------------------
+    loadData();
+    if (currentUser) startLoops();
     renderUI();
 </script>
 </body>
