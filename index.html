@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>🦭 SEAL CLICKER | Роли + синхронизация + фото</title>
+    <title>🦭 SEAL CLICKER | Роли + автосинхронизация</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; user-select: none; }
         body { background: #1e6b3e; font-family: 'Segoe UI', system-ui; min-height: 100vh; display: flex; justify-content: center; align-items: center; padding: 20px; }
@@ -135,7 +135,7 @@
         renderUI();
     }
 
-    // ==================== АНТИЧИТ (исправлен) ====================
+    // ==================== АНТИЧИТ ====================
     function isBlocked(data) {
         if (data.anticheatDisabled) return false;
         if (Date.now() < (data.anticheatBlockedUntil || 0)) return true;
@@ -218,7 +218,7 @@
         }
     }
 
-    // ==================== СМЕНА ФОТО (AVATAR) ====================
+    // ==================== СМЕНА ФОТО ====================
     function changeAvatar(file) {
         if (!file) return;
         const reader = new FileReader();
@@ -232,7 +232,7 @@
         reader.readAsDataURL(file);
     }
 
-    // ==================== АДМИН-ПАНЕЛЬ (полный список игроков и управление) ====================
+    // ==================== АДМИН-ПАНЕЛЬ ====================
     function showAdminModal() {
         const modal = document.createElement('div');
         modal.className = 'modal';
@@ -257,9 +257,7 @@
                     </select>
                     <input type="number" id="giveLevels" placeholder="Количество уровней">
                     <button id="giveUpgradeBtn">Выдать уровни</button><br><br>
-                    <h4>Список всех игроков</h4>
-                    <div id="playersList" class="player-list"></div>
-                    <button id="resetDataBtn" style="background:#c7254e; margin-top:10px;">⚠️ СБРОСИТЬ ВСЕ ДАННЫЕ</button>
+                    <button id="resetDataBtn" style="background:#c7254e;">⚠️ СБРОСИТЬ ВСЕ ДАННЫЕ</button>
                 </div>
             </div>
         `;
@@ -274,78 +272,8 @@
             if (pass === 'seal123') {
                 modal.querySelector('#adminControls').style.display = 'block';
                 loginBtn.disabled = true;
-                renderPlayersList(modal);
             } else showToast("Неверный пароль");
         };
-        
-        function renderPlayersList(modal) {
-            const container = modal.querySelector('#playersList');
-            const players = Object.entries(accounts).map(([nick, data]) => ({ nick, ...data }));
-            players.sort((a,b) => b.totalFish - a.totalFish);
-            container.innerHTML = players.map(p => `
-                <div class="player-row" data-nick="${p.nick}">
-                    <div style="display:flex; align-items:center; gap:8px;">
-                        ${p.avatar ? `<img src="${p.avatar}" class="avatar-img" style="width:40px;height:40px;">` : '<span style="font-size:2rem;">🦭</span>'}
-                        <strong>${escapeHtml(p.nick)}</strong>
-                        <span class="role-badge role-${p.role || 'player'}">${p.role || 'player'}</span>
-                    </div>
-                    <div style="display:flex; gap:5px; flex-wrap:wrap;">
-                        <select class="role-select" data-nick="${p.nick}">
-                            <option value="player" ${(p.role||'player')==='player'?'selected':''}>Игрок</option>
-                            <option value="developer" ${(p.role||'player')==='developer'?'selected':''}>Разработчик</option>
-                            <option value="seal" ${(p.role||'player')==='seal'?'selected':''}>Тюлень</option>
-                        </select>
-                        <button class="giveFishBtnSmall" data-nick="${p.nick}" data-amount="100">+100 рыбы</button>
-                        <button class="giveFishBtnSmall" data-nick="${p.nick}" data-amount="1000">+1000 рыбы</button>
-                        <button class="giveUpgradeSmall" data-nick="${p.nick}" data-upgrade="clickPower" data-levels="1">+1 сила клика</button>
-                    </div>
-                </div>
-            `).join('');
-            
-            // Обработчики для этой модалки
-            container.querySelectorAll('.role-select').forEach(sel => {
-                sel.onchange = () => {
-                    const nick = sel.dataset.nick;
-                    const newRole = sel.value;
-                    if (accounts[nick]) {
-                        accounts[nick].role = newRole;
-                        saveData();
-                        showToast(`Роль ${nick} изменена на ${newRole}`);
-                        renderPlayersList(modal);
-                        if (currentUser === nick) renderUI();
-                    }
-                };
-            });
-            container.querySelectorAll('.giveFishBtnSmall').forEach(btn => {
-                btn.onclick = () => {
-                    const nick = btn.dataset.nick;
-                    const amount = parseInt(btn.dataset.amount);
-                    if (accounts[nick]) {
-                        accounts[nick].fish += amount;
-                        accounts[nick].totalFish += amount;
-                        saveData();
-                        showToast(`Выдано ${amount} рыбы игроку ${nick}`);
-                        if (currentUser === nick) renderUI();
-                        renderPlayersList(modal);
-                    }
-                };
-            });
-            container.querySelectorAll('.giveUpgradeSmall').forEach(btn => {
-                btn.onclick = () => {
-                    const nick = btn.dataset.nick;
-                    const upgrade = btn.dataset.upgrade;
-                    const levels = parseInt(btn.dataset.levels);
-                    if (accounts[nick]) {
-                        accounts[nick].upgrades[upgrade] = (accounts[nick].upgrades[upgrade] || 0) + levels;
-                        saveData();
-                        showToast(`Улучшение ${upgrade} +${levels} для ${nick}`);
-                        if (currentUser === nick) renderUI();
-                        renderPlayersList(modal);
-                    }
-                };
-            });
-        }
-        
         modal.querySelector('#giveFishBtn').onclick = () => {
             const nick = modal.querySelector('#targetNick').value.trim();
             const amount = parseInt(modal.querySelector('#giveFish').value);
@@ -356,7 +284,6 @@
                 saveData();
                 showToast(`Выдано ${amount} рыбы игроку ${nick}`);
                 if (currentUser === nick) renderUI();
-                if (modal.querySelector('#adminControls').style.display === 'block') renderPlayersList(modal);
             } else showToast("Игрок не найден");
         };
         modal.querySelector('#giveUpgradeBtn').onclick = () => {
@@ -369,7 +296,6 @@
                 saveData();
                 showToast(`Улучшение ${up} +${levels} для ${nick}`);
                 if (currentUser === nick) renderUI();
-                if (modal.querySelector('#adminControls').style.display === 'block') renderPlayersList(modal);
             } else showToast("Игрок не найден");
         };
         modal.querySelector('#resetDataBtn').onclick = () => {
@@ -380,7 +306,40 @@
         };
     }
 
-    // ==================== ПРОФИЛЬ (смена ника, фото, роль) ====================
+    // ==================== СПИСОК ИГРОКОВ (ОТДЕЛЬНАЯ КНОПКА, БЕЗ АДМИНКИ) ====================
+    function showPlayersList() {
+        const modal = document.createElement('div');
+        modal.className = 'modal';
+        modal.innerHTML = `
+            <div class="modal-content">
+                <span class="close-modal">&times;</span>
+                <h3>👥 Все игроки</h3>
+                <div id="playersListModal" class="player-list"></div>
+                <p style="margin-top:10px;">* админ может менять роли и выдавать ресурсы через админ-панель</p>
+            </div>
+        `;
+        document.body.appendChild(modal);
+        modal.style.display = 'flex';
+        modal.querySelector('.close-modal').onclick = () => modal.remove();
+        modal.onclick = (e) => { if (e.target === modal) modal.remove(); };
+        
+        const container = modal.querySelector('#playersListModal');
+        const players = Object.entries(accounts).map(([nick, data]) => ({ nick, ...data }));
+        players.sort((a,b) => b.totalFish - a.totalFish);
+        container.innerHTML = players.map(p => `
+            <div class="player-row">
+                <div style="display:flex; align-items:center; gap:8px;">
+                    ${p.avatar ? `<img src="${p.avatar}" class="avatar-img" style="width:40px;height:40px;">` : '<span style="font-size:2rem;">🦭</span>'}
+                    <strong>${escapeHtml(p.nick)}</strong>
+                    <span class="role-badge role-${p.role || 'player'}">${p.role || 'player'}</span>
+                </div>
+                <div>🐟 ${Math.floor(p.fish).toLocaleString()}</div>
+                <div>🏆 ${Math.floor(p.totalFish).toLocaleString()}</div>
+            </div>
+        `).join('');
+    }
+
+    // ==================== ПРОФИЛЬ ====================
     function showProfileModal() {
         const data = getUser();
         const modal = document.createElement('div');
@@ -490,20 +449,34 @@
         renderUI();
     }
 
-    // ==================== АВТО-СИНХРОНИЗАЦИЯ ДАННЫХ (без перезагрузки) ====================
-    let lastUserDataHash = "";
+    // ==================== АВТО-СИНХРОНИЗАЦИЯ (РАБОТАЕТ КАЖДЫЕ 3 СЕКУНДЫ) ====================
+    // Сохраняем последнюю "сырую" версию данных текущего игрока, чтобы сравнивать.
+    let lastDataString = "";
     function startDataSync() {
         if (syncInterval) clearInterval(syncInterval);
         syncInterval = setInterval(() => {
             if (currentUser && accounts[currentUser]) {
+                // Берём актуальные данные из accounts
                 const currentData = accounts[currentUser];
-                const hash = JSON.stringify(currentData);
-                if (lastUserDataHash && lastUserDataHash !== hash) {
-                    // данные изменились (например, админ выдал что-то этому игроку)
+                // Создаём строковое представление только для сравнения (без учёта clickTimestamps, чтобы не было ложных срабатываний)
+                const dataForCheck = {
+                    fish: currentData.fish,
+                    totalFish: currentData.totalFish,
+                    upgrades: currentData.upgrades,
+                    stats: currentData.stats,
+                    anticheatDisabled: currentData.anticheatDisabled,
+                    prestigeBonus: currentData.prestigeBonus,
+                    achievements: currentData.achievements,
+                    role: currentData.role,
+                    avatar: currentData.avatar,
+                };
+                const currentString = JSON.stringify(dataForCheck);
+                if (lastDataString !== "" && lastDataString !== currentString) {
+                    // Данные изменились! Перерисовываем интерфейс.
                     renderUI();
                     showToast("🔄 Данные обновлены автоматически");
                 }
-                lastUserDataHash = hash;
+                lastDataString = currentString;
             }
         }, 3000);
     }
@@ -615,6 +588,7 @@
             <div class="action-buttons">
                 ${!data.anticheatDisabled ? `<button id="disableAnticheatBtn">🔓 Отключить защиту</button>` : `<button id="enableAnticheatBtn">🛡️ Включить защиту</button>`}
                 <button id="adminPanelBtn">👑 Админ</button>
+                <button id="playersListBtn">👥 Список игроков</button>
                 <button id="profileBtn">📋 Профиль</button>
                 <button id="leaderboardBtn">🏆 Топ</button>
                 <button id="prestigeBtn">🏅 Престиж</button>
@@ -651,6 +625,7 @@
             document.getElementById('enableAnticheatBtn').onclick = enableAnticheat;
         }
         document.getElementById('adminPanelBtn').onclick = showAdminModal;
+        document.getElementById('playersListBtn').onclick = showPlayersList;  // Новая кнопка
         document.getElementById('profileBtn').onclick = showProfileModal;
         document.getElementById('leaderboardBtn').onclick = showLeaderboard;
         document.getElementById('prestigeBtn').onclick = doPrestige;
@@ -726,7 +701,7 @@
                 showToast(ev.msg + " " + Math.floor(gain) + " рыб!");
             }
         }, 25000);
-        startDataSync();
+        startDataSync();  // синхронизация каждые 3 секунды
     }
 
     loadData();
