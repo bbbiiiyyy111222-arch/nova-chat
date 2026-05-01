@@ -204,15 +204,18 @@
 <div class="game-card" id="app"></div>
 
 <script>
+(function() {
     // ========== SUPABASE (ТВОИ КЛЮЧИ) ==========
     const SUPABASE_URL = 'https://pmvbhhidcojkkpumsxxb.supabase.co';
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBtdmJoaGlkY29qa2twdW1zeHhiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzcyNzk3MjcsImV4cCI6MjA5Mjg1NTcyN30.1eKxcaqeClRdAVH8lVcOdYaV0o_PbRzjnM9vBUP15QQ';
-    let supabase;
+    let sbClient = null;
     try {
-        supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-    } catch(e) { console.warn(e); supabase = null; }
+        if (window.supabase) {
+            sbClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        }
+    } catch(e) { console.warn(e); }
 
-    // ========== ГЛОБАЛЬНОЕ СОСТОЯНИЕ (всегда инициализировано) ==========
+    // ========== ГЛОБАЛЬНОЕ СОСТОЯНИЕ ==========
     let game = {
         nickname: null,
         fish: 0,
@@ -325,9 +328,9 @@
         return true;
     }
 
-    // ========== РАБОТА С SUPABASE (с обработкой ошибок) ==========
+    // ========== РАБОТА С SUPABASE ==========
     async function saveToSupabase() {
-        if (!supabase || !game.nickname) return;
+        if (!sbClient || !game.nickname) return;
         try {
             const data = {
                 nickname: game.nickname,
@@ -347,15 +350,15 @@
                 achievements: game.achievements,
                 updated_at: new Date(),
             };
-            await supabase.from('users').upsert(data, { onConflict: 'nickname' });
-            await supabase.from('leaderboard').upsert({ nickname: game.nickname, total_fish: game.totalFish, updated_at: new Date() }, { onConflict: 'nickname' });
+            await sbClient.from('users').upsert(data, { onConflict: 'nickname' });
+            await sbClient.from('leaderboard').upsert({ nickname: game.nickname, total_fish: game.totalFish, updated_at: new Date() }, { onConflict: 'nickname' });
         } catch(e) { console.warn("Supabase save error", e); }
     }
 
     async function loadFromSupabase(nickname) {
-        if (!supabase) return false;
+        if (!sbClient) return false;
         try {
-            const { data, error } = await supabase.from('users').select('*').eq('nickname', nickname).maybeSingle();
+            const { data, error } = await sbClient.from('users').select('*').eq('nickname', nickname).maybeSingle();
             if (error || !data) return false;
             game.nickname = data.nickname;
             game.fish = data.fish;
@@ -379,11 +382,10 @@
         } catch(e) { console.warn(e); return false; }
     }
 
-    // ========== ЛИДЕРБОРД (из Supabase) ==========
     async function fetchLeaderboard() {
-        if (!supabase) return [];
+        if (!sbClient) return [];
         try {
-            const { data, error } = await supabase.from('leaderboard').select('nickname, total_fish').order('total_fish', { ascending: false }).limit(20);
+            const { data, error } = await sbClient.from('leaderboard').select('nickname, total_fish').order('total_fish', { ascending: false }).limit(20);
             if (error) return [];
             return data;
         } catch(e) { return []; }
@@ -396,10 +398,9 @@
         alert(msg);
     }
 
-    // ========== ПРОФИЛЬ И СПИСОК ИГРОКОВ ==========
     async function showPlayersModal() {
-        if (!supabase) { alert("Нет подключения к Supabase"); return; }
-        const { data: players, error } = await supabase.from('users').select('nickname, total_fish, role').order('total_fish', { ascending: false });
+        if (!sbClient) { alert("Нет подключения к Supabase"); return; }
+        const { data: players, error } = await sbClient.from('users').select('nickname, total_fish, role').order('total_fish', { ascending: false });
         if (error) { alert("Ошибка"); return; }
         const modalHtml = `
             <div class="modal-content">
@@ -415,7 +416,7 @@
         modal.querySelectorAll('.player-item').forEach(el => {
             el.onclick = async () => {
                 const nick = el.dataset.nick;
-                const { data: userData } = await supabase.from('users').select('*').eq('nickname', nick).single();
+                const { data: userData } = await sbClient.from('users').select('*').eq('nickname', nick).single();
                 if (userData) {
                     modal.querySelector('#selectedProfile').innerHTML = `
                         <h4>Профиль: ${escapeHtml(userData.nickname)}</h4>
@@ -430,7 +431,6 @@
         });
     }
 
-    // ========== АДМИН-ПАНЕЛЬ ==========
     function showAdminModal() {
         const modalHtml = `
             <div class="modal-content">
@@ -502,7 +502,6 @@
         };
     }
 
-    // ========== ОТКЛЮЧЕНИЕ АНТИЧИТА ПО ПАРОЛЮ ==========
     function showDisableAnticheatModal() {
         const modalHtml = `
             <div class="modal-content">
@@ -525,7 +524,6 @@
         };
     }
 
-    // ========== ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ UI ==========
     function createModal(html) {
         const modal = document.createElement('div');
         modal.className = 'modal';
@@ -547,7 +545,6 @@
 
     function escapeHtml(str) { return str.replace(/[&<>]/g, m => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;' }[m])); }
 
-    // ========== ПОЯСНЕНИЯ К УЛУЧШЕНИЯМ ==========
     function showHelp(upgradeId) {
         const helps = {
             clickPower: "🐟 Острый зуб: +2 рыбы за клик за уровень.",
@@ -561,7 +558,6 @@
         alert(helps[upgradeId] || "Улучшение увеличивает доход.");
     }
 
-    // ========== ПРЕСТИЖ ==========
     async function doPrestige() {
         if (game.totalFish < 5000) { showToast("Нужно 5000 общей рыбы"); return; }
         if (confirm("Престиж: сбросить рыбу и улучшения, получить +50% к силе клика навсегда?")) {
@@ -577,7 +573,6 @@
         }
     }
 
-    // ========== ПОКУПКА УЛУЧШЕНИЙ ==========
     async function buyUpgrade(id, basePrice, name) {
         let level = game.upgrades[id];
         let price = Math.floor(basePrice * (level + 1));
@@ -590,7 +585,6 @@
         showToast(`🎉 ${name} → ур.${game.upgrades[id]}`);
     }
 
-    // ========== ОСНОВНОЙ РЕНДЕР ИНТЕРФЕЙСА ==========
     function renderUI() {
         const root = document.getElementById('app');
         if (!game.nickname) {
@@ -629,7 +623,6 @@
             return;
         }
 
-        // ----- Игровой интерфейс -----
         const fish = Math.floor(game.fish);
         const total = Math.floor(game.totalFish);
         const clickPower = getClickPower();
@@ -712,7 +705,6 @@
             <footer>Автосохранение в облаке. Античит отключается паролем "seal". Админ-пароль "seal123".</footer>
         `;
 
-        // Обработчики
         document.getElementById('clickZone').onclick = () => {
             if (!registerClick()) return;
             let gain = getClickPower();
@@ -742,7 +734,6 @@
         });
     }
 
-    // ========== ЗВУК ==========
     let audioCtx = null;
     function playSound(freq, duration) {
         if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -758,7 +749,6 @@
         osc.stop(audioCtx.currentTime + duration);
     }
 
-    // ========== ИГРОВОЙ ЦИКЛ ==========
     let passiveInterval = null;
     let eventInterval = null;
     function startGameLoop() {
@@ -785,9 +775,9 @@
         }, 25000);
     }
 
-    // ========== СТАРТ ==========
     initAchievements();
     renderUI();
+})();
 </script>
 </body>
 </html>
