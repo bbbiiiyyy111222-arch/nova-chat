@@ -3,12 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>🦭 SEAL CLICKER | Стабильная сессия</title>
+    <title>🦭 SEAL CLICKER | Чистая версия</title>
     <style>
-        /* ... те же стили, что и выше (чтобы не раздувать, они идентичны) ... */
         * { margin: 0; padding: 0; box-sizing: border-box; user-select: none; }
         body { background: #1e6b3e; font-family: 'Segoe UI', system-ui; min-height: 100vh; display: flex; justify-content: center; align-items: center; padding: 20px; }
-        .game-card { max-width: 900px; width: 100%; background: #fffef5; border-radius: 60px; padding: 25px; box-shadow: 0 20px 30px rgba(0,0,0,0.3); }
+        .game-card { max-width: 950px; width: 100%; background: #fffef5; border-radius: 60px; padding: 25px; box-shadow: 0 20px 30px rgba(0,0,0,0.3); }
         h1 { text-align: center; color: #1c6948; margin-bottom: 20px; }
         .nick-panel { background: #e9f3ed; border-radius: 60px; padding: 15px; display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
         .nick-input, .pass-input { flex: 2; padding: 10px; border-radius: 50px; border: 1px solid #ffc896; text-align: center; font-weight: bold; }
@@ -31,7 +30,7 @@
         .achievement { font-size: 0.75rem; padding: 4px 8px; margin: 4px 0; border-radius: 30px; background: #fff3e0; }
         .achievement.unlocked { background: #ffe0b5; font-weight: bold; }
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); justify-content: center; align-items: center; z-index: 1000; }
-        .modal-content { background: #fffef5; border-radius: 60px; padding: 25px; max-width: 700px; width: 90%; max-height: 80vh; overflow-y: auto; }
+        .modal-content { background: #fffef5; border-radius: 60px; padding: 25px; max-width: 800px; width: 90%; max-height: 80vh; overflow-y: auto; }
         .close-modal { float: right; font-size: 1.5rem; cursor: pointer; }
         .player-list { max-height: 400px; overflow-y: auto; }
         .player-row { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #ddd; padding: 8px; gap: 8px; flex-wrap: wrap; }
@@ -48,28 +47,50 @@
 <div class="game-card" id="app"></div>
 
 <script>
-    // ==================== ХРАНИЛИЩЕ ====================
-    let accounts = {};
-    let currentUser = null;
-    let passiveInterval = null, eventInterval = null, syncInterval = null;
+    // --------------------------------------------------------------
+    // 1. Хранилище данных и сессия (чистая реализация)
+    // --------------------------------------------------------------
+    let accounts = {};          // { ник: { password, fish, totalFish, upgrades, stats, achievements, anticheatDisabled, ... } }
+    let currentUser = null;     // текущий ник
+    let syncInterval = null;    // для автообновления
 
+    // Загрузка из localStorage
     function loadData() {
         const raw = localStorage.getItem('seal_accounts');
-        if (raw) { try { accounts = JSON.parse(raw); } catch(e) { accounts = {}; } }
-        else { accounts = {}; }
-        const savedUser = localStorage.getItem('seal_current_user');
-        if (savedUser && accounts[savedUser]) currentUser = savedUser;
-        else currentUser = null;
+        if (raw) {
+            try { accounts = JSON.parse(raw); } catch(e) { accounts = {}; }
+        } else {
+            accounts = {};
+        }
+        const saved = localStorage.getItem('seal_current_user');
+        if (saved && accounts[saved]) {
+            currentUser = saved;
+        } else {
+            currentUser = null;
+            localStorage.removeItem('seal_current_user');
+        }
     }
+
+    // Сохранение всех аккаунтов и сессии
     function saveData() {
         localStorage.setItem('seal_accounts', JSON.stringify(accounts));
         if (currentUser) localStorage.setItem('seal_current_user', currentUser);
         else localStorage.removeItem('seal_current_user');
     }
-    function getUser() { return currentUser ? accounts[currentUser] : null; }
-    function saveUser() { if (currentUser) saveData(); }
 
-    // ==================== ДОСТИЖЕНИЯ ====================
+    // Получить данные текущего игрока
+    function getUser() {
+        return currentUser ? accounts[currentUser] : null;
+    }
+
+    // Сохранить данные текущего игрока (обёртка)
+    function saveUser() {
+        if (currentUser) saveData();
+    }
+
+    // --------------------------------------------------------------
+    // 2. Достижения (60+)
+    // --------------------------------------------------------------
     function generateAchievements() {
         const list = [];
         for (let i = 1; i <= 20; i++) {
@@ -95,6 +116,7 @@
         if (!data.achievements) data.achievements = {};
         achievementsList.forEach(ach => { if (data.achievements[ach.id] === undefined) data.achievements[ach.id] = false; });
     }
+
     function checkAchievements(data) {
         let changed = false;
         for (let ach of achievementsList) {
@@ -110,7 +132,9 @@
         return changed;
     }
 
-    // ==================== ИГРОВЫЕ ФУНКЦИИ ====================
+    // --------------------------------------------------------------
+    // 3. Игровые расчёты
+    // --------------------------------------------------------------
     function getClickPower(data) {
         let base = 1 + data.upgrades.clickPower * 2;
         let mult = 1 + data.upgrades.clickMult * 0.03;
@@ -133,10 +157,12 @@
         if (fromClick) data.stats.totalClicks++;
         saveUser();
         checkAchievements(data);
-        renderUI();
+        renderUI(); // обновляем интерфейс сразу
     }
 
-    // ==================== АНТИЧИТ ====================
+    // --------------------------------------------------------------
+    // 4. Анти-автоклик
+    // --------------------------------------------------------------
     function isBlocked(data) {
         if (data.anticheatDisabled) return false;
         if (Date.now() < (data.anticheatBlockedUntil || 0)) return true;
@@ -188,7 +214,9 @@
         }
     }
 
-    // ==================== ПОКУПКА УЛУЧШЕНИЙ ====================
+    // --------------------------------------------------------------
+    // 5. Магазин улучшений
+    // --------------------------------------------------------------
     function buyUpgrade(id, basePrice, name) {
         let data = getUser();
         let level = data.upgrades[id];
@@ -202,7 +230,9 @@
         showToast(`🎉 ${name} → ур.${data.upgrades[id]}`);
     }
 
-    // ==================== ПРЕСТИЖ ====================
+    // --------------------------------------------------------------
+    // 6. Престиж
+    // --------------------------------------------------------------
     function doPrestige() {
         let data = getUser();
         if (data.totalFish < 5000) { showToast("Нужно 5000 общей рыбы"); return; }
@@ -219,7 +249,9 @@
         }
     }
 
-    // ==================== СМЕНА ФОТО ====================
+    // --------------------------------------------------------------
+    // 7. Аватарка (фото)
+    // --------------------------------------------------------------
     function changeAvatar(file) {
         if (!file) return;
         const reader = new FileReader();
@@ -233,7 +265,9 @@
         reader.readAsDataURL(file);
     }
 
-    // ==================== АДМИН-ПАНЕЛЬ ====================
+    // --------------------------------------------------------------
+    // 8. Админ-панель (пароль seal123)
+    // --------------------------------------------------------------
     function showAdminModal() {
         const modal = document.createElement('div');
         modal.className = 'modal';
@@ -258,7 +292,9 @@
                     </select>
                     <input type="number" id="giveLevels" placeholder="Количество уровней">
                     <button id="giveUpgradeBtn">Выдать уровни</button><br><br>
-                    <button id="resetDataBtn" style="background:#c7254e;">⚠️ СБРОСИТЬ ВСЕ ДАННЫЕ</button>
+                    <h4>Управление ролями</h4>
+                    <div id="playersListAdmin" class="player-list"></div>
+                    <button id="resetDataBtn" style="background:#c7254e; margin-top:10px;">⚠️ СБРОСИТЬ ВСЕ ДАННЫЕ</button>
                 </div>
             </div>
         `;
@@ -273,8 +309,81 @@
             if (pass === 'seal123') {
                 modal.querySelector('#adminControls').style.display = 'block';
                 loginBtn.disabled = true;
+                renderAdminPlayerList(modal);
             } else showToast("Неверный пароль");
         };
+        
+        function renderAdminPlayerList(modal) {
+            const container = modal.querySelector('#playersListAdmin');
+            const players = Object.entries(accounts).map(([nick, data]) => ({ nick, ...data }));
+            players.sort((a,b) => b.totalFish - a.totalFish);
+            container.innerHTML = players.map(p => `
+                <div class="player-row" data-nick="${p.nick}">
+                    <div style="display:flex; align-items:center; gap:8px;">
+                        ${p.avatar ? `<img src="${p.avatar}" class="avatar-img" style="width:40px;height:40px;">` : '<span style="font-size:2rem;">🦭</span>'}
+                        <strong>${escapeHtml(p.nick)}</strong>
+                        <span class="role-badge role-${p.role || 'player'}">${p.role || 'player'}</span>
+                    </div>
+                    <div style="display:flex; gap:5px; flex-wrap:wrap;">
+                        <select class="role-select" data-nick="${p.nick}">
+                            <option value="player" ${(p.role||'player')==='player'?'selected':''}>Игрок</option>
+                            <option value="developer" ${(p.role||'player')==='developer'?'selected':''}>Разработчик</option>
+                            <option value="seal" ${(p.role||'player')==='seal'?'selected':''}>Тюлень</option>
+                        </select>
+                        <button class="giveFishSmall" data-nick="${p.nick}" data-amount="100">+100</button>
+                        <button class="giveFishSmall" data-nick="${p.nick}" data-amount="1000">+1000</button>
+                        <button class="giveUpgradeSmall" data-nick="${p.nick}" data-upgrade="clickPower" data-levels="1">+1 клик</button>
+                    </div>
+                </div>
+            `).join('');
+            
+            // Роли
+            container.querySelectorAll('.role-select').forEach(sel => {
+                sel.onchange = () => {
+                    const nick = sel.dataset.nick;
+                    const newRole = sel.value;
+                    if (accounts[nick]) {
+                        accounts[nick].role = newRole;
+                        saveData();
+                        showToast(`Роль ${nick} изменена на ${newRole}`);
+                        renderAdminPlayerList(modal);
+                        if (currentUser === nick) renderUI();
+                    }
+                };
+            });
+            // Выдать рыбу
+            container.querySelectorAll('.giveFishSmall').forEach(btn => {
+                btn.onclick = () => {
+                    const nick = btn.dataset.nick;
+                    const amount = parseInt(btn.dataset.amount);
+                    if (accounts[nick]) {
+                        accounts[nick].fish += amount;
+                        accounts[nick].totalFish += amount;
+                        saveData();
+                        showToast(`Выдано ${amount} рыбы игроку ${nick}`);
+                        if (currentUser === nick) renderUI();
+                        renderAdminPlayerList(modal);
+                    }
+                };
+            });
+            // Выдать уровни
+            container.querySelectorAll('.giveUpgradeSmall').forEach(btn => {
+                btn.onclick = () => {
+                    const nick = btn.dataset.nick;
+                    const upgrade = btn.dataset.upgrade;
+                    const levels = parseInt(btn.dataset.levels);
+                    if (accounts[nick]) {
+                        accounts[nick].upgrades[upgrade] = (accounts[nick].upgrades[upgrade] || 0) + levels;
+                        saveData();
+                        showToast(`Улучшение ${upgrade} +${levels} для ${nick}`);
+                        if (currentUser === nick) renderUI();
+                        renderAdminPlayerList(modal);
+                    }
+                };
+            });
+        }
+        
+        // Отдельные кнопки для выдачи по нику
         modal.querySelector('#giveFishBtn').onclick = () => {
             const nick = modal.querySelector('#targetNick').value.trim();
             const amount = parseInt(modal.querySelector('#giveFish').value);
@@ -285,6 +394,7 @@
                 saveData();
                 showToast(`Выдано ${amount} рыбы игроку ${nick}`);
                 if (currentUser === nick) renderUI();
+                if (modal.querySelector('#adminControls').style.display === 'block') renderAdminPlayerList(modal);
             } else showToast("Игрок не найден");
         };
         modal.querySelector('#giveUpgradeBtn').onclick = () => {
@@ -297,6 +407,7 @@
                 saveData();
                 showToast(`Улучшение ${up} +${levels} для ${nick}`);
                 if (currentUser === nick) renderUI();
+                if (modal.querySelector('#adminControls').style.display === 'block') renderAdminPlayerList(modal);
             } else showToast("Игрок не найден");
         };
         modal.querySelector('#resetDataBtn').onclick = () => {
@@ -307,7 +418,9 @@
         };
     }
 
-    // ==================== СПИСОК ИГРОКОВ ====================
+    // --------------------------------------------------------------
+    // 9. Список игроков (только просмотр)
+    // --------------------------------------------------------------
     function showPlayersList() {
         const modal = document.createElement('div');
         modal.className = 'modal';
@@ -315,8 +428,7 @@
             <div class="modal-content">
                 <span class="close-modal">&times;</span>
                 <h3>👥 Все игроки</h3>
-                <div id="playersListModal" class="player-list"></div>
-                <p style="margin-top:10px;">* админ может менять роли и выдавать ресурсы через админ-панель</p>
+                <div id="playersListView" class="player-list"></div>
             </div>
         `;
         document.body.appendChild(modal);
@@ -324,7 +436,7 @@
         modal.querySelector('.close-modal').onclick = () => modal.remove();
         modal.onclick = (e) => { if (e.target === modal) modal.remove(); };
         
-        const container = modal.querySelector('#playersListModal');
+        const container = modal.querySelector('#playersListView');
         const players = Object.entries(accounts).map(([nick, data]) => ({ nick, ...data }));
         players.sort((a,b) => b.totalFish - a.totalFish);
         container.innerHTML = players.map(p => `
@@ -340,7 +452,9 @@
         `).join('');
     }
 
-    // ==================== ПРОФИЛЬ ====================
+    // --------------------------------------------------------------
+    // 10. Профиль (смена ника, фото)
+    // --------------------------------------------------------------
     function showProfileModal() {
         const data = getUser();
         const modal = document.createElement('div');
@@ -394,7 +508,9 @@
         };
     }
 
-    // ==================== ЛИДЕРБОРД ====================
+    // --------------------------------------------------------------
+    // 11. Лидерборд (топ по общей рыбе)
+    // --------------------------------------------------------------
     function showLeaderboard() {
         const sorted = Object.entries(accounts)
             .map(([nick, d]) => ({ nick, total: d.totalFish }))
@@ -405,7 +521,9 @@
         alert(msg);
     }
 
-    // ==================== РЕГИСТРАЦИЯ / ЛОГИН ====================
+    // --------------------------------------------------------------
+    // 12. Регистрация / Логин / Выход
+    // --------------------------------------------------------------
     function register(nick, pass) {
         if (accounts[nick]) { showToast("Ник уже занят"); return false; }
         accounts[nick] = {
@@ -425,10 +543,10 @@
         initAchievements(accounts[nick]);
         saveData();
         currentUser = nick;
-        saveData(); // гарантированно запишем currentUser
+        saveData(); // фиксируем сессию
         showToast("Регистрация успешна!");
         renderUI();
-        startLoops();
+        startGameLoops();
         return true;
     }
     function login(nick, pass) {
@@ -438,47 +556,79 @@
         saveData();
         showToast("Вход выполнен");
         renderUI();
-        startLoops();
+        startGameLoops();
         return true;
     }
     function logout() {
-        if (passiveInterval) clearInterval(passiveInterval);
-        if (eventInterval) clearInterval(eventInterval);
-        if (syncInterval) clearInterval(syncInterval);
         currentUser = null;
         saveData();
+        if (syncInterval) clearInterval(syncInterval);
         renderUI();
     }
 
-    // ==================== АВТОСИНХРОНИЗАЦИЯ ====================
-    let lastDataString = "";
+    // --------------------------------------------------------------
+    // 13. Автосинхронизация данных (каждые 3 секунды)
+    // --------------------------------------------------------------
+    let lastDataHash = "";
     function startDataSync() {
         if (syncInterval) clearInterval(syncInterval);
         syncInterval = setInterval(() => {
             if (currentUser && accounts[currentUser]) {
-                const currentData = accounts[currentUser];
-                const dataForCheck = {
-                    fish: currentData.fish,
-                    totalFish: currentData.totalFish,
-                    upgrades: currentData.upgrades,
-                    stats: currentData.stats,
-                    anticheatDisabled: currentData.anticheatDisabled,
-                    prestigeBonus: currentData.prestigeBonus,
-                    achievements: currentData.achievements,
-                    role: currentData.role,
-                    avatar: currentData.avatar,
-                };
-                const currentString = JSON.stringify(dataForCheck);
-                if (lastDataString !== "" && lastDataString !== currentString) {
+                const data = accounts[currentUser];
+                const hash = JSON.stringify({
+                    fish: data.fish,
+                    totalFish: data.totalFish,
+                    upgrades: data.upgrades,
+                    stats: data.stats,
+                    anticheatDisabled: data.anticheatDisabled,
+                    prestigeBonus: data.prestigeBonus,
+                    achievements: data.achievements,
+                    role: data.role,
+                    avatar: data.avatar,
+                });
+                if (lastDataHash !== "" && lastDataHash !== hash) {
                     renderUI();
                     showToast("🔄 Данные обновлены автоматически");
                 }
-                lastDataString = currentString;
+                lastDataHash = hash;
             }
         }, 3000);
     }
 
-    // ==================== ОТРИСОВКА UI ====================
+    // --------------------------------------------------------------
+    // 14. Игровые циклы (пассивный доход, события)
+    // --------------------------------------------------------------
+    let passiveInterval = null, eventInterval = null;
+    function startGameLoops() {
+        if (passiveInterval) clearInterval(passiveInterval);
+        if (eventInterval) clearInterval(eventInterval);
+        passiveInterval = setInterval(() => {
+            if (currentUser) {
+                const d = getUser();
+                const inc = getPassiveIncome(d);
+                if (inc > 0) addFish(inc, false);
+            }
+        }, 1000);
+        eventInterval = setInterval(() => {
+            if (currentUser && Math.random() < 0.4) {
+                const d = getUser();
+                const events = [
+                    { msg: "🐟 Косяк рыбы! +50", gain: 50 },
+                    { msg: "💎 Золотая рыбка! +200", gain: 200 },
+                    { msg: "🎣 Рыбак поделился +30", gain: 30 },
+                ];
+                const ev = events[Math.floor(Math.random() * events.length)];
+                let gain = ev.gain * getEventBonus(d);
+                addFish(gain, false);
+                showToast(ev.msg + " " + Math.floor(gain) + " рыб!");
+            }
+        }, 25000);
+        startDataSync();
+    }
+
+    // --------------------------------------------------------------
+    // 15. Отрисовка интерфейса (рендер)
+    // --------------------------------------------------------------
     function renderUI() {
         const root = document.getElementById('app');
         if (!currentUser) {
@@ -599,6 +749,7 @@
             <footer>Автосохранение. Админ-пароль: ***. Отключение защиты: ***</footer>
         `;
 
+        // Обработчики
         document.getElementById('clickZone').onclick = () => {
             if (!registerClick()) return;
             let gain = getClickPower(getUser());
@@ -674,35 +825,11 @@
     }
     function escapeHtml(str) { return str.replace(/[&<>]/g, m => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;' }[m])); }
 
-    function startLoops() {
-        if (passiveInterval) clearInterval(passiveInterval);
-        if (eventInterval) clearInterval(eventInterval);
-        passiveInterval = setInterval(() => {
-            if (currentUser) {
-                const d = getUser();
-                const inc = getPassiveIncome(d);
-                if (inc > 0) addFish(inc, false);
-            }
-        }, 1000);
-        eventInterval = setInterval(() => {
-            if (currentUser && Math.random() < 0.4) {
-                const d = getUser();
-                const events = [
-                    { msg: "🐟 Косяк рыбы! +50", gain: 50 },
-                    { msg: "💎 Золотая рыбка! +200", gain: 200 },
-                    { msg: "🎣 Рыбак поделился +30", gain: 30 },
-                ];
-                const ev = events[Math.floor(Math.random() * events.length)];
-                let gain = ev.gain * getEventBonus(d);
-                addFish(gain, false);
-                showToast(ev.msg + " " + Math.floor(gain) + " рыб!");
-            }
-        }, 25000);
-        startDataSync();
-    }
-
+    // --------------------------------------------------------------
+    // 16. Инициализация и старт
+    // --------------------------------------------------------------
     loadData();
-    if (currentUser) startLoops();
+    if (currentUser) startGameLoops();
     renderUI();
 </script>
 </body>
