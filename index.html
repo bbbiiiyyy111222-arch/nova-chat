@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>🦐 SEAL CLICKER | Регистрация + Админ</title>
+    <title>🦭 SEAL CLICKER | Регистрация + Админ</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; user-select: none; }
         body { background: #1e6b3e; font-family: 'Segoe UI', system-ui; min-height: 100vh; display: flex; justify-content: center; align-items: center; padding: 20px; }
@@ -41,13 +41,13 @@
 
 <script>
     // ==================== ХРАНИЛИЩЕ ====================
-    let accounts = {};      // { nickname: { password, fish, totalFish, upgrades, stats, achievements, anticheatDisabled, anticheatBlockedUntil, clickTimestamps, prestigeBonus } }
+    let accounts = {};
     let currentUser = null;
     let passiveInterval = null, eventInterval = null;
 
     function loadData() {
         const raw = localStorage.getItem('seal_accounts');
-        if (raw) { try { accounts = JSON.parse(raw); } catch(e) { accounts = {}; } } 
+        if (raw) { try { accounts = JSON.parse(raw); } catch(e) { accounts = {}; } }
         else { accounts = {}; }
         const saved = localStorage.getItem('seal_current_user');
         if (saved && accounts[saved]) currentUser = saved;
@@ -102,7 +102,7 @@
         return changed;
     }
 
-    // ==================== ИГРОВАЯ ЛОГИКА ====================
+    // ==================== ИГРОВЫЕ ФУНКЦИИ ====================
     function getClickPower(data) {
         let base = 1 + data.upgrades.clickPower * 2;
         let mult = 1 + data.upgrades.clickMult * 0.03;
@@ -125,19 +125,24 @@
         if (fromClick) data.stats.totalClicks++;
         saveUser();
         checkAchievements(data);
-        renderUI(); // обновляем без перезагрузки
+        renderUI();
     }
 
-    // ==================== АНТИЧИТ ====================
+    // ==================== АНТИЧИТ (ИСПРАВЛЕН) ====================
     function isBlocked(data) {
-        if (data.anticheatDisabled) return false;
+        if (data.anticheatDisabled) return false;          // защита отключена – блокировок нет
         if (Date.now() < (data.anticheatBlockedUntil || 0)) return true;
         return false;
     }
     function registerClick() {
         let data = getUser();
         if (!data) return false;
-        if (isBlocked(data)) { showToast("⛔ Античит: блокировка 8 сек"); return false; }
+        // Если защита отключена – разрешаем клик без всяких проверок
+        if (data.anticheatDisabled) return true;
+        if (isBlocked(data)) {
+            showToast("⛔ Античит: клики заблокированы на 8 секунд");
+            return false;
+        }
         const now = Date.now();
         if (!data.clickTimestamps) data.clickTimestamps = [];
         data.clickTimestamps.push(now);
@@ -145,7 +150,7 @@
         if (data.clickTimestamps.length > 18) {
             data.anticheatBlockedUntil = now + 8000;
             data.clickTimestamps = [];
-            showToast("⚠️ Слишком быстро! Блокировка 8 сек.");
+            showToast("⚠️ Слишком быстро! Блокировка на 8 секунд.");
             saveUser();
             renderUI();
             return false;
@@ -157,8 +162,10 @@
         if (!data) return;
         if (password === 'seal') {
             data.anticheatDisabled = true;
+            data.anticheatBlockedUntil = 0;    // сбрасываем блокировку
+            data.clickTimestamps = [];          // очищаем историю
             saveUser();
-            showToast("✅ Защита отключена");
+            showToast("✅ Защита отключена. Клики больше не блокируются.");
             renderUI();
         } else showToast("❌ Неверный пароль");
     }
@@ -166,8 +173,10 @@
         let data = getUser();
         if (data) {
             data.anticheatDisabled = false;
+            data.anticheatBlockedUntil = 0;
+            data.clickTimestamps = [];
             saveUser();
-            showToast("🛡️ Защита включена");
+            showToast("🛡️ Защита включена. При быстром клике будет блокировка.");
             renderUI();
         }
     }
@@ -277,7 +286,7 @@
         };
     }
 
-    // ==================== ПРОФИЛЬ и СМЕНА НИКА ====================
+    // ==================== ПРОФИЛЬ ====================
     function showProfileModal() {
         const data = getUser();
         const modal = document.createElement('div');
@@ -328,7 +337,7 @@
         alert(msg);
     }
 
-    // ==================== РЕГИСТРАЦИЯ / ЛОГИН / ВЫХОД ====================
+    // ==================== РЕГИСТРАЦИЯ / ЛОГИН ====================
     function register(nick, pass) {
         if (accounts[nick]) { showToast("Ник уже занят"); return false; }
         accounts[nick] = {
@@ -370,7 +379,7 @@
         renderUI();
     }
 
-    // ==================== UI ОТРИСОВКА ====================
+    // ==================== ОТРИСОВКА UI ====================
     function renderUI() {
         const root = document.getElementById('app');
         if (!currentUser) {
@@ -485,7 +494,7 @@
             <footer>Автосохранение. Админ-пароль: ***. Отключение защиты: ***</footer>
         `;
 
-        // ========== ПРИВЯЗКА ОБРАБОТЧИКОВ ПОСЛЕ ВСТАВКИ HTML ==========
+        // Привязываем обработчики
         document.getElementById('clickZone').onclick = () => {
             if (!registerClick()) return;
             let gain = getClickPower(getUser());
