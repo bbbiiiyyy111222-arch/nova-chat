@@ -3,11 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>🦭 SEAL CLICKER | Регистрация + Админ</title>
+    <title>🦭 SEAL CLICKER | Роли + синхронизация + фото</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; user-select: none; }
         body { background: #1e6b3e; font-family: 'Segoe UI', system-ui; min-height: 100vh; display: flex; justify-content: center; align-items: center; padding: 20px; }
-        .game-card { max-width: 800px; width: 100%; background: #fffef5; border-radius: 60px; padding: 25px; box-shadow: 0 20px 30px rgba(0,0,0,0.3); }
+        .game-card { max-width: 900px; width: 100%; background: #fffef5; border-radius: 60px; padding: 25px; box-shadow: 0 20px 30px rgba(0,0,0,0.3); }
         h1 { text-align: center; color: #1c6948; margin-bottom: 20px; }
         .nick-panel { background: #e9f3ed; border-radius: 60px; padding: 15px; display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
         .nick-input, .pass-input { flex: 2; padding: 10px; border-radius: 50px; border: 1px solid #ffc896; text-align: center; font-weight: bold; }
@@ -16,6 +16,7 @@
         .seal-area { text-align: center; cursor: pointer; margin: 20px 0; }
         .seal-emoji { font-size: 8rem; display: inline-block; transition: 0.07s; }
         .click-effect { transform: scale(0.9); }
+        .avatar-img { width: 60px; height: 60px; border-radius: 50%; object-fit: cover; background: #ddd; border: 2px solid #ffb347; }
         .fish-counter { background: #2a5c48; color: #FFE5B4; font-size: 2rem; font-weight: bold; text-align: center; padding: 12px; border-radius: 60px; margin: 15px 0; }
         .stat-grid { display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap; margin: 15px 0; }
         .stat { background: #e3f0ea; flex: 1; border-radius: 40px; padding: 8px; text-align: center; font-weight: bold; }
@@ -29,8 +30,14 @@
         .achievement { font-size: 0.75rem; padding: 4px 8px; margin: 4px 0; border-radius: 30px; background: #fff3e0; }
         .achievement.unlocked { background: #ffe0b5; font-weight: bold; }
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); justify-content: center; align-items: center; z-index: 1000; }
-        .modal-content { background: #fffef5; border-radius: 60px; padding: 25px; max-width: 500px; width: 90%; max-height: 80vh; overflow-y: auto; }
+        .modal-content { background: #fffef5; border-radius: 60px; padding: 25px; max-width: 700px; width: 90%; max-height: 80vh; overflow-y: auto; }
         .close-modal { float: right; font-size: 1.5rem; cursor: pointer; }
+        .player-list { max-height: 400px; overflow-y: auto; }
+        .player-row { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #ddd; padding: 8px; gap: 8px; flex-wrap: wrap; }
+        .role-badge { padding: 2px 8px; border-radius: 20px; font-size: 0.7rem; font-weight: bold; }
+        .role-player { background: #a0c4ff; }
+        .role-developer { background: #ffb347; color: white; }
+        .role-seal { background: #6b8e23; color: white; }
         .toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: #2b241cee; color: #ffeaaf; padding: 8px 20px; border-radius: 60px; animation: fadeOut 2s forwards; z-index: 1001; }
         @keyframes fadeOut { 0% { opacity: 1; bottom: 0; } 80% { opacity: 1; } 100% { opacity: 0; visibility: hidden; } }
         footer { font-size: 0.7rem; text-align: center; margin-top: 20px; color: #6e8f7a; }
@@ -43,7 +50,7 @@
     // ==================== ХРАНИЛИЩЕ ====================
     let accounts = {};
     let currentUser = null;
-    let passiveInterval = null, eventInterval = null;
+    let passiveInterval = null, eventInterval = null, syncInterval = null;
 
     function loadData() {
         const raw = localStorage.getItem('seal_accounts');
@@ -128,16 +135,15 @@
         renderUI();
     }
 
-    // ==================== АНТИЧИТ (ИСПРАВЛЕН) ====================
+    // ==================== АНТИЧИТ (исправлен) ====================
     function isBlocked(data) {
-        if (data.anticheatDisabled) return false;          // защита отключена – блокировок нет
+        if (data.anticheatDisabled) return false;
         if (Date.now() < (data.anticheatBlockedUntil || 0)) return true;
         return false;
     }
     function registerClick() {
         let data = getUser();
         if (!data) return false;
-        // Если защита отключена – разрешаем клик без всяких проверок
         if (data.anticheatDisabled) return true;
         if (isBlocked(data)) {
             showToast("⛔ Античит: клики заблокированы на 8 секунд");
@@ -162,8 +168,8 @@
         if (!data) return;
         if (password === 'seal') {
             data.anticheatDisabled = true;
-            data.anticheatBlockedUntil = 0;    // сбрасываем блокировку
-            data.clickTimestamps = [];          // очищаем историю
+            data.anticheatBlockedUntil = 0;
+            data.clickTimestamps = [];
             saveUser();
             showToast("✅ Защита отключена. Клики больше не блокируются.");
             renderUI();
@@ -176,7 +182,7 @@
             data.anticheatBlockedUntil = 0;
             data.clickTimestamps = [];
             saveUser();
-            showToast("🛡️ Защита включена. При быстром клике будет блокировка.");
+            showToast("🛡️ Защита включена.");
             renderUI();
         }
     }
@@ -212,7 +218,21 @@
         }
     }
 
-    // ==================== АДМИН-ПАНЕЛЬ ====================
+    // ==================== СМЕНА ФОТО (AVATAR) ====================
+    function changeAvatar(file) {
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            let data = getUser();
+            data.avatar = e.target.result;
+            saveUser();
+            renderUI();
+            showToast("Фото профиля обновлено!");
+        };
+        reader.readAsDataURL(file);
+    }
+
+    // ==================== АДМИН-ПАНЕЛЬ (полный список игроков и управление) ====================
     function showAdminModal() {
         const modal = document.createElement('div');
         modal.className = 'modal';
@@ -237,7 +257,9 @@
                     </select>
                     <input type="number" id="giveLevels" placeholder="Количество уровней">
                     <button id="giveUpgradeBtn">Выдать уровни</button><br><br>
-                    <button id="resetDataBtn" style="background:#c7254e;">⚠️ СБРОСИТЬ ВСЕ ДАННЫЕ</button>
+                    <h4>Список всех игроков</h4>
+                    <div id="playersList" class="player-list"></div>
+                    <button id="resetDataBtn" style="background:#c7254e; margin-top:10px;">⚠️ СБРОСИТЬ ВСЕ ДАННЫЕ</button>
                 </div>
             </div>
         `;
@@ -252,31 +274,103 @@
             if (pass === 'seal123') {
                 modal.querySelector('#adminControls').style.display = 'block';
                 loginBtn.disabled = true;
+                renderPlayersList(modal);
             } else showToast("Неверный пароль");
         };
+        
+        function renderPlayersList(modal) {
+            const container = modal.querySelector('#playersList');
+            const players = Object.entries(accounts).map(([nick, data]) => ({ nick, ...data }));
+            players.sort((a,b) => b.totalFish - a.totalFish);
+            container.innerHTML = players.map(p => `
+                <div class="player-row" data-nick="${p.nick}">
+                    <div style="display:flex; align-items:center; gap:8px;">
+                        ${p.avatar ? `<img src="${p.avatar}" class="avatar-img" style="width:40px;height:40px;">` : '<span style="font-size:2rem;">🦭</span>'}
+                        <strong>${escapeHtml(p.nick)}</strong>
+                        <span class="role-badge role-${p.role || 'player'}">${p.role || 'player'}</span>
+                    </div>
+                    <div style="display:flex; gap:5px; flex-wrap:wrap;">
+                        <select class="role-select" data-nick="${p.nick}">
+                            <option value="player" ${(p.role||'player')==='player'?'selected':''}>Игрок</option>
+                            <option value="developer" ${(p.role||'player')==='developer'?'selected':''}>Разработчик</option>
+                            <option value="seal" ${(p.role||'player')==='seal'?'selected':''}>Тюлень</option>
+                        </select>
+                        <button class="giveFishBtnSmall" data-nick="${p.nick}" data-amount="100">+100 рыбы</button>
+                        <button class="giveFishBtnSmall" data-nick="${p.nick}" data-amount="1000">+1000 рыбы</button>
+                        <button class="giveUpgradeSmall" data-nick="${p.nick}" data-upgrade="clickPower" data-levels="1">+1 сила клика</button>
+                    </div>
+                </div>
+            `).join('');
+            
+            // Обработчики для этой модалки
+            container.querySelectorAll('.role-select').forEach(sel => {
+                sel.onchange = () => {
+                    const nick = sel.dataset.nick;
+                    const newRole = sel.value;
+                    if (accounts[nick]) {
+                        accounts[nick].role = newRole;
+                        saveData();
+                        showToast(`Роль ${nick} изменена на ${newRole}`);
+                        renderPlayersList(modal);
+                        if (currentUser === nick) renderUI();
+                    }
+                };
+            });
+            container.querySelectorAll('.giveFishBtnSmall').forEach(btn => {
+                btn.onclick = () => {
+                    const nick = btn.dataset.nick;
+                    const amount = parseInt(btn.dataset.amount);
+                    if (accounts[nick]) {
+                        accounts[nick].fish += amount;
+                        accounts[nick].totalFish += amount;
+                        saveData();
+                        showToast(`Выдано ${amount} рыбы игроку ${nick}`);
+                        if (currentUser === nick) renderUI();
+                        renderPlayersList(modal);
+                    }
+                };
+            });
+            container.querySelectorAll('.giveUpgradeSmall').forEach(btn => {
+                btn.onclick = () => {
+                    const nick = btn.dataset.nick;
+                    const upgrade = btn.dataset.upgrade;
+                    const levels = parseInt(btn.dataset.levels);
+                    if (accounts[nick]) {
+                        accounts[nick].upgrades[upgrade] = (accounts[nick].upgrades[upgrade] || 0) + levels;
+                        saveData();
+                        showToast(`Улучшение ${upgrade} +${levels} для ${nick}`);
+                        if (currentUser === nick) renderUI();
+                        renderPlayersList(modal);
+                    }
+                };
+            });
+        }
+        
         modal.querySelector('#giveFishBtn').onclick = () => {
             const nick = modal.querySelector('#targetNick').value.trim();
             const amount = parseInt(modal.querySelector('#giveFish').value);
             if (!nick || isNaN(amount)) { showToast("Введите ник и количество"); return; }
-            const target = accounts[nick];
-            if (!target) { showToast("Игрок не найден"); return; }
-            target.fish += amount;
-            target.totalFish += amount;
-            saveData();
-            showToast(`Выдано ${amount} рыбы игроку ${nick}`);
-            if (currentUser === nick) renderUI();
+            if (accounts[nick]) {
+                accounts[nick].fish += amount;
+                accounts[nick].totalFish += amount;
+                saveData();
+                showToast(`Выдано ${amount} рыбы игроку ${nick}`);
+                if (currentUser === nick) renderUI();
+                if (modal.querySelector('#adminControls').style.display === 'block') renderPlayersList(modal);
+            } else showToast("Игрок не найден");
         };
         modal.querySelector('#giveUpgradeBtn').onclick = () => {
             const nick = modal.querySelector('#targetNick').value.trim();
             const up = modal.querySelector('#upgradeSelect').value;
             const levels = parseInt(modal.querySelector('#giveLevels').value);
             if (!nick || isNaN(levels)) { showToast("Введите ник и количество уровней"); return; }
-            const target = accounts[nick];
-            if (!target) { showToast("Игрок не найден"); return; }
-            target.upgrades[up] = (target.upgrades[up] || 0) + levels;
-            saveData();
-            showToast(`Улучшение ${up} +${levels} для ${nick}`);
-            if (currentUser === nick) renderUI();
+            if (accounts[nick]) {
+                accounts[nick].upgrades[up] = (accounts[nick].upgrades[up] || 0) + levels;
+                saveData();
+                showToast(`Улучшение ${up} +${levels} для ${nick}`);
+                if (currentUser === nick) renderUI();
+                if (modal.querySelector('#adminControls').style.display === 'block') renderPlayersList(modal);
+            } else showToast("Игрок не найден");
         };
         modal.querySelector('#resetDataBtn').onclick = () => {
             if (confirm("Очистить ВСЕ данные? Все пользователи потеряют прогресс!")) {
@@ -286,7 +380,7 @@
         };
     }
 
-    // ==================== ПРОФИЛЬ ====================
+    // ==================== ПРОФИЛЬ (смена ника, фото, роль) ====================
     function showProfileModal() {
         const data = getUser();
         const modal = document.createElement('div');
@@ -295,10 +389,18 @@
             <div class="modal-content">
                 <span class="close-modal">&times;</span>
                 <h3>📋 Профиль: ${escapeHtml(currentUser)}</h3>
+                <div style="display:flex; align-items:center; gap:15px; margin:10px 0;">
+                    ${data.avatar ? `<img src="${data.avatar}" class="avatar-img" style="width:80px;height:80px;">` : '<div style="font-size:4rem;">🦭</div>'}
+                    <div>
+                        <input type="file" id="avatarInput" accept="image/*" style="margin-bottom:5px;">
+                        <button id="uploadAvatarBtn">Загрузить фото</button>
+                    </div>
+                </div>
                 <p>💰 Рыба: ${Math.floor(data.fish).toLocaleString()}</p>
                 <p>🏆 Всего: ${Math.floor(data.totalFish).toLocaleString()}</p>
                 <p>🖱️ Кликов: ${data.stats.totalClicks.toLocaleString()}</p>
                 <p>⭐ Престиж: +${data.prestigeBonus || 0}%</p>
+                <p>🎭 Роль: <span class="role-badge role-${data.role || 'player'}">${data.role || 'player'}</span></p>
                 <hr>
                 <h4>Сменить ник</h4>
                 <input type="text" id="newNick" placeholder="Новый ник" style="width:100%; margin:8px 0;">
@@ -310,6 +412,12 @@
         modal.style.display = 'flex';
         modal.querySelector('.close-modal').onclick = () => modal.remove();
         modal.onclick = (e) => { if (e.target === modal) modal.remove(); };
+        
+        modal.querySelector('#uploadAvatarBtn').onclick = () => {
+            const fileInput = modal.querySelector('#avatarInput');
+            if (fileInput.files && fileInput.files[0]) changeAvatar(fileInput.files[0]);
+            else showToast("Выберите файл");
+        };
         modal.querySelector('#changeNickBtn').onclick = () => {
             const newNick = modal.querySelector('#newNick').value.trim();
             const pass = modal.querySelector('#confirmPass').value;
@@ -351,6 +459,8 @@
             anticheatBlockedUntil: 0,
             clickTimestamps: [],
             prestigeBonus: 0,
+            role: 'player',
+            avatar: null,
         };
         initAchievements(accounts[nick]);
         saveData();
@@ -374,9 +484,28 @@
     function logout() {
         if (passiveInterval) clearInterval(passiveInterval);
         if (eventInterval) clearInterval(eventInterval);
+        if (syncInterval) clearInterval(syncInterval);
         currentUser = null;
         saveData();
         renderUI();
+    }
+
+    // ==================== АВТО-СИНХРОНИЗАЦИЯ ДАННЫХ (без перезагрузки) ====================
+    let lastUserDataHash = "";
+    function startDataSync() {
+        if (syncInterval) clearInterval(syncInterval);
+        syncInterval = setInterval(() => {
+            if (currentUser && accounts[currentUser]) {
+                const currentData = accounts[currentUser];
+                const hash = JSON.stringify(currentData);
+                if (lastUserDataHash && lastUserDataHash !== hash) {
+                    // данные изменились (например, админ выдал что-то этому игроку)
+                    renderUI();
+                    showToast("🔄 Данные обновлены автоматически");
+                }
+                lastUserDataHash = hash;
+            }
+        }, 3000);
     }
 
     // ==================== ОТРИСОВКА UI ====================
@@ -422,6 +551,7 @@
         const critChance = getCritChance(data);
         const blocked = isBlocked(data);
         const unlockCount = achievementsList.filter(a => data.achievements[a.id]).length;
+        const role = data.role || 'player';
 
         const upgradesList = [
             { id: 'clickPower', name: '🐟 Острый зуб', desc: '+2 рыбы/клик', basePrice: 20, level: data.upgrades.clickPower },
@@ -459,7 +589,11 @@
         root.innerHTML = `
             <h1>🦭 SEAL CLICKER</h1>
             <div class="nick-panel" style="justify-content:space-between;">
-                <span>🐚 ${escapeHtml(currentUser)}</span>
+                <div style="display:flex; align-items:center; gap:8px;">
+                    ${data.avatar ? `<img src="${data.avatar}" class="avatar-img">` : '<span style="font-size:2rem;">🦭</span>'}
+                    <span>🐚 ${escapeHtml(currentUser)}</span>
+                    <span class="role-badge role-${role}">${role}</span>
+                </div>
                 <span>⭐ Престиж +${data.prestigeBonus || 0}%</span>
                 <button id="logoutBtn">Выйти</button>
             </div>
@@ -494,7 +628,6 @@
             <footer>Автосохранение. Админ-пароль: ***. Отключение защиты: ***</footer>
         `;
 
-        // Привязываем обработчики
         document.getElementById('clickZone').onclick = () => {
             if (!registerClick()) return;
             let gain = getClickPower(getUser());
@@ -504,7 +637,7 @@
             if (seal) {
                 seal.classList.add('click-effect');
                 setTimeout(() => seal.classList.remove('click-effect'), 100);
-                playSound();
+                try { playSound(); } catch(e) {}
             }
         };
         document.getElementById('logoutBtn').onclick = () => logout();
@@ -546,17 +679,18 @@
     }
 
     function playSound() {
-        let ctx = new (window.AudioContext || window.webkitAudioContext)();
-        if (!ctx) return;
-        const osc = ctx.createOscillator();
-        const gain = ctx.createGain();
-        osc.connect(gain);
-        gain.connect(ctx.destination);
-        osc.frequency.value = 600;
-        gain.gain.value = 0.05;
-        osc.start();
-        gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.2);
-        osc.stop(ctx.currentTime + 0.2);
+        try {
+            let ctx = new (window.AudioContext || window.webkitAudioContext)();
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            osc.frequency.value = 600;
+            gain.gain.value = 0.05;
+            osc.start();
+            gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.2);
+            osc.stop(ctx.currentTime + 0.2);
+        } catch(e) {}
     }
 
     function showToast(msg) {
@@ -568,7 +702,6 @@
     }
     function escapeHtml(str) { return str.replace(/[&<>]/g, m => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;' }[m])); }
 
-    // ==================== ИГРОВЫЕ ЦИКЛЫ ====================
     function startLoops() {
         if (passiveInterval) clearInterval(passiveInterval);
         if (eventInterval) clearInterval(eventInterval);
@@ -593,9 +726,9 @@
                 showToast(ev.msg + " " + Math.floor(gain) + " рыб!");
             }
         }, 25000);
+        startDataSync();
     }
 
-    // ==================== СТАРТ ====================
     loadData();
     if (currentUser) startLoops();
     renderUI();
