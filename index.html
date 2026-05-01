@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>🦭 SEAL CLICKER | Регистрация и админка</title>
+    <title>🦭 SEAL CLICKER | Регистрация + логин</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         * {
             margin: 0;
@@ -28,27 +29,32 @@
             padding: 25px;
             box-shadow: 0 20px 30px rgba(0,0,0,0.3);
         }
-        h1 { text-align: center; color: #1c6948; margin-bottom: 20px; font-size: 1.8rem; }
-        .form-group { margin-bottom: 15px; }
-        input, button {
+        h1 { text-align: center; color: #1c6948; margin-bottom: 20px; }
+        .auth-panel {
+            background: #e9f3ed;
+            border-radius: 60px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .auth-input {
             width: 100%;
             padding: 10px;
+            margin: 8px 0;
             border-radius: 50px;
             border: 1px solid #ffc896;
-            font-size: 1rem;
-            margin-bottom: 8px;
+            text-align: center;
         }
         button {
             background: #ffb347;
             border: none;
+            padding: 8px 18px;
+            border-radius: 50px;
             font-weight: bold;
             cursor: pointer;
             transition: 0.05s linear;
+            margin: 5px;
         }
         button:active { transform: scale(0.97); }
-        .toggle-buttons { display: flex; gap: 10px; margin-top: 10px; }
-        .toggle-buttons button { flex: 1; }
-        .error { color: #c7254e; font-size: 0.8rem; text-align: center; margin-top: 5px; }
         .seal-area { text-align: center; cursor: pointer; margin: 20px 0; }
         .seal-emoji { font-size: 8rem; display: inline-block; transition: 0.07s; }
         .click-effect { transform: scale(0.9); }
@@ -159,14 +165,6 @@
             font-size: 1.5rem;
             cursor: pointer;
         }
-        .player-list-item {
-            padding: 8px;
-            border-bottom: 1px solid #ddd;
-            cursor: pointer;
-            display: flex;
-            justify-content: space-between;
-        }
-        .player-list-item:hover { background: #f0e5d8; }
         .toast {
             position: fixed;
             bottom: 20px;
@@ -196,88 +194,34 @@
 <div class="game-card" id="app"></div>
 
 <script>
-    // ---------- БАЗА ДАННЫХ (localStorage) ----------
-    // Структура: users = { "ник": { password, fish, totalFish, upgrades, stats, achievements, anticheatDisabled, role, prestigeBonus } }
-    let currentUser = null; // ник текущего пользователя
-    let game = null; // данные текущего пользователя (ссылка на объект)
+    // ========== SUPABASE ==========
+    const SUPABASE_URL = 'https://pmvbhhidcojkkpumsxxb.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBtdmJoaGlkY29qa2twdW1zeHhiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzcyNzk3MjcsImV4cCI6MjA5Mjg1NTcyN30.1eKxcaqeClRdAVH8lVcOdYaV0o_PbRzjnM9vBUP15QQ';
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    // Функции работы с хранилищем
-    function loadUsers() {
-        const raw = localStorage.getItem('seal_users');
-        if (raw) return JSON.parse(raw);
-        // создаем админа по умолчанию (admin / adminpass) - можно убрать потом, но для теста
-        const defaultUsers = {
-            "admin": {
-                password: "admin123",
-                fish: 0,
-                totalFish: 0,
-                upgrades: { clickPower:0, autoClicker:0, crit:0, clickMult:0, passiveMult:0, eventBonus:0 },
-                stats: { totalClicks:0, prestigeCount:0 },
-                achievements: {},
-                anticheatDisabled: false,
-                role: "admin",
-                prestigeBonus: 0,
-            }
-        };
-        localStorage.setItem('seal_users', JSON.stringify(defaultUsers));
-        return defaultUsers;
-    }
+    // ========== ГЛОБАЛЬНОЕ СОСТОЯНИЕ ==========
+    let game = {
+        nickname: null,
+        password: null,
+        fish: 0,
+        totalFish: 0,
+        upgrades: {
+            clickPower: 0,
+            autoClicker: 0,
+            crit: 0,
+            clickMult: 0,
+            passiveMult: 0,
+            eventBonus: 0,
+        },
+        stats: { totalClicks: 0, prestigeCount: 0 },
+        achievements: {},
+        anticheatDisabled: false,
+        anticheatBlockedUntil: 0,
+        clickTimestamps: [],
+        prestigeBonus: 0,
+    };
 
-    function saveUsers(users) {
-        localStorage.setItem('seal_users', JSON.stringify(users));
-    }
-
-    // Сохранение текущего пользователя
-    function saveCurrentUser() {
-        if (!currentUser) return;
-        const users = loadUsers();
-        users[currentUser] = game;
-        saveUsers(users);
-    }
-
-    // Загрузка пользователя по нику и паролю (возвращает true/false)
-    function loginUser(nick, password) {
-        const users = loadUsers();
-        if (users[nick] && users[nick].password === password) {
-            currentUser = nick;
-            game = users[nick];
-            // убедимся, что все поля есть (миграция)
-            if (!game.upgrades) game.upgrades = { clickPower:0, autoClicker:0, crit:0, clickMult:0, passiveMult:0, eventBonus:0 };
-            if (!game.stats) game.stats = { totalClicks:0, prestigeCount:0 };
-            if (!game.achievements) game.achievements = {};
-            if (game.anticheatDisabled === undefined) game.anticheatDisabled = false;
-            if (!game.role) game.role = "player";
-            if (!game.prestigeBonus) game.prestigeBonus = 0;
-            initAchievements();
-            return true;
-        }
-        return false;
-    }
-
-    // Регистрация нового пользователя (ник уникален)
-    function registerUser(nick, password) {
-        if (password.length < 4) return false;
-        const users = loadUsers();
-        if (users[nick]) return false;
-        const newUser = {
-            password: password,
-            fish: 0,
-            totalFish: 0,
-            upgrades: { clickPower:0, autoClicker:0, crit:0, clickMult:0, passiveMult:0, eventBonus:0 },
-            stats: { totalClicks:0, prestigeCount:0 },
-            achievements: {},
-            anticheatDisabled: false,
-            role: "player",
-            prestigeBonus: 0,
-        };
-        users[nick] = newUser;
-        saveUsers(users);
-        return true;
-    }
-
-    // Достижения (генерируются динамически)
-    let achievementsList = [];
-
+    // ========== ДОСТИЖЕНИЯ ==========
     function generateAchievements() {
         const list = [];
         for (let i = 1; i <= 20; i++) {
@@ -297,15 +241,15 @@
         }
         return list.slice(0, 60);
     }
+    let achievementsList = generateAchievements();
 
     function initAchievements() {
-        achievementsList = generateAchievements();
         achievementsList.forEach(ach => {
             if (game.achievements[ach.id] === undefined) game.achievements[ach.id] = false;
         });
     }
 
-    function checkAchievements() {
+    async function checkAchievements() {
         let changed = false;
         for (let ach of achievementsList) {
             if (!game.achievements[ach.id] && ach.cond()) {
@@ -316,10 +260,10 @@
                 showToast(`🏆 ${ach.name}! +${ach.reward} рыб`);
             }
         }
-        if (changed) saveCurrentUser();
+        if (changed) await saveToSupabase();
     }
 
-    // Игровые расчеты
+    // ========== ИГРОВЫЕ РАСЧЁТЫ ==========
     function getClickPower() {
         let base = 1 + game.upgrades.clickPower * 2;
         let mult = 1 + game.upgrades.clickMult * 0.03;
@@ -334,113 +278,118 @@
     function getCritChance() { return Math.min(70, game.upgrades.crit * 5); }
     function getEventBonus() { return 1 + game.upgrades.eventBonus * 0.1; }
 
-    function addFish(amount, fromClick = false) {
-        if (!currentUser) return;
-        game.fish += amount;
-        game.totalFish += amount;
+    async function addFish(amount, fromClick = false) {
+        if (!game.nickname) return;
+        let final = amount;
+        game.fish += final;
+        game.totalFish += final;
         if (fromClick) game.stats.totalClicks++;
-        saveCurrentUser();
-        checkAchievements();
-        renderGameUI();
+        await saveToSupabase();
+        await checkAchievements();
+        renderUI();
     }
 
-    // Античит
-    let anticheatBlockedUntil = 0;
-    let clickTimestamps = [];
-
+    // ========== АНТИЧИТ ==========
     function isAnticheatBlocked() {
         if (game.anticheatDisabled) return false;
-        if (Date.now() < anticheatBlockedUntil) return true;
+        if (Date.now() < game.anticheatBlockedUntil) return true;
         return false;
     }
-
     function registerClick() {
         if (isAnticheatBlocked()) {
             showToast("⛔ Античит: клики заблокированы на 8 секунд");
             return false;
         }
         const now = Date.now();
-        clickTimestamps.push(now);
-        while (clickTimestamps.length && clickTimestamps[0] < now - 1000) clickTimestamps.shift();
-        if (clickTimestamps.length > 18 && !game.anticheatDisabled) {
-            anticheatBlockedUntil = now + 8000;
-            clickTimestamps = [];
+        game.clickTimestamps.push(now);
+        while (game.clickTimestamps.length && game.clickTimestamps[0] < now - 1000) game.clickTimestamps.shift();
+        if (game.clickTimestamps.length > 18 && !game.anticheatDisabled) {
+            game.anticheatBlockedUntil = now + 8000;
+            game.clickTimestamps = [];
             showToast("⚠️ Слишком быстро! Блокировка на 8 секунд.");
-            renderGameUI();
+            renderUI();
             return false;
         }
         return true;
     }
 
-    function disableAnticheat(password) {
-        if (password === "seal") {
-            game.anticheatDisabled = true;
-            anticheatBlockedUntil = 0;
-            saveCurrentUser();
-            showToast("✅ Защита отключена.");
-            renderGameUI();
-            return true;
-        } else {
-            showToast("❌ Неверный пароль!");
-            return false;
-        }
+    // ========== РАБОТА С БД ==========
+    async function saveToSupabase() {
+        if (!game.nickname) return;
+        const data = {
+            nickname: game.nickname,
+            password: game.password,
+            fish: game.fish,
+            total_fish: game.totalFish,
+            click_power_level: game.upgrades.clickPower,
+            auto_level: game.upgrades.autoClicker,
+            crit_level: game.upgrades.crit,
+            click_mult_level: game.upgrades.clickMult,
+            passive_mult_level: game.upgrades.passiveMult,
+            event_bonus_level: game.upgrades.eventBonus,
+            prestige_bonus: game.prestigeBonus,
+            anticheat_disabled: game.anticheatDisabled,
+            stats: game.stats,
+            achievements: game.achievements,
+            updated_at: new Date(),
+        };
+        await supabase.from('users').upsert(data, { onConflict: 'nickname' });
+        await supabase.from('leaderboard').upsert({ nickname: game.nickname, total_fish: game.totalFish, updated_at: new Date() }, { onConflict: 'nickname' });
     }
 
-    function enableAnticheat() {
-        game.anticheatDisabled = false;
-        anticheatBlockedUntil = 0;
-        clickTimestamps = [];
-        saveCurrentUser();
-        showToast("🛡️ Защита включена.");
-        renderGameUI();
+    async function loadFromSupabase(nickname, password) {
+        const { data, error } = await supabase.from('users').select('*').eq('nickname', nickname).maybeSingle();
+        if (error || !data) return null;
+        if (data.password !== password) return null;
+        game.nickname = data.nickname;
+        game.password = data.password;
+        game.fish = data.fish;
+        game.totalFish = data.total_fish;
+        game.upgrades = {
+            clickPower: data.click_power_level || 0,
+            autoClicker: data.auto_level || 0,
+            crit: data.crit_level || 0,
+            clickMult: data.click_mult_level || 0,
+            passiveMult: data.passive_mult_level || 0,
+            eventBonus: data.event_bonus_level || 0,
+        };
+        game.stats = data.stats || { totalClicks:0, prestigeCount:0 };
+        game.achievements = data.achievements || {};
+        game.anticheatDisabled = data.anticheat_disabled || false;
+        game.prestigeBonus = data.prestige_bonus || 0;
+        initAchievements();
+        return game;
     }
 
-    // Покупка улучшений
-    function buyUpgrade(id, basePrice, name) {
-        let level = game.upgrades[id];
-        let price = Math.floor(basePrice * (level + 1));
-        if (game.fish < price) { showToast(`❌ Нужно ${price} рыб`); return; }
-        game.fish -= price;
-        game.upgrades[id]++;
-        saveCurrentUser();
-        checkAchievements();
-        renderGameUI();
-        showToast(`🎉 ${name} → ур.${game.upgrades[id]}`);
+    async function registerUser(nickname, password) {
+        const { data: existing } = await supabase.from('users').select('nickname').eq('nickname', nickname);
+        if (existing && existing.length > 0) return null;
+        const newUser = {
+            nickname, password,
+            fish: 0, total_fish: 0,
+            click_power_level: 0, auto_level: 0, crit_level: 0,
+            click_mult_level: 0, passive_mult_level: 0, event_bonus_level: 0,
+            prestige_bonus: 0, anticheat_disabled: false,
+            stats: { totalClicks:0, prestigeCount:0 },
+            achievements: {},
+        };
+        const { error } = await supabase.from('users').insert(newUser);
+        if (error) return null;
+        return newUser;
     }
 
-    // Престиж
-    function doPrestige() {
-        if (game.totalFish < 5000) { showToast("Нужно 5000 общей рыбы"); return; }
-        if (confirm("Престиж: сбросить рыбу и улучшения, получить +50% к силе клика навсегда?")) {
-            game.prestigeBonus += 50;
-            game.fish = 0;
-            game.totalFish = 0;
-            game.upgrades = { clickPower:0, autoClicker:0, crit:0, clickMult:0, passiveMult:0, eventBonus:0 };
-            game.stats.prestigeCount++;
-            saveCurrentUser();
-            checkAchievements();
-            renderGameUI();
-            showToast("🌟 Престиж! +50% к силе клика.");
-        }
-    }
-
-    // Админ-панель (расширенная)
-    function showAdminPanel() {
-        if (game.role !== 'admin') { showToast("Доступно только администратору"); return; }
-        const users = loadUsers();
-        const userList = Object.keys(users).map(nick => ({ nick, ...users[nick] }));
+    // ========== АДМИН-ПАНЕЛЬ (пароль seal123) ==========
+    async function showAdminModal() {
         const modalHtml = `
             <div class="modal-content">
                 <span class="close-modal">&times;</span>
                 <h3>👑 Админ-панель</h3>
-                <div style="margin-bottom: 10px;">
-                    <label>Выдать ресурсы игроку:</label>
-                    <select id="adminSelectUser">${userList.map(u => `<option value="${u.nick}">${u.nick} (${u.role})</option>`).join('')}</select>
-                    <input type="number" id="adminGiveFish" placeholder="Количество рыбы">
-                    <button id="adminGiveFishBtn">Выдать рыбу</button>
-                </div>
-                <div style="margin-bottom: 10px;">
-                    <select id="adminUpgradeSelect">
+                <input type="password" id="adminPass" placeholder="Пароль администратора" style="width:100%; margin:10px 0;">
+                <button id="adminLoginBtn">Войти</button>
+                <div id="adminControls" style="display:none; margin-top:15px;">
+                    <input type="text" id="targetNick" placeholder="Ник игрока" style="width:100%; margin-bottom:10px;">
+                    <input type="number" id="giveFish" placeholder="Количество рыбы"> <button id="giveFishBtn">Выдать рыбу</button><br><br>
+                    <select id="upgradeSelect">
                         <option value="clickPower">Сила клика</option>
                         <option value="autoClicker">Автокликер</option>
                         <option value="crit">Крит</option>
@@ -448,193 +397,203 @@
                         <option value="passiveMult">Множитель пассива</option>
                         <option value="eventBonus">Бонус событий</option>
                     </select>
-                    <input type="number" id="adminGiveLevels" placeholder="Количество уровней">
-                    <button id="adminGiveUpgradeBtn">Выдать уровни</button>
-                </div>
-                <div style="margin-bottom: 10px;">
-                    <select id="adminRoleSelect">
-                        <option value="player">Игрок</option>
-                        <option value="admin">Администратор</option>
-                    </select>
-                    <button id="adminSetRoleBtn">Сменить роль</button>
-                </div>
-                <div style="margin-bottom: 10px;">
-                    <button id="adminResetAnticheatBtn">Сбросить блокировку античита игроку</button>
-                </div>
-                <div style="margin-bottom: 10px;">
-                    <button id="adminResetAllDataBtn" style="background:#c7254e; color:white;">⚠️ СБРОСИТЬ ВСЕ ДАННЫЕ (удалить всех игроков) ⚠️</button>
-                </div>
-                <div style="margin-top:15px;">
-                    <h4>Список игроков</h4>
-                    <div style="max-height:200px; overflow-y:auto;">${userList.map(u => `<div class="player-list-item" data-nick="${u.nick}"><span>${u.nick} (${u.role}) — ${u.totalFish} 🐟</span></div>`).join('')}</div>
+                    <input type="number" id="giveLevels" placeholder="Уровней"> <button id="giveUpgradeBtn">Выдать уровни</button><br><br>
+                    <button id="resetAllBtn" style="background:#c7254e;">⚠️ СБРОСИТЬ ВСЕ ДАННЫЕ</button>
                 </div>
             </div>
         `;
         const modal = createModal(modalHtml);
-        const targetNickSelect = modal.querySelector('#adminSelectUser');
-        const giveFishBtn = modal.querySelector('#adminGiveFishBtn');
-        giveFishBtn.onclick = () => {
-            const targetNick = targetNickSelect.value;
-            const amount = parseInt(modal.querySelector('#adminGiveFish').value);
-            if (isNaN(amount)) return;
-            const usersData = loadUsers();
-            if (usersData[targetNick]) {
-                usersData[targetNick].fish += amount;
-                usersData[targetNick].totalFish += amount;
-                saveUsers(usersData);
-                showToast(`Выдано ${amount} рыбы игроку ${targetNick}`);
-                if (targetNick === currentUser) {
-                    game = usersData[currentUser];
-                    renderGameUI();
-                }
-            }
+        const adminLoginBtn = modal.querySelector('#adminLoginBtn');
+        const adminControls = modal.querySelector('#adminControls');
+        adminLoginBtn.onclick = () => {
+            const pass = modal.querySelector('#adminPass').value;
+            if (pass === 'seal123') {
+                adminControls.style.display = 'block';
+                adminLoginBtn.disabled = true;
+            } else showToast("Неверный пароль!");
         };
-        modal.querySelector('#adminGiveUpgradeBtn').onclick = () => {
-            const targetNick = targetNickSelect.value;
-            const upgrade = modal.querySelector('#adminUpgradeSelect').value;
-            const levels = parseInt(modal.querySelector('#adminGiveLevels').value);
-            if (isNaN(levels)) return;
-            const usersData = loadUsers();
-            if (usersData[targetNick]) {
-                if (!usersData[targetNick].upgrades) usersData[targetNick].upgrades = {};
-                usersData[targetNick].upgrades[upgrade] = (usersData[targetNick].upgrades[upgrade] || 0) + levels;
-                saveUsers(usersData);
-                showToast(`Выдано ${levels} уровней ${upgrade} игроку ${targetNick}`);
-                if (targetNick === currentUser) {
-                    game = usersData[currentUser];
-                    renderGameUI();
-                }
-            }
+        modal.querySelector('#giveFishBtn').onclick = async () => {
+            const nick = modal.querySelector('#targetNick').value.trim();
+            const amount = parseInt(modal.querySelector('#giveFish').value);
+            if (!nick || isNaN(amount)) return;
+            const { data: user, error } = await supabase.from('users').select('*').eq('nickname', nick).single();
+            if (error || !user) { showToast("Игрок не найден"); return; }
+            const newFish = (user.fish || 0) + amount;
+            const newTotal = (user.total_fish || 0) + amount;
+            await supabase.from('users').update({ fish: newFish, total_fish: newTotal }).eq('nickname', nick);
+            await supabase.from('leaderboard').upsert({ nickname: nick, total_fish: newTotal, updated_at: new Date() });
+            showToast(`Выдано ${amount} рыбы игроку ${nick}`);
+            if (game.nickname === nick) { game.fish = newFish; game.totalFish = newTotal; renderUI(); }
         };
-        modal.querySelector('#adminSetRoleBtn').onclick = () => {
-            const targetNick = targetNickSelect.value;
-            const newRole = modal.querySelector('#adminRoleSelect').value;
-            const usersData = loadUsers();
-            if (usersData[targetNick]) {
-                usersData[targetNick].role = newRole;
-                saveUsers(usersData);
-                showToast(`Роль игрока ${targetNick} изменена на ${newRole}`);
-                if (targetNick === currentUser) {
-                    game = usersData[currentUser];
-                    renderGameUI();
-                }
-            }
+        modal.querySelector('#giveUpgradeBtn').onclick = async () => {
+            const nick = modal.querySelector('#targetNick').value.trim();
+            const up = modal.querySelector('#upgradeSelect').value;
+            const levels = parseInt(modal.querySelector('#giveLevels').value);
+            if (!nick || isNaN(levels)) return;
+            const { data: user, error } = await supabase.from('users').select('*').eq('nickname', nick).single();
+            if (error || !user) { showToast("Игрок не найден"); return; }
+            const fieldMap = { clickPower:'click_power_level', autoClicker:'auto_level', crit:'crit_level', clickMult:'click_mult_level', passiveMult:'passive_mult_level', eventBonus:'event_bonus_level' };
+            const field = fieldMap[up];
+            const current = user[field] || 0;
+            await supabase.from('users').update({ [field]: current + levels }).eq('nickname', nick);
+            showToast(`Улучшение ${up} +${levels} для ${nick}`);
+            if (game.nickname === nick) { game.upgrades[up] = current + levels; renderUI(); }
         };
-        modal.querySelector('#adminResetAnticheatBtn').onclick = () => {
-            const targetNick = targetNickSelect.value;
-            const usersData = loadUsers();
-            if (usersData[targetNick]) {
-                usersData[targetNick].anticheatDisabled = false;
-                saveUsers(usersData);
-                showToast(`Античит сброшен для ${targetNick}`);
-                if (targetNick === currentUser) {
-                    game = usersData[currentUser];
-                    anticheatBlockedUntil = 0;
-                    clickTimestamps = [];
-                    renderGameUI();
-                }
-            }
-        };
-        modal.querySelector('#adminResetAllDataBtn').onclick = () => {
-            if (confirm("ВНИМАНИЕ! Это удалит всех игроков, включая вас. Вы будете перенаправлены на страницу входа. Продолжить?")) {
-                localStorage.removeItem('seal_users');
-                currentUser = null;
-                game = null;
-                renderAuthUI();
-                modal.remove();
+        modal.querySelector('#resetAllBtn').onclick = async () => {
+            if (confirm("СБРОСИТЬ ВСЮ БАЗУ ДАННЫХ? Это удалит всех игроков!")) {
+                await supabase.from('users').delete().neq('nickname', '___none');
+                await supabase.from('leaderboard').delete().neq('nickname', '___none');
+                showToast("База данных очищена");
+                if (game.nickname) { await saveToSupabase(); renderUI(); }
             }
         };
     }
 
-    // Лидерборд
-    function showLeaderboard() {
-        const users = loadUsers();
-        const list = Object.entries(users).map(([nick, data]) => ({ nick, totalFish: data.totalFish }));
-        list.sort((a,b) => b.totalFish - a.totalFish);
-        let msg = "🏆 ГЛОБАЛЬНЫЙ ТОП 🏆\n";
-        list.slice(0, 20).forEach((u, i) => msg += `${i+1}. ${u.nick} — ${u.totalFish.toLocaleString()} 🐟\n`);
-        alert(msg);
-    }
-
-    // Список игроков и просмотр профиля
-    function showPlayers() {
-        const users = loadUsers();
-        const list = Object.entries(users).map(([nick, data]) => ({ nick, totalFish: data.totalFish, role: data.role, stats: data.stats }));
-        list.sort((a,b) => b.totalFish - a.totalFish);
+    // ========== ПРОФИЛЬ ==========
+    async function showProfileModal() {
         const modalHtml = `
             <div class="modal-content">
                 <span class="close-modal">&times;</span>
-                <h3>👥 Игроки</h3>
-                <div style="max-height:300px; overflow-y:auto;">
-                    ${list.map(p => `<div class="player-list-item" data-nick="${p.nick}"><span>${p.nick} (${p.role === 'admin' ? '👑 Админ' : '🦭 Игрок'}) — ${p.totalFish.toLocaleString()} 🐟</span></div>`).join('')}
-                </div>
-                <div id="profileDetails" style="margin-top:15px; border-top:1px solid #ccc; padding:10px;"></div>
+                <h3>👤 Профиль</h3>
+                <p><strong>Ник:</strong> ${escapeHtml(game.nickname)}</p>
+                <p><strong>Всего рыбы:</strong> ${game.totalFish.toLocaleString()}</p>
+                <p><strong>Сила клика:</strong> ${getClickPower()}</p>
+                <p><strong>Пассивный доход:</strong> ${getPassiveIncome()}/сек</p>
+                <p><strong>Критический шанс:</strong> ${getCritChance()}%</p>
+                <hr>
+                <h4>Сменить ник</h4>
+                <input type="text" id="newNick" placeholder="Новый ник" style="width:100%; margin:5px 0;">
+                <input type="password" id="confirmPassword" placeholder="Ваш пароль" style="width:100%; margin:5px 0;">
+                <button id="changeNickBtn">Сменить ник</button>
             </div>
         `;
         const modal = createModal(modalHtml);
-        modal.querySelectorAll('.player-list-item').forEach(el => {
-            el.onclick = () => {
-                const nick = el.dataset.nick;
-                const userData = users[nick];
-                if (userData) {
-                    modal.querySelector('#profileDetails').innerHTML = `
-                        <h4>${escapeHtml(nick)}</h4>
-                        <p>Роль: ${userData.role === 'admin' ? 'Администратор' : 'Игрок'}</p>
-                        <p>Всего рыбы: ${userData.totalFish.toLocaleString()}</p>
-                        <p>Кликов: ${userData.stats?.totalClicks || 0}</p>
-                        <p>Сила клика: ${1 + (userData.upgrades?.clickPower||0)*2}</p>
-                        <p>Пассивный доход: ${(userData.upgrades?.autoClicker||0)}/сек</p>
-                    `;
-                }
-            };
-        });
+        modal.querySelector('#changeNickBtn').onclick = async () => {
+            const newNick = modal.querySelector('#newNick').value.trim();
+            const pass = modal.querySelector('#confirmPassword').value;
+            if (!newNick || !pass) { showToast("Заполните поля"); return; }
+            if (pass !== game.password) { showToast("Неверный пароль"); return; }
+            const { data: existing } = await supabase.from('users').select('nickname').eq('nickname', newNick);
+            if (existing && existing.length > 0) { showToast("Ник уже занят"); return; }
+            await supabase.from('users').update({ nickname: newNick }).eq('nickname', game.nickname);
+            await supabase.from('leaderboard').update({ nickname: newNick }).eq('nickname', game.nickname);
+            game.nickname = newNick;
+            await saveToSupabase();
+            showToast("Ник изменён!");
+            modal.remove();
+            renderUI();
+        };
     }
 
-    // Вспомогательные UI
-    function renderAuthUI() {
-        const root = document.getElementById('app');
-        root.innerHTML = `
-            <h1>🦭 SEAL CLICKER</h1>
-            <div style="margin-bottom: 15px;">
-                <input type="text" id="loginNick" placeholder="Никнейм">
-                <input type="password" id="loginPass" placeholder="Пароль">
-                <button id="loginBtn">Вход</button>
+    // ========== ЛИДЕРБОРД ==========
+    async function showLeaderboardModal() {
+        const { data, error } = await supabase.from('leaderboard').select('nickname, total_fish').order('total_fish', { ascending: false }).limit(20);
+        if (error) { alert("Ошибка"); return; }
+        let msg = "🏆 ГЛОБАЛЬНЫЙ ТОП 🏆\n";
+        data.forEach((u,i) => msg += `${i+1}. ${u.nickname} — ${u.total_fish.toLocaleString()} 🐟\n`);
+        alert(msg);
+    }
+
+    // ========== ПРЕСТИЖ ==========
+    async function doPrestige() {
+        if (game.totalFish < 5000) { showToast("Нужно 5000 общей рыбы"); return; }
+        if (confirm("Престиж: сбросить рыбу и улучшения, получить +50% к силе клика?")) {
+            game.prestigeBonus += 50;
+            game.fish = 0;
+            game.totalFish = 0;
+            game.upgrades = { clickPower:0, autoClicker:0, crit:0, clickMult:0, passiveMult:0, eventBonus:0 };
+            game.stats.prestigeCount++;
+            await saveToSupabase();
+            await checkAchievements();
+            renderUI();
+            showToast("🌟 Престиж! +50% к силе клика.");
+        }
+    }
+
+    // ========== ОТКЛЮЧЕНИЕ ЗАЩИТЫ (пароль seal) ==========
+    function showDisableAnticheatModal() {
+        const modalHtml = `
+            <div class="modal-content">
+                <span class="close-modal">&times;</span>
+                <h3>Отключение защиты от авто-клика</h3>
+                <input type="password" id="anticheatPass" placeholder="Пароль" style="width:100%; margin:10px 0;">
+                <button id="confirmDisableBtn">Отключить навсегда</button>
             </div>
-            <div style="margin-bottom: 15px;">
-                <input type="text" id="regNick" placeholder="Новый ник">
-                <input type="password" id="regPass" placeholder="Пароль (мин.4 символа)">
-                <button id="regBtn">Регистрация</button>
-            </div>
-            <div id="authError" class="error"></div>
-            <footer>Уникальный ник, пароль. Админ по умолчанию: admin / admin123</footer>
         `;
-        document.getElementById('loginBtn').onclick = () => {
-            const nick = document.getElementById('loginNick').value.trim();
-            const pass = document.getElementById('loginPass').value;
-            if (!nick || !pass) { showToast("Введите ник и пароль"); return; }
-            if (loginUser(nick, pass)) {
-                initAchievements();
-                startGameLoop();
-                renderGameUI();
-            } else {
-                document.getElementById('authError').innerText = "Неверный ник или пароль";
-            }
-        };
-        document.getElementById('regBtn').onclick = () => {
-            const nick = document.getElementById('regNick').value.trim();
-            const pass = document.getElementById('regPass').value;
-            if (!nick || pass.length < 4) { showToast("Ник обязателен, пароль минимум 4 символа"); return; }
-            if (registerUser(nick, pass)) {
-                showToast("Регистрация успешна! Теперь войдите.");
-                document.getElementById('authError').innerHTML = "";
-            } else {
-                document.getElementById('authError').innerText = "Ник уже существует";
-            }
+        const modal = createModal(modalHtml);
+        modal.querySelector('#confirmDisableBtn').onclick = async () => {
+            const pass = modal.querySelector('#anticheatPass').value;
+            if (pass === 'seal') {
+                game.anticheatDisabled = true;
+                await saveToSupabase();
+                showToast("✅ Защита отключена!");
+                modal.remove();
+                renderUI();
+            } else showToast("❌ Неверный пароль!");
         };
     }
 
-    function renderGameUI() {
-        if (!currentUser || !game) return;
+    function enableAnticheat() {
+        game.anticheatDisabled = false;
+        saveToSupabase();
+        showToast("🛡️ Защита включена.");
+        renderUI();
+    }
+
+    // ========== ПОКУПКА УЛУЧШЕНИЙ ==========
+    async function buyUpgrade(id, basePrice, name) {
+        let level = game.upgrades[id];
+        let price = Math.floor(basePrice * (level + 1));
+        if (game.fish < price) { showToast(`❌ Нужно ${price} рыб`); return; }
+        game.fish -= price;
+        game.upgrades[id]++;
+        await saveToSupabase();
+        await checkAchievements();
+        renderUI();
+        showToast(`🎉 ${name} → ур.${game.upgrades[id]}`);
+    }
+
+    // ========== UI ОТРИСОВКА ==========
+    function renderUI() {
+        const root = document.getElementById('app');
+        if (!game.nickname) {
+            root.innerHTML = `
+                <h1>🦭 SEAL CLICKER</h1>
+                <div class="auth-panel">
+                    <h3>Регистрация</h3>
+                    <input type="text" id="regNick" class="auth-input" placeholder="Ник">
+                    <input type="password" id="regPass" class="auth-input" placeholder="Пароль">
+                    <button id="registerBtn">Зарегистрироваться</button>
+                    <hr>
+                    <h3>Вход</h3>
+                    <input type="text" id="loginNick" class="auth-input" placeholder="Ник">
+                    <input type="password" id="loginPass" class="auth-input" placeholder="Пароль">
+                    <button id="loginBtn">Войти</button>
+                </div>
+                <footer>Регистрация создаёт уникальный ник. После входа начнётся игра.</footer>
+            `;
+            document.getElementById('registerBtn').onclick = async () => {
+                const nick = document.getElementById('regNick').value.trim();
+                const pass = document.getElementById('regPass').value;
+                if (!nick || !pass) { alert("Заполните поля"); return; }
+                const newUser = await registerUser(nick, pass);
+                if (!newUser) { alert("Ник уже существует"); return; }
+                await loadFromSupabase(nick, pass);
+                startGameLoop();
+                renderUI();
+            };
+            document.getElementById('loginBtn').onclick = async () => {
+                const nick = document.getElementById('loginNick').value.trim();
+                const pass = document.getElementById('loginPass').value;
+                const user = await loadFromSupabase(nick, pass);
+                if (!user) { alert("Неверные данные"); return; }
+                startGameLoop();
+                renderUI();
+            };
+            return;
+        }
+
+        // ИГРОВОЙ ИНТЕРФЕЙС
         const fish = Math.floor(game.fish);
         const total = Math.floor(game.totalFish);
         const clickPower = getClickPower();
@@ -676,13 +635,12 @@
             achievementsHtml += `<div class="achievement ${unlocked ? 'unlocked' : ''}">${unlocked ? '✅' : '🔒'} ${ach.name}</div>`;
         }
 
-        const root = document.getElementById('app');
         root.innerHTML = `
             <h1>🦭 SEAL CLICKER</h1>
-            <div class="nick-panel" style="justify-content:space-between; background:#e9f3ed; border-radius:60px; padding:12px; margin-bottom:15px;">
-                <span>🐚 ${escapeHtml(currentUser)} | Роль: ${game.role === 'admin' ? '👑 Админ' : '🦭 Игрок'}</span>
+            <div class="nick-panel" style="display:flex; justify-content:space-between; background:#e9f3ed; border-radius:60px; padding:12px; margin-bottom:15px;">
+                <span>🐚 ${escapeHtml(game.nickname)}</span>
                 <span>⭐ Престиж +${game.prestigeBonus}%</span>
-                <button id="logoutBtn" style="background:#c2a575;">Выйти</button>
+                <button id="logoutBtn">Выйти</button>
             </div>
             <div class="seal-area" id="clickZone">
                 <div class="seal-emoji" id="sealEmoji">🦭</div>
@@ -698,11 +656,11 @@
                 <div class="stat">🏆 Всего: ${total.toLocaleString()}</div>
                 <div class="stat">🖱️ Кликов: ${game.stats.totalClicks}</div>
             </div>
-            ${blocked ? `<div class="warning">⛔ Античит: клики заблокированы</div>` : ''}
+            ${blocked ? `<div class="warning">⛔ Античит: клики заблокированы на несколько секунд</div>` : ''}
             <div class="action-buttons">
                 ${!game.anticheatDisabled ? `<button id="disableAnticheatBtn">🔓 Отключить защиту</button>` : `<button id="enableAnticheatBtn" style="background:#b48c60;">🛡️ Включить защиту</button>`}
-                ${game.role === 'admin' ? `<button id="adminPanelBtn">👑 Админ-панель</button>` : ''}
-                <button id="playersBtn">👥 Игроки</button>
+                <button id="adminPanelBtn">👑 Админ</button>
+                <button id="profileBtn">👤 Профиль</button>
                 <button id="leaderboardBtn">🏆 Топ</button>
                 <button id="prestigeBtn">🏅 Престиж</button>
             </div>
@@ -714,7 +672,6 @@
             </div>
         `;
 
-        // Обработчики
         document.getElementById('clickZone').onclick = () => {
             if (!registerClick()) return;
             let gain = getClickPower();
@@ -727,27 +684,17 @@
                 playSound(600, 0.08);
             }
         };
-        document.getElementById('logoutBtn').onclick = () => {
-            currentUser = null;
-            game = null;
-            if (passiveInterval) clearInterval(passiveInterval);
-            renderAuthUI();
-        };
+        document.getElementById('logoutBtn').onclick = () => { game.nickname = null; if (passiveInterval) clearInterval(passiveInterval); renderUI(); };
         if (!game.anticheatDisabled) {
             const btn = document.getElementById('disableAnticheatBtn');
-            if (btn) btn.onclick = () => {
-                const pwd = prompt("Введите пароль для отключения защиты:");
-                if (pwd) disableAnticheat(pwd);
-            };
+            if (btn) btn.onclick = showDisableAnticheatModal;
         } else {
             const btn = document.getElementById('enableAnticheatBtn');
             if (btn) btn.onclick = enableAnticheat;
         }
-        if (game.role === 'admin') {
-            document.getElementById('adminPanelBtn').onclick = showAdminPanel;
-        }
-        document.getElementById('playersBtn').onclick = showPlayers;
-        document.getElementById('leaderboardBtn').onclick = showLeaderboard;
+        document.getElementById('adminPanelBtn').onclick = showAdminModal;
+        document.getElementById('profileBtn').onclick = showProfileModal;
+        document.getElementById('leaderboardBtn').onclick = showLeaderboardModal;
         document.getElementById('prestigeBtn').onclick = doPrestige;
         document.querySelectorAll('.buy-btn').forEach(btn => {
             const id = btn.dataset.upgrade;
@@ -772,7 +719,6 @@
         alert(helps[upgradeId] || "Улучшение увеличивает доход.");
     }
 
-    // Вспомогательные
     let audioCtx = null;
     function playSound(freq, duration) {
         if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -813,14 +759,14 @@
     function startGameLoop() {
         if (passiveInterval) clearInterval(passiveInterval);
         if (eventInterval) clearInterval(eventInterval);
-        passiveInterval = setInterval(() => {
-            if (currentUser && game) {
+        passiveInterval = setInterval(async () => {
+            if (game.nickname) {
                 let inc = getPassiveIncome();
-                if (inc > 0) addFish(inc, false);
+                if (inc > 0) await addFish(inc, false);
             }
         }, 1000);
-        eventInterval = setInterval(() => {
-            if (currentUser && game && Math.random() < 0.4) {
+        eventInterval = setInterval(async () => {
+            if (game.nickname && Math.random() < 0.4) {
                 const events = [
                     { msg: "🐟 Косяк рыбы! +50", gain: 50 },
                     { msg: "💎 Золотая рыбка! +200", gain: 200 },
@@ -828,14 +774,14 @@
                 ];
                 const ev = events[Math.floor(Math.random() * events.length)];
                 let gain = ev.gain * getEventBonus();
-                addFish(gain, false);
+                await addFish(gain, false);
                 showToast(ev.msg + " " + Math.floor(gain) + " рыб!");
             }
         }, 25000);
     }
 
-    // Инициализация
-    renderAuthUI();
+    initAchievements();
+    renderUI();
 </script>
 </body>
 </html>
