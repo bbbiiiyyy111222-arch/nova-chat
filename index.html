@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>🦭 SEAL CLICKER | Регистрация + админ</title>
+    <title>🦭 SEAL CLICKER | Регистрация + Админ</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; user-select: none; }
@@ -41,10 +41,10 @@
 <div class="game-card" id="app"></div>
 
 <script>
-    // ==================== SUPABASE ====================
+    // ==================== ИНИЦИАЛИЗАЦИЯ SUPABASE (уникальное имя) ====================
     const SUPABASE_URL = 'https://pmvbhhidcojkkpumsxxb.supabase.co';
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBtdmJoaGlkY29qa2twdW1zeHhiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzcyNzk3MjcsImV4cCI6MjA5Mjg1NTcyN30.1eKxcaqeClRdAVH8lVcOdYaV0o_PbRzjnM9vBUP15QQ';
-    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
     // ========== ГЛОБАЛЬНОЕ СОСТОЯНИЕ ==========
     let game = {
@@ -64,7 +64,7 @@
         password: ''
     };
 
-    // ========== ДОСТИЖЕНИЯ (60+) ==========
+    // ========== ДОСТИЖЕНИЯ ==========
     function generateAchievements() {
         const list = [];
         for (let i = 1; i <= 20; i++) {
@@ -82,7 +82,7 @@
         for (let i = 1; i <= 5; i++) {
             list.push({ id: `crit_${i}`, name: `Крит ${i}`, cond: () => game.upgrades.crit >= i, reward: 80 * i });
         }
-        return list.slice(0, 60);
+        return list;
     }
     let achievementsList = generateAchievements();
     function initAchievements() { achievementsList.forEach(ach => { if (game.achievements[ach.id] === undefined) game.achievements[ach.id] = false; }); }
@@ -101,6 +101,7 @@
         if (changed) await saveToSupabase();
     }
 
+    // ========== ИГРОВЫЕ РАСЧЁТЫ ==========
     function getClickPower() {
         let base = 1 + game.upgrades.clickPower * 2;
         let mult = 1 + game.upgrades.clickMult * 0.03;
@@ -115,14 +116,74 @@
     function getCritChance() { return Math.min(70, game.upgrades.crit * 5); }
     function getEventBonus() { return 1 + game.upgrades.eventBonus * 0.1; }
 
-    async function addFish(amount, fromClick = false) {
+    // ========== РАБОТА С БАЗОЙ ==========
+    async function saveToSupabase() {
         if (!game.nickname) return;
-        game.fish += amount;
-        game.totalFish += amount;
-        if (fromClick) game.stats.totalClicks++;
-        await saveToSupabase();
-        await checkAchievements();
+        const data = {
+            nickname: game.nickname,
+            password: game.password,
+            fish: game.fish,
+            total_fish: game.totalFish,
+            click_power_level: game.upgrades.clickPower,
+            auto_level: game.upgrades.autoClicker,
+            crit_level: game.upgrades.crit,
+            click_mult_level: game.upgrades.clickMult,
+            passive_mult_level: game.upgrades.passiveMult,
+            event_bonus_level: game.upgrades.eventBonus,
+            prestige_bonus: game.prestigeBonus,
+            anticheat_disabled: game.anticheatDisabled,
+            stats: game.stats,
+            achievements: game.achievements,
+            updated_at: new Date(),
+        };
+        const { error } = await supabaseClient.from('users').upsert(data, { onConflict: 'nickname' });
+        if (error) console.error('Save error:', error);
+        const { error: lbError } = await supabaseClient.from('leaderboard').upsert({ nickname: game.nickname, total_fish: game.totalFish, updated_at: new Date() }, { onConflict: 'nickname' });
+        if (lbError) console.error('Leaderboard error:', lbError);
+    }
+
+    async function login(nickname, password) {
+        const { data, error } = await supabaseClient.from('users').select('*').eq('nickname', nickname).maybeSingle();
+        if (error || !data) { showToast("Неверный ник или пароль"); return false; }
+        if (data.password !== password) { showToast("Неверный пароль"); return false; }
+        game.nickname = data.nickname;
+        game.password = data.password;
+        game.fish = data.fish;
+        game.totalFish = data.total_fish;
+        game.upgrades = {
+            clickPower: data.click_power_level || 0,
+            autoClicker: data.auto_level || 0,
+            crit: data.crit_level || 0,
+            clickMult: data.click_mult_level || 0,
+            passiveMult: data.passive_mult_level || 0,
+            eventBonus: data.event_bonus_level || 0,
+        };
+        game.stats = data.stats || { totalClicks:0, prestigeCount:0 };
+        game.achievements = data.achievements || {};
+        game.anticheatDisabled = data.anticheat_disabled || false;
+        game.prestigeBonus = data.prestige_bonus || 0;
+        initAchievements();
         renderUI();
+        startGameLoop();
+        return true;
+    }
+
+    async function register(nickname, password) {
+        const { data: existing } = await supabaseClient.from('users').select('nickname').eq('nickname', nickname);
+        if (existing && existing.length) { showToast("Ник уже занят"); return false; }
+        const newUser = {
+            nickname, password,
+            fish: 0, total_fish: 0,
+            click_power_level: 0, auto_level: 0, crit_level: 0,
+            click_mult_level: 0, passive_mult_level: 0, event_bonus_level: 0,
+            prestige_bonus: 0,
+            anticheat_disabled: false,
+            stats: { totalClicks:0, prestigeCount:0 },
+            achievements: {},
+        };
+        const { error } = await supabaseClient.from('users').insert(newUser);
+        if (error) { showToast("Ошибка регистрации: " + error.message); return false; }
+        return await login(nickname, password);
     }
 
     // ========== АНТИЧИТ ==========
@@ -174,15 +235,15 @@
                     <input type="text" id="targetNick" placeholder="Ник игрока" style="width:100%; margin-bottom:8px;">
                     <input type="number" id="giveFish" placeholder="Рыба"> <button id="giveFishBtn">Выдать рыбу</button><br><br>
                     <select id="upgradeSelect">
-                        <option value="clickPower">Сила клика</option>
-                        <option value="autoClicker">Автокликер</option>
-                        <option value="crit">Крит</option>
-                        <option value="clickMult">Множитель клика</option>
-                        <option value="passiveMult">Множитель пассива</option>
-                        <option value="eventBonus">Бонус событий</option>
+                        <option value="click_power_level">Сила клика</option>
+                        <option value="auto_level">Автокликер</option>
+                        <option value="crit_level">Крит</option>
+                        <option value="click_mult_level">Множитель клика</option>
+                        <option value="passive_mult_level">Множитель пассива</option>
+                        <option value="event_bonus_level">Бонус событий</option>
                     </select>
                     <input type="number" id="giveLevels" placeholder="Уровней"> <button id="giveUpgradeBtn">Выдать уровни</button><br><br>
-                    <button id="resetDataBtn" style="background:#c7254e;">⚠️ СБРОСИТЬ ВСЕ ДАННЫЕ (ОЧИСТИТЬ ТАБЛИЦУ)</button>
+                    <button id="resetDataBtn" style="background:#c7254e;">⚠️ СБРОСИТЬ ВСЕ ДАННЫЕ</button>
                 </div>
             </div>
         `;
@@ -200,12 +261,12 @@
             const targetNick = modal.querySelector('#targetNick').value.trim();
             const amount = parseInt(modal.querySelector('#giveFish').value);
             if (!targetNick || isNaN(amount)) return;
-            const { data: user, error } = await supabase.from('users').select('fish, total_fish').eq('nickname', targetNick).maybeSingle();
+            const { data: user, error } = await supabaseClient.from('users').select('fish, total_fish').eq('nickname', targetNick).single();
             if (error || !user) { showToast("Игрок не найден"); return; }
             const newFish = (user.fish || 0) + amount;
             const newTotal = (user.total_fish || 0) + amount;
-            await supabase.from('users').update({ fish: newFish, total_fish: newTotal }).eq('nickname', targetNick);
-            await supabase.from('leaderboard').upsert({ nickname: targetNick, total_fish: newTotal, updated_at: new Date() }, { onConflict: 'nickname' });
+            await supabaseClient.from('users').update({ fish: newFish, total_fish: newTotal }).eq('nickname', targetNick);
+            await supabaseClient.from('leaderboard').upsert({ nickname: targetNick, total_fish: newTotal, updated_at: new Date() }, { onConflict: 'nickname' });
             showToast(`Выдано ${amount} рыбы игроку ${targetNick}`);
         };
         modal.querySelector('#giveUpgradeBtn').onclick = async () => {
@@ -213,16 +274,16 @@
             const up = modal.querySelector('#upgradeSelect').value;
             const levels = parseInt(modal.querySelector('#giveLevels').value);
             if (!targetNick || isNaN(levels)) return;
-            const { data: user, error } = await supabase.from('users').select(up).eq('nickname', targetNick).maybeSingle();
+            const { data: user, error } = await supabaseClient.from('users').select(up).eq('nickname', targetNick).single();
             if (error || !user) { showToast("Игрок не найден"); return; }
             const newLevel = (user[up] || 0) + levels;
-            await supabase.from('users').update({ [up]: newLevel }).eq('nickname', targetNick);
+            await supabaseClient.from('users').update({ [up]: newLevel }).eq('nickname', targetNick);
             showToast(`Улучшение ${up} +${levels} для ${targetNick}`);
         };
         modal.querySelector('#resetDataBtn').onclick = async () => {
-            if (confirm("Очистить ВСЕ данные? Все пользователи потеряют прогресс!")) {
-                await supabase.from('users').delete().neq('nickname', '');
-                await supabase.from('leaderboard').delete().neq('nickname', '');
+            if (confirm("Очистить ВСЕ данные? Будет удалена вся таблица users и leaderboard!")) {
+                await supabaseClient.from('users').delete().neq('nickname', '');
+                await supabaseClient.from('leaderboard').delete().neq('nickname', '');
                 showToast("Все данные сброшены");
                 if (game.nickname) location.reload();
             }
@@ -252,10 +313,10 @@
             const pass = modal.querySelector('#confirmPass').value;
             if (!newNick || !pass) { showToast("Заполните поля"); return; }
             if (pass !== game.password) { showToast("Неверный пароль"); return; }
-            const { data: existing } = await supabase.from('users').select('nickname').eq('nickname', newNick);
+            const { data: existing } = await supabaseClient.from('users').select('nickname').eq('nickname', newNick);
             if (existing && existing.length) { showToast("Ник занят"); return; }
-            await supabase.from('users').update({ nickname: newNick }).eq('nickname', game.nickname);
-            await supabase.from('leaderboard').update({ nickname: newNick }).eq('nickname', game.nickname);
+            await supabaseClient.from('users').update({ nickname: newNick }).eq('nickname', game.nickname);
+            await supabaseClient.from('leaderboard').update({ nickname: newNick }).eq('nickname', game.nickname);
             game.nickname = newNick;
             showToast("Ник изменён!");
             modal.remove();
@@ -265,8 +326,8 @@
 
     // ========== ЛИДЕРБОРД ==========
     async function showLeaderboardModal() {
-        const { data, error } = await supabase.from('leaderboard').select('nickname, total_fish').order('total_fish', { ascending: false }).limit(20);
-        if (error) { alert("Ошибка загрузки"); return; }
+        const { data, error } = await supabaseClient.from('leaderboard').select('nickname, total_fish').order('total_fish', { ascending: false }).limit(20);
+        if (error) { alert("Ошибка загрузки топа"); return; }
         let msg = "🏆 ГЛОБАЛЬНЫЙ ТОП 🏆\n";
         data.forEach((u,i) => msg += `${i+1}. ${u.nickname} — ${u.total_fish.toLocaleString()} 🐟\n`);
         alert(msg);
@@ -275,7 +336,7 @@
     // ========== ПРЕСТИЖ ==========
     async function doPrestige() {
         if (game.totalFish < 5000) { showToast("Нужно 5000 общей рыбы"); return; }
-        if (confirm("Престиж: сбросить рыбу и улучшения, получить +50% к силе клика?")) {
+        if (confirm("Престиж: сбросить рыбу и улучшения, получить +50% к силе клика навсегда?")) {
             game.prestigeBonus += 50;
             game.fish = 0;
             game.totalFish = 0;
@@ -301,72 +362,14 @@
         showToast(`🎉 ${name} → ур.${game.upgrades[id]}`);
     }
 
-    // ========== РАБОТА С БАЗОЙ ==========
-    async function saveToSupabase() {
+    async function addFish(amount, fromClick = false) {
         if (!game.nickname) return;
-        const data = {
-            nickname: game.nickname,
-            password: game.password,
-            fish: game.fish,
-            total_fish: game.totalFish,
-            click_power_level: game.upgrades.clickPower,
-            auto_level: game.upgrades.autoClicker,
-            crit_level: game.upgrades.crit,
-            click_mult_level: game.upgrades.clickMult,
-            passive_mult_level: game.upgrades.passiveMult,
-            event_bonus_level: game.upgrades.eventBonus,
-            prestige_bonus: game.prestigeBonus,
-            anticheat_disabled: game.anticheatDisabled,
-            stats: game.stats,
-            achievements: game.achievements,
-            updated_at: new Date(),
-        };
-        await supabase.from('users').upsert(data, { onConflict: 'nickname' });
-        await supabase.from('leaderboard').upsert({ nickname: game.nickname, total_fish: game.totalFish, updated_at: new Date() }, { onConflict: 'nickname' });
-    }
-
-    async function login(nickname, password) {
-        const { data, error } = await supabase.from('users').select('*').eq('nickname', nickname).maybeSingle();
-        if (error || !data) { showToast("Неверный ник или пароль"); return false; }
-        if (data.password !== password) { showToast("Неверный пароль"); return false; }
-        game.nickname = data.nickname;
-        game.password = data.password;
-        game.fish = data.fish;
-        game.totalFish = data.total_fish;
-        game.upgrades = {
-            clickPower: data.click_power_level || 0,
-            autoClicker: data.auto_level || 0,
-            crit: data.crit_level || 0,
-            clickMult: data.click_mult_level || 0,
-            passiveMult: data.passive_mult_level || 0,
-            eventBonus: data.event_bonus_level || 0,
-        };
-        game.stats = data.stats || { totalClicks:0, prestigeCount:0 };
-        game.achievements = data.achievements || {};
-        game.anticheatDisabled = data.anticheat_disabled || false;
-        game.prestigeBonus = data.prestige_bonus || 0;
-        initAchievements();
+        game.fish += amount;
+        game.totalFish += amount;
+        if (fromClick) game.stats.totalClicks++;
+        await saveToSupabase();
+        await checkAchievements();
         renderUI();
-        startGameLoop();
-        return true;
-    }
-
-    async function register(nickname, password) {
-        const { data: existing } = await supabase.from('users').select('nickname').eq('nickname', nickname);
-        if (existing && existing.length) { showToast("Ник уже занят"); return false; }
-        const newUser = {
-            nickname, password,
-            fish: 0, total_fish: 0,
-            click_power_level: 0, auto_level: 0, crit_level: 0,
-            click_mult_level: 0, passive_mult_level: 0, event_bonus_level: 0,
-            prestige_bonus: 0,
-            anticheat_disabled: false,
-            stats: { totalClicks:0, prestigeCount:0 },
-            achievements: {},
-        };
-        const { error } = await supabase.from('users').insert(newUser);
-        if (error) { showToast("Ошибка регистрации"); return false; }
-        return await login(nickname, password);
     }
 
     // ========== ОТКЛЮЧЕНИЕ АНТИЧИТА (МОДАЛКА) ==========
@@ -410,7 +413,7 @@
                 const nick = document.getElementById('regNick').value.trim();
                 const pass = document.getElementById('regPass').value;
                 if (!nick || !pass) { showToast("Введите ник и пароль"); return; }
-                await register(nick, pass);
+                if (await register(nick, pass)) renderUI();
             };
             document.getElementById('loginBtn').onclick = async () => {
                 const nick = document.getElementById('loginNick').value.trim();
@@ -422,6 +425,7 @@
             return;
         }
 
+        // Основной игровой интерфейс
         const fish = Math.floor(game.fish);
         const total = Math.floor(game.totalFish);
         const clickPower = getClickPower();
@@ -498,9 +502,10 @@
                 <strong>🏅 ДОСТИЖЕНИЯ (${unlockCount}/${achievementsList.length})</strong>
                 <div style="max-height:200px; overflow-y:auto;">${achievementsHtml}</div>
             </div>
-            <footer>Автосохранение в облаке.</footer>
+            <footer>Автосохранение в облаке. Админ-панель и отключение защиты — по паролям (не отображаются).</footer>
         `;
 
+        // Обработчики
         document.getElementById('clickZone').onclick = () => {
             if (!registerClick()) return;
             let gain = getClickPower();
