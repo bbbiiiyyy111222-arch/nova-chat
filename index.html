@@ -3,8 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>🦭 SEAL CLICKER | Роли + автосинхронизация</title>
+    <title>🦭 SEAL CLICKER | Стабильная сессия</title>
     <style>
+        /* ... те же стили, что и выше (чтобы не раздувать, они идентичны) ... */
         * { margin: 0; padding: 0; box-sizing: border-box; user-select: none; }
         body { background: #1e6b3e; font-family: 'Segoe UI', system-ui; min-height: 100vh; display: flex; justify-content: center; align-items: center; padding: 20px; }
         .game-card { max-width: 900px; width: 100%; background: #fffef5; border-radius: 60px; padding: 25px; box-shadow: 0 20px 30px rgba(0,0,0,0.3); }
@@ -56,8 +57,8 @@
         const raw = localStorage.getItem('seal_accounts');
         if (raw) { try { accounts = JSON.parse(raw); } catch(e) { accounts = {}; } }
         else { accounts = {}; }
-        const saved = localStorage.getItem('seal_current_user');
-        if (saved && accounts[saved]) currentUser = saved;
+        const savedUser = localStorage.getItem('seal_current_user');
+        if (savedUser && accounts[savedUser]) currentUser = savedUser;
         else currentUser = null;
     }
     function saveData() {
@@ -306,7 +307,7 @@
         };
     }
 
-    // ==================== СПИСОК ИГРОКОВ (ОТДЕЛЬНАЯ КНОПКА, БЕЗ АДМИНКИ) ====================
+    // ==================== СПИСОК ИГРОКОВ ====================
     function showPlayersList() {
         const modal = document.createElement('div');
         modal.className = 'modal';
@@ -424,7 +425,7 @@
         initAchievements(accounts[nick]);
         saveData();
         currentUser = nick;
-        saveData();
+        saveData(); // гарантированно запишем currentUser
         showToast("Регистрация успешна!");
         renderUI();
         startLoops();
@@ -449,16 +450,13 @@
         renderUI();
     }
 
-    // ==================== АВТО-СИНХРОНИЗАЦИЯ (РАБОТАЕТ КАЖДЫЕ 3 СЕКУНДЫ) ====================
-    // Сохраняем последнюю "сырую" версию данных текущего игрока, чтобы сравнивать.
+    // ==================== АВТОСИНХРОНИЗАЦИЯ ====================
     let lastDataString = "";
     function startDataSync() {
         if (syncInterval) clearInterval(syncInterval);
         syncInterval = setInterval(() => {
             if (currentUser && accounts[currentUser]) {
-                // Берём актуальные данные из accounts
                 const currentData = accounts[currentUser];
-                // Создаём строковое представление только для сравнения (без учёта clickTimestamps, чтобы не было ложных срабатываний)
                 const dataForCheck = {
                     fish: currentData.fish,
                     totalFish: currentData.totalFish,
@@ -472,7 +470,6 @@
                 };
                 const currentString = JSON.stringify(dataForCheck);
                 if (lastDataString !== "" && lastDataString !== currentString) {
-                    // Данные изменились! Перерисовываем интерфейс.
                     renderUI();
                     showToast("🔄 Данные обновлены автоматически");
                 }
@@ -625,7 +622,7 @@
             document.getElementById('enableAnticheatBtn').onclick = enableAnticheat;
         }
         document.getElementById('adminPanelBtn').onclick = showAdminModal;
-        document.getElementById('playersListBtn').onclick = showPlayersList;  // Новая кнопка
+        document.getElementById('playersListBtn').onclick = showPlayersList;
         document.getElementById('profileBtn').onclick = showProfileModal;
         document.getElementById('leaderboardBtn').onclick = showLeaderboard;
         document.getElementById('prestigeBtn').onclick = doPrestige;
@@ -701,7 +698,7 @@
                 showToast(ev.msg + " " + Math.floor(gain) + " рыб!");
             }
         }, 25000);
-        startDataSync();  // синхронизация каждые 3 секунды
+        startDataSync();
     }
 
     loadData();
