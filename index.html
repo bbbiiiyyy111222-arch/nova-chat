@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>🦭 SEAL CLICKER | Античит + престиж</title>
+    <title>🦭 SEAL CLICKER | Супер-версия</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         * {
             margin: 0;
@@ -21,18 +22,14 @@
             padding: 20px;
         }
         .game-card {
-            max-width: 550px;
+            max-width: 700px;
             width: 100%;
             background: #fffef5;
             border-radius: 60px;
             padding: 25px;
             box-shadow: 0 20px 30px rgba(0,0,0,0.3);
         }
-        h1 {
-            text-align: center;
-            color: #1c6948;
-            margin-bottom: 20px;
-        }
+        h1 { text-align: center; color: #1c6948; margin-bottom: 20px; }
         .nick-panel {
             background: #e9f3ed;
             border-radius: 60px;
@@ -60,16 +57,8 @@
             transition: 0.05s linear;
         }
         button:active { transform: scale(0.97); }
-        .seal-area {
-            text-align: center;
-            cursor: pointer;
-            margin: 20px 0;
-        }
-        .seal-emoji {
-            font-size: 8rem;
-            display: inline-block;
-            transition: 0.07s;
-        }
+        .seal-area { text-align: center; cursor: pointer; margin: 20px 0; }
+        .seal-emoji { font-size: 8rem; display: inline-block; transition: 0.07s; }
         .click-effect { transform: scale(0.9); }
         .fish-counter {
             background: #2a5c48;
@@ -106,21 +95,21 @@
             align-items: center;
             flex-wrap: wrap;
         }
-        .anticheat-panel {
-            background: #f0e5d8;
-            border-radius: 50px;
-            padding: 12px;
-            margin: 15px 0;
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
+        .upgrade-info { flex: 2; }
+        .upgrade-name { font-weight: bold; }
+        .upgrade-desc { font-size: 0.7rem; color: #7a6a54; }
+        .help-icon {
+            background: #ffb347;
+            border-radius: 50%;
+            width: 22px;
+            height: 22px;
+            display: inline-flex;
             align-items: center;
-        }
-        .anticheat-panel input {
-            flex: 2;
-            padding: 8px;
-            border-radius: 50px;
-            border: 1px solid #cca86b;
+            justify-content: center;
+            font-weight: bold;
+            cursor: pointer;
+            margin-left: 8px;
+            font-size: 0.8rem;
         }
         .warning {
             background: #f9e6e6;
@@ -131,18 +120,19 @@
             font-size: 0.8rem;
             margin-top: 10px;
         }
-        .leaderboard-btn, .prestige-btn {
-            width: 100%;
-            margin-top: 10px;
-            background: #ffb347;
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin: 15px 0;
         }
-        .prestige-btn { background: #b48c60; color: white; }
+        .action-buttons button { flex: 1; }
         .achievements {
             background: #f7efdd;
             border-radius: 40px;
             padding: 12px;
             margin-top: 20px;
-            max-height: 200px;
+            max-height: 250px;
             overflow-y: auto;
         }
         .achievement {
@@ -170,47 +160,141 @@
             80% { opacity: 1; }
             100% { opacity: 0; visibility: hidden; }
         }
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0,0,0,0.7);
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+        }
+        .modal-content {
+            background: #fffef5;
+            border-radius: 60px;
+            padding: 25px;
+            max-width: 500px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        .modal-content h3 { margin-bottom: 15px; }
+        .close-modal {
+            float: right;
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
         footer {
             font-size: 0.7rem;
             text-align: center;
             margin-top: 20px;
             color: #6e8f7a;
         }
+        .player-list {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .player-item {
+            padding: 8px;
+            border-bottom: 1px solid #ddd;
+            cursor: pointer;
+        }
+        .player-item:hover { background: #f0e5d8; }
     </style>
 </head>
 <body>
 <div class="game-card" id="app"></div>
 
 <script>
-    // ==================== ИГРОВОЕ СОСТОЯНИЕ (localStorage) ====================
+    // ==================== SUPABASE ====================
+    const SUPABASE_URL = 'https://pmvbhhidcojkkpumsxxb.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBtdmJoaGlkY29qa2twdW1zeHhiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzcyNzk3MjcsImV4cCI6MjA5Mjg1NTcyN30.1eKxcaqeClRdAVH8lVcOdYaV0o_PbRzjnM9vBUP15QQ';
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    // Глобальное состояние
     let game = {
         nickname: null,
         fish: 0,
         totalFish: 0,
         upgrades: {
-            clickPower: 0,      // +2 рыбы/клик
-            autoClicker: 0,     // +1 рыба/сек
+            clickPower: 0,
+            autoClicker: 0,
+            crit: 0,
+            bank: 0,
+            clickMult: 0,
+            passiveMult: 0,
+            eventBonus: 0,
         },
         stats: { totalClicks: 0, prestigeCount: 0 },
         achievements: {},
         anticheatDisabled: false,
         anticheatBlockedUntil: 0,
         clickTimestamps: [],
+        role: 'player',   // player или developer
+        prestigeBonus: 0,
     };
 
-    // -------------------- Достижения (10 штук) --------------------
-    const achievementsList = [
-        { id: "total_100", name: "100 рыб", cond: () => game.totalFish >= 100, reward: 50 },
-        { id: "total_1000", name: "1000 рыб", cond: () => game.totalFish >= 1000, reward: 150 },
-        { id: "total_10000", name: "10 000 рыб", cond: () => game.totalFish >= 10000, reward: 500 },
-        { id: "clicks_100", name: "100 кликов", cond: () => game.stats.totalClicks >= 100, reward: 50 },
-        { id: "clicks_1000", name: "1000 кликов", cond: () => game.stats.totalClicks >= 1000, reward: 200 },
-        { id: "clickPower_5", name: "Сила клика 5", cond: () => game.upgrades.clickPower >= 5, reward: 150 },
-        { id: "auto_5", name: "Автокликер 5", cond: () => game.upgrades.autoClicker >= 5, reward: 200 },
-        { id: "prestige_1", name: "Первый престиж", cond: () => game.stats.prestigeCount >= 1, reward: 500 },
-        { id: "total_50000", name: "50 000 рыб", cond: () => game.totalFish >= 50000, reward: 2000 },
-        { id: "clickPower_10", name: "Сила клика 10", cond: () => game.upgrades.clickPower >= 10, reward: 500 },
-    ];
+    // ========== ГЕНЕРАЦИЯ 50+ ДОСТИЖЕНИЙ ==========
+    function generateAchievements() {
+        const list = [];
+        // за общую рыбу
+        for (let i = 1; i <= 20; i++) {
+            let target = 100 * Math.pow(1.6, i-1);
+            list.push({
+                id: `total_${i}`,
+                name: `${Math.floor(target).toLocaleString()} рыб`,
+                cond: () => game.totalFish >= target,
+                reward: Math.floor(target * 0.1)
+            });
+        }
+        // за клики
+        for (let i = 1; i <= 15; i++) {
+            let clicks = 50 * Math.pow(2, i-1);
+            list.push({
+                id: `clicks_${i}`,
+                name: `${Math.floor(clicks).toLocaleString()} кликов`,
+                cond: () => game.stats.totalClicks >= clicks,
+                reward: Math.floor(clicks * 0.2)
+            });
+        }
+        // уровни силы клика
+        for (let i = 1; i <= 10; i++) {
+            list.push({
+                id: `clickPower_${i}`,
+                name: `Сила клика ${i}`,
+                cond: () => game.upgrades.clickPower >= i,
+                reward: 50 * i
+            });
+        }
+        // уровни автокликера
+        for (let i = 1; i <= 10; i++) {
+            list.push({
+                id: `auto_${i}`,
+                name: `Автокликер ${i}`,
+                cond: () => game.upgrades.autoClicker >= i,
+                reward: 60 * i
+            });
+        }
+        // остальные улучшения
+        for (let i = 1; i <= 5; i++) {
+            list.push({
+                id: `crit_${i}`,
+                name: `Крит ${i}`,
+                cond: () => game.upgrades.crit >= i,
+                reward: 80 * i
+            });
+            list.push({
+                id: `bank_${i}`,
+                name: `Банк ${i}`,
+                cond: () => game.upgrades.bank >= i,
+                reward: 150 * i
+            });
+        }
+        return list.slice(0, 70);
+    }
+
+    let achievementsList = generateAchievements();
 
     function initAchievements() {
         achievementsList.forEach(ach => {
@@ -218,7 +302,7 @@
         });
     }
 
-    function checkAchievements() {
+    async function checkAchievements() {
         let changed = false;
         for (let ach of achievementsList) {
             if (!game.achievements[ach.id] && ach.cond()) {
@@ -229,30 +313,41 @@
                 showToast(`🏆 Достижение: ${ach.name}! +${ach.reward} рыб`);
             }
         }
-        if (changed) saveGame();
+        if (changed) await saveToSupabase();
     }
 
-    // -------------------- Игровые расчёты --------------------
+    // ========== ИГРОВЫЕ РАСЧЁТЫ ==========
     function getClickPower() {
         let base = 1 + game.upgrades.clickPower * 2;
-        let prestigeBonus = parseInt(localStorage.getItem('prestigeBonus') || 0);
-        return Math.floor(base * (1 + prestigeBonus / 100));
+        let mult = 1 + game.upgrades.clickMult * 0.03;
+        let prestige = game.prestigeBonus;
+        return Math.floor(base * mult * (1 + prestige / 100));
     }
     function getPassiveIncome() {
-        return game.upgrades.autoClicker * 1;
+        let inc = game.upgrades.autoClicker * 1;
+        let mult = 1 + game.upgrades.passiveMult * 0.02;
+        return Math.floor(inc * mult);
     }
+    function getCritChance() { return Math.min(70, game.upgrades.crit * 5); }
+    function getBankBonus() { return game.upgrades.bank * 0.005; }
+    function getEventBonus() { return 1 + game.upgrades.eventBonus * 0.1; }
 
-    function addFish(amount, fromClick = false) {
+    async function addFish(amount, fromClick = false) {
         if (!game.nickname) return;
-        game.fish += amount;
-        game.totalFish += amount;
+        let final = amount;
+        if (fromClick && getBankBonus() > 0) {
+            final += Math.floor(game.totalFish * getBankBonus());
+        }
+        game.fish += final;
+        game.totalFish += final;
         if (fromClick) game.stats.totalClicks++;
-        saveGame();
-        checkAchievements();
+        await saveToSupabase();
+        await checkAchievements();
+        await updateLeaderboard();
         renderUI();
     }
 
-    // -------------------- Анти-автоклик --------------------
+    // ========== АНТИЧИТ ==========
     function isAnticheatBlocked() {
         if (game.anticheatDisabled) return false;
         if (Date.now() < game.anticheatBlockedUntil) return true;
@@ -277,145 +372,293 @@
         return true;
     }
 
-    function disableAnticheat(password) {
-        if (password === "seal") {
-            game.anticheatDisabled = true;
-            saveGame();
-            showToast("✅ Защита от авто-клика отключена навсегда!");
-            renderUI();
-        } else {
-            showToast("❌ Неверный пароль!");
-        }
+    // Отключение защиты (модальное окно)
+    function showDisableAnticheatModal() {
+        const modalHtml = `
+            <div class="modal-content">
+                <span class="close-modal">&times;</span>
+                <h3>Отключение защиты от авто-клика</h3>
+                <p>Введите пароль для отключения:</p>
+                <input type="password" id="anticheatPass" placeholder="Пароль" style="width:100%; padding:8px; margin:10px 0;">
+                <button id="confirmDisableBtn">Отключить навсегда</button>
+            </div>
+        `;
+        const modal = document.createElement('div');
+        modal.className = 'modal';
+        modal.innerHTML = modalHtml;
+        document.body.appendChild(modal);
+        modal.style.display = 'flex';
+        modal.querySelector('.close-modal').onclick = () => modal.remove();
+        modal.querySelector('#confirmDisableBtn').onclick = async () => {
+            const pass = modal.querySelector('#anticheatPass').value;
+            if (pass === 'seal') {
+                game.anticheatDisabled = true;
+                await saveToSupabase();
+                showToast("✅ Защита отключена навсегда!");
+                modal.remove();
+                renderUI();
+            } else {
+                showToast("❌ Неверный пароль!");
+            }
+        };
     }
 
-    // -------------------- Престиж --------------------
-    function doPrestige() {
-        if (game.totalFish < 5000) {
-            showToast("Нужно 5000 рыб для престижа!");
-            return;
-        }
-        if (confirm("Престиж: сбросить рыбу и улучшения, но получить +50% к силе клика навсегда?")) {
-            let bonus = parseInt(localStorage.getItem('prestigeBonus') || 0);
-            bonus += 50;
-            localStorage.setItem('prestigeBonus', bonus);
+    // ========== АДМИН-ПАНЕЛЬ ==========
+    async function showAdminModal() {
+        const modalHtml = `
+            <div class="modal-content">
+                <span class="close-modal">&times;</span>
+                <h3>👑 Административная панель</h3>
+                <input type="password" id="adminPass" placeholder="Пароль администратора" style="width:100%; margin:10px 0;">
+                <button id="adminLoginBtn">Войти</button>
+                <div id="adminControls" style="display:none; margin-top:15px;">
+                    <h4>Выдать ресурсы:</h4>
+                    <input type="number" id="giveFish" placeholder="Количество рыбы">
+                    <button id="giveFishBtn">Выдать рыбу</button><br><br>
+                    <select id="upgradeSelect">
+                        <option value="clickPower">Сила клика</option>
+                        <option value="autoClicker">Автокликер</option>
+                        <option value="crit">Крит</option>
+                        <option value="bank">Банк</option>
+                        <option value="clickMult">Множитель клика</option>
+                        <option value="passiveMult">Множитель пассива</option>
+                        <option value="eventBonus">Бонус событий</option>
+                    </select>
+                    <input type="number" id="giveLevels" placeholder="Количество уровней">
+                    <button id="giveUpgradeBtn">Выдать уровни</button><br><br>
+                    <select id="roleSelect">
+                        <option value="player">Обычный игрок</option>
+                        <option value="developer">Разработчик</option>
+                    </select>
+                    <button id="setRoleBtn">Установить роль</button><br><br>
+                    <button id="resetAnticheatBtn">Сбросить античит-блокировку</button>
+                </div>
+            </div>
+        `;
+        const modal = document.createElement('div');
+        modal.className = 'modal';
+        modal.innerHTML = modalHtml;
+        document.body.appendChild(modal);
+        modal.style.display = 'flex';
+        modal.querySelector('.close-modal').onclick = () => modal.remove();
+
+        const adminLoginBtn = modal.querySelector('#adminLoginBtn');
+        const adminControls = modal.querySelector('#adminControls');
+        adminLoginBtn.onclick = () => {
+            const pass = modal.querySelector('#adminPass').value;
+            if (pass === 'seal123') {
+                adminControls.style.display = 'block';
+                adminLoginBtn.disabled = true;
+            } else {
+                showToast("Неверный пароль!");
+            }
+        };
+        // Выдать рыбу
+        modal.querySelector('#giveFishBtn').onclick = async () => {
+            const amount = parseInt(modal.querySelector('#giveFish').value);
+            if (isNaN(amount)) return;
+            game.fish += amount;
+            game.totalFish += amount;
+            await saveToSupabase();
+            await checkAchievements();
+            renderUI();
+            showToast(`Выдано ${amount} рыбы`);
+        };
+        // Выдать уровни улучшения
+        modal.querySelector('#giveUpgradeBtn').onclick = async () => {
+            const upgrade = modal.querySelector('#upgradeSelect').value;
+            const levels = parseInt(modal.querySelector('#giveLevels').value);
+            if (isNaN(levels)) return;
+            game.upgrades[upgrade] += levels;
+            await saveToSupabase();
+            await checkAchievements();
+            renderUI();
+            showToast(`Улучшение ${upgrade} повышено на ${levels}`);
+        };
+        // Установить роль
+        modal.querySelector('#setRoleBtn').onclick = async () => {
+            const role = modal.querySelector('#roleSelect').value;
+            game.role = role;
+            await saveToSupabase();
+            renderUI();
+            showToast(`Ваша роль: ${role === 'developer' ? 'Разработчик' : 'Обычный игрок'}`);
+        };
+        // Сброс античита
+        modal.querySelector('#resetAnticheatBtn').onclick = async () => {
+            game.anticheatBlockedUntil = 0;
+            await saveToSupabase();
+            showToast("Античит разблокирован");
+            renderUI();
+        };
+    }
+
+    // ========== ПРОФИЛЬ И СПИСОК ИГРОКОВ ==========
+    async function showProfileModal() {
+        const { data: allPlayers, error } = await supabase
+            .from('users')
+            .select('nickname, total_fish, role')
+            .order('total_fish', { ascending: false });
+        if (error) { showToast("Ошибка загрузки"); return; }
+        const playersHtml = allPlayers.map(p => `
+            <div class="player-item" data-nick="${p.nickname}">
+                <strong>${escapeHtml(p.nickname)}</strong> (${p.role === 'developer' ? '👑 Разработчик' : '🦭 Игрок'}) — ${p.total_fish.toLocaleString()} 🐟
+            </div>
+        `).join('');
+        const modalHtml = `
+            <div class="modal-content">
+                <span class="close-modal">&times;</span>
+                <h3>👥 Все игроки</h3>
+                <div class="player-list">${playersHtml || "Нет данных"}</div>
+                <div id="selectedProfile" style="margin-top:15px; border-top:1px solid #ccc; padding-top:10px;"></div>
+            </div>
+        `;
+        const modal = document.createElement('div');
+        modal.className = 'modal';
+        modal.innerHTML = modalHtml;
+        document.body.appendChild(modal);
+        modal.style.display = 'flex';
+        modal.querySelector('.close-modal').onclick = () => modal.remove();
+        // Обработка клика по игроку
+        modal.querySelectorAll('.player-item').forEach(el => {
+            el.onclick = async () => {
+                const nick = el.dataset.nick;
+                const { data: userData, error } = await supabase
+                    .from('users')
+                    .select('*')
+                    .eq('nickname', nick)
+                    .single();
+                if (error || !userData) return;
+                const profileHtml = `
+                    <h4>Профиль: ${escapeHtml(userData.nickname)}</h4>
+                    <p>Роль: ${userData.role === 'developer' ? 'Разработчик' : 'Обычный игрок'}</p>
+                    <p>Всего рыбы: ${userData.total_fish.toLocaleString()}</p>
+                    <p>Сила клика: ${1 + (userData.click_power_level||0)*2}</p>
+                    <p>Пассив: ${(userData.auto_level||0)}/сек</p>
+                    <p>Крит: ${(userData.crit_level||0)*5}%</p>
+                `;
+                modal.querySelector('#selectedProfile').innerHTML = profileHtml;
+            };
+        });
+    }
+
+    // ========== ПОЯСНЕНИЯ К УЛУЧШЕНИЯМ ==========
+    function showUpgradeHelp(upgradeId) {
+        const helps = {
+            clickPower: "🐟 Острый зуб: каждый уровень даёт +2 рыбы за клик.",
+            autoClicker: "⏱️ Автокормушка: каждый уровень даёт +1 рыбу в секунду.",
+            crit: "⚡ Крит-удар: каждый уровень даёт +5% шанс получить x2 рыбы за клик.",
+            bank: "🏦 Банк: каждый уровень даёт +0.5% от общей пойманной рыбы за клик.",
+            clickMult: "📈 Множитель клика: каждый уровень увеличивает силу клика на 3%.",
+            passiveMult: "📈 Множитель пассива: каждый уровень увеличивает пассивный доход на 2%.",
+            eventBonus: "🎁 Бонус событий: каждый уровень увеличивает награду от случайных событий на 10%.",
+        };
+        alert(helps[upgradeId] || "Улучшение увеличивает ваш доход.");
+    }
+
+    // ========== SUPABASE: СОХРАНЕНИЕ И ЗАГРУЗКА ==========
+    async function saveToSupabase() {
+        if (!game.nickname) return;
+        const data = {
+            nickname: game.nickname,
+            fish: game.fish,
+            total_fish: game.totalFish,
+            click_power_level: game.upgrades.clickPower,
+            auto_level: game.upgrades.autoClicker,
+            crit_level: game.upgrades.crit,
+            bank_level: game.upgrades.bank,
+            click_mult_level: game.upgrades.clickMult,
+            passive_mult_level: game.upgrades.passiveMult,
+            event_bonus_level: game.upgrades.eventBonus,
+            prestige_bonus: game.prestigeBonus,
+            anticheat_disabled: game.anticheatDisabled,
+            role: game.role,
+            stats: game.stats,
+            achievements: game.achievements,
+            updated_at: new Date(),
+        };
+        await supabase.from('users').upsert(data, { onConflict: 'nickname' });
+        await supabase.from('leaderboard').upsert({ nickname: game.nickname, total_fish: game.totalFish, updated_at: new Date() }, { onConflict: 'nickname' });
+    }
+
+    async function loadFromSupabase(nickname) {
+        const { data, error } = await supabase.from('users').select('*').eq('nickname', nickname).maybeSingle();
+        if (error || !data) {
+            // новый пользователь
+            game.nickname = nickname;
             game.fish = 0;
             game.totalFish = 0;
-            game.upgrades = { clickPower: 0, autoClicker: 0 };
+            game.upgrades = { clickPower:0, autoClicker:0, crit:0, bank:0, clickMult:0, passiveMult:0, eventBonus:0 };
+            game.stats = { totalClicks:0, prestigeCount:0 };
+            game.achievements = {};
+            game.anticheatDisabled = false;
+            game.role = 'player';
+            game.prestigeBonus = 0;
+            initAchievements();
+            await saveToSupabase();
+            return;
+        }
+        game.nickname = data.nickname;
+        game.fish = data.fish;
+        game.totalFish = data.total_fish;
+        game.upgrades = {
+            clickPower: data.click_power_level || 0,
+            autoClicker: data.auto_level || 0,
+            crit: data.crit_level || 0,
+            bank: data.bank_level || 0,
+            clickMult: data.click_mult_level || 0,
+            passiveMult: data.passive_mult_level || 0,
+            eventBonus: data.event_bonus_level || 0,
+        };
+        game.stats = data.stats || { totalClicks:0, prestigeCount:0 };
+        game.achievements = data.achievements || {};
+        game.anticheatDisabled = data.anticheat_disabled || false;
+        game.role = data.role || 'player';
+        game.prestigeBonus = data.prestige_bonus || 0;
+        initAchievements();
+    }
+
+    async function updateLeaderboard() {
+        await supabase.from('leaderboard').upsert({ nickname: game.nickname, total_fish: game.totalFish, updated_at: new Date() }, { onConflict: 'nickname' });
+    }
+
+    async function showLeaderboardModal() {
+        const { data, error } = await supabase.from('leaderboard').select('nickname, total_fish').order('total_fish', { ascending: false }).limit(20);
+        if (error) { showToast("Ошибка"); return; }
+        let msg = "🏆 ГЛОБАЛЬНЫЙ ТОП 🏆\n";
+        data.forEach((u, i) => msg += `${i+1}. ${u.nickname} — ${u.total_fish.toLocaleString()} 🐟\n`);
+        alert(msg);
+    }
+
+    // ========== ПРЕСТИЖ ==========
+    async function doPrestige() {
+        if (game.totalFish < 5000) { showToast("Нужно 5000 общей рыбы"); return; }
+        if (confirm("Престиж: сбросить рыбу и улучшения, получить +50% к силе клика навсегда?")) {
+            game.prestigeBonus += 50;
+            game.fish = 0;
+            game.totalFish = 0;
+            game.upgrades = { clickPower:0, autoClicker:0, crit:0, bank:0, clickMult:0, passiveMult:0, eventBonus:0 };
             game.stats.prestigeCount++;
-            saveGame();
-            checkAchievements();
+            await saveToSupabase();
+            await checkAchievements();
             renderUI();
             showToast("🌟 Престиж! +50% к силе клика.");
         }
     }
 
-    // -------------------- Покупка улучшений --------------------
-    function buyUpgrade(upgradeId, basePrice, name) {
-        if (!game.nickname) return;
-        let level = game.upgrades[upgradeId];
+    // ========== ПОКУПКА УЛУЧШЕНИЙ ==========
+    async function buyUpgrade(id, basePrice, name) {
+        let level = game.upgrades[id];
         let price = Math.floor(basePrice * (level + 1));
-        if (game.fish < price) {
-            showToast(`❌ Не хватает рыбы (нужно ${price})`);
-            return;
-        }
+        if (game.fish < price) { showToast(`❌ Нужно ${price} рыб`); return; }
         game.fish -= price;
-        game.upgrades[upgradeId]++;
-        saveGame();
-        checkAchievements();
+        game.upgrades[id]++;
+        await saveToSupabase();
+        await checkAchievements();
         renderUI();
-        showToast(`🎉 ${name} улучшен до ${game.upgrades[upgradeId]} уровня!`);
+        showToast(`🎉 ${name} улучшен до ${game.upgrades[id]} уровня!`);
     }
 
-    // -------------------- Сохранение / загрузка (localStorage) --------------------
-    function saveGame() {
-        if (!game.nickname) return;
-        const saveData = {
-            nickname: game.nickname,
-            fish: game.fish,
-            totalFish: game.totalFish,
-            upgrades: game.upgrades,
-            stats: game.stats,
-            achievements: game.achievements,
-            anticheatDisabled: game.anticheatDisabled,
-        };
-        localStorage.setItem('sealGameSave', JSON.stringify(saveData));
-    }
-
-    function loadGame(nickname) {
-        const raw = localStorage.getItem('sealGameSave');
-        if (!raw) {
-            // новый пользователь
-            game.nickname = nickname;
-            game.fish = 0;
-            game.totalFish = 0;
-            game.upgrades = { clickPower: 0, autoClicker: 0 };
-            game.stats = { totalClicks: 0, prestigeCount: 0 };
-            game.achievements = {};
-            game.anticheatDisabled = false;
-            initAchievements();
-            saveGame();
-            return;
-        }
-        try {
-            const data = JSON.parse(raw);
-            if (data.nickname === nickname) {
-                game = { ...game, ...data };
-            } else {
-                // новый ник – новый прогресс
-                game.nickname = nickname;
-                game.fish = 0;
-                game.totalFish = 0;
-                game.upgrades = { clickPower: 0, autoClicker: 0 };
-                game.stats = { totalClicks: 0, prestigeCount: 0 };
-                game.achievements = {};
-                game.anticheatDisabled = false;
-            }
-            initAchievements();
-        } catch(e) {
-            game.nickname = nickname;
-            game.fish = 0;
-            game.totalFish = 0;
-            game.upgrades = { clickPower: 0, autoClicker: 0 };
-            game.stats = { totalClicks: 0, prestigeCount: 0 };
-            game.achievements = {};
-            game.anticheatDisabled = false;
-            initAchievements();
-        }
-        saveGame();
-    }
-
-    // -------------------- Лидерборд (локальный, на основе localStorage) --------------------
-    function getLocalLeaderboard() {
-        let allSaves = [];
-        for (let i = 0; i < localStorage.length; i++) {
-            const key = localStorage.key(i);
-            if (key === 'sealGameSave') {
-                try {
-                    const data = JSON.parse(localStorage.getItem(key));
-                    if (data && data.nickname) {
-                        allSaves.push({ nickname: data.nickname, totalFish: data.totalFish });
-                    }
-                } catch(e) {}
-            }
-        }
-        // также добавляем текущего, если его нет
-        if (game.nickname && !allSaves.find(s => s.nickname === game.nickname)) {
-            allSaves.push({ nickname: game.nickname, totalFish: game.totalFish });
-        }
-        allSaves.sort((a,b) => b.totalFish - a.totalFish);
-        return allSaves.slice(0, 15);
-    }
-
-    function showLeaderboardModal() {
-        const leaders = getLocalLeaderboard();
-        let msg = "🏆 ГЛОБАЛЬНЫЙ ТОП (localStorage) 🏆\n";
-        leaders.forEach((u, i) => {
-            msg += `${i+1}. ${u.nickname} — ${u.totalFish.toLocaleString()} 🐟\n`;
-        });
-        alert(msg);
-    }
-
-    // -------------------- UI рендеринг --------------------
+    // ========== UI РЕНДЕРИНГ ==========
     function renderUI() {
         const root = document.getElementById('app');
         if (!game.nickname) {
@@ -426,12 +669,12 @@
                     <button id="startBtn">НАЧАТЬ</button>
                 </div>
                 <button id="leaderboardBtn" class="leaderboard-btn">🏆 Глобальный топ</button>
-                <footer>Введи ник – прогресс сохранится в браузере.</footer>
+                <footer>Введи ник – прогресс сохранится в облаке.</footer>
             `;
-            document.getElementById('startBtn').onclick = () => {
+            document.getElementById('startBtn').onclick = async () => {
                 const nick = document.getElementById('nickInput').value.trim();
                 if (!nick) return;
-                loadGame(nick);
+                await loadFromSupabase(nick);
                 startGameLoop();
                 renderUI();
             };
@@ -443,23 +686,53 @@
         const total = Math.floor(game.totalFish);
         const clickPower = getClickPower();
         const passive = getPassiveIncome();
+        const critChance = getCritChance();
+        const bankBonus = (getBankBonus() * 100).toFixed(1);
         const blocked = isAnticheatBlocked();
-        const prestigeBonus = parseInt(localStorage.getItem('prestigeBonus') || 0);
 
-        const upgradeClickPrice = Math.floor(20 * (game.upgrades.clickPower + 1));
-        const upgradeAutoPrice = Math.floor(25 * (game.upgrades.autoClicker + 1));
+        // Список улучшений
+        const upgradesList = [
+            { id: 'clickPower', name: '🐟 Острый зуб', desc: '+2 рыбы/клик', basePrice: 20, level: game.upgrades.clickPower },
+            { id: 'autoClicker', name: '⏱️ Автокормушка', desc: '+1 рыба/сек', basePrice: 25, level: game.upgrades.autoClicker },
+            { id: 'crit', name: '⚡ Крит-удар', desc: '+5% шанс x2', basePrice: 80, level: game.upgrades.crit },
+            { id: 'bank', name: '🏦 Банк', desc: '+0.5% от улова за клик', basePrice: 200, level: game.upgrades.bank },
+            { id: 'clickMult', name: '📈 Множитель клика', desc: '+3% к силе клика', basePrice: 500, level: game.upgrades.clickMult },
+            { id: 'passiveMult', name: '📈 Множитель пассива', desc: '+2% к пассивке', basePrice: 700, level: game.upgrades.passiveMult },
+            { id: 'eventBonus', name: '🎁 Бонус событий', desc: '+10% к наградам', basePrice: 300, level: game.upgrades.eventBonus },
+        ];
 
+        let upgradesHtml = '';
+        for (let up of upgradesList) {
+            const price = Math.floor(up.basePrice * (up.level + 1));
+            const canBuy = game.fish >= price && !blocked;
+            upgradesHtml += `
+                <div class="upgrade">
+                    <div class="upgrade-info">
+                        <div class="upgrade-name">${up.name}</div>
+                        <div class="upgrade-desc">${up.desc} (ур.${up.level})</div>
+                    </div>
+                    <div style="display:flex; gap:5px;">
+                        <button class="buy-btn" data-upgrade="${up.id}" data-price="${up.basePrice}" ${!canBuy ? 'disabled' : ''}>${price} 🐟</button>
+                        <div class="help-icon" data-help="${up.id}">?</div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Достижения (первые 30)
         let achievementsHtml = '';
-        for (let ach of achievementsList) {
+        const shownAch = achievementsList.slice(0, 40);
+        for (let ach of shownAch) {
             const unlocked = game.achievements[ach.id];
             achievementsHtml += `<div class="achievement ${unlocked ? 'unlocked' : ''}">${unlocked ? '✅' : '🔒'} ${ach.name}</div>`;
         }
+        const unlockCount = achievementsList.filter(a => game.achievements[a.id]).length;
 
         root.innerHTML = `
             <h1>🦭 SEAL CLICKER</h1>
             <div class="nick-panel" style="justify-content:space-between;">
-                <span>🐚 ${escapeHtml(game.nickname)}</span>
-                <span>⭐ Престиж +${prestigeBonus}%</span>
+                <span>🐚 ${escapeHtml(game.nickname)} | Роль: ${game.role === 'developer' ? '👑 Разработчик' : '🦭 Игрок'}</span>
+                <span>⭐ Престиж +${game.prestigeBonus}%</span>
                 <button id="logoutBtn">Выйти</button>
             </div>
             <div class="seal-area" id="clickZone">
@@ -470,59 +743,63 @@
             <div class="stat-grid">
                 <div class="stat">💪 Сила: +${clickPower}</div>
                 <div class="stat">⏱️ Пассив: +${passive}/сек</div>
+                <div class="stat">💥 Крит: ${critChance}%</div>
+                <div class="stat">🏦 Банк: +${bankBonus}%</div>
+            </div>
+            <div class="stat-grid">
                 <div class="stat">🏆 Всего: ${total.toLocaleString()}</div>
+                <div class="stat">🖱️ Кликов: ${game.stats.totalClicks}</div>
             </div>
             ${blocked ? `<div class="warning">⛔ Античит: клики заблокированы на несколько секунд</div>` : ''}
-            <div class="anticheat-panel">
-                <input type="password" id="antibotPass" placeholder="пароль для отключения защиты">
-                <button id="disableAntibotBtn">🔓 Снять защиту</button>
-                <span style="font-size:0.7rem;">(пароль: seal)</span>
+            <div class="action-buttons">
+                <button id="disableAnticheatBtn">🔓 Отключить защиту</button>
+                <button id="adminPanelBtn">👑 Админ-панель</button>
+                <button id="profileBtn">👥 Игроки и профиль</button>
+                <button id="leaderboardBtn">🏆 Топ</button>
+                <button id="prestigeBtn">🏅 Престиж (5000 рыб)</button>
             </div>
-            <div class="upgrade">
-                <div><strong>🐟 Острый зуб</strong><br>+2 рыбы/клик<br>Уровень ${game.upgrades.clickPower}</div>
-                <button id="buyClickBtn">${upgradeClickPrice} 🐟</button>
-            </div>
-            <div class="upgrade">
-                <div><strong>⏱️ Автокормушка</strong><br>+1 рыба/сек<br>Уровень ${game.upgrades.autoClicker}</div>
-                <button id="buyAutoBtn">${upgradeAutoPrice} 🐟</button>
-            </div>
-            <button id="prestigeBtn" class="prestige-btn">🏅 ПРЕСТИЖ (5000 рыб, +50%)</button>
-            <button id="leaderboardBtn" class="leaderboard-btn">🏆 Глобальный топ</button>
+            <div class="shop-title" style="margin:10px 0 5px; font-weight:bold;">📦 МАГАЗИН ФУНКЦИЙ</div>
+            ${upgradesHtml}
             <div class="achievements">
-                <strong>🏅 ДОСТИЖЕНИЯ (${achievementsList.filter(a => game.achievements[a.id]).length}/${achievementsList.length})</strong>
-                ${achievementsHtml}
+                <strong>🏅 ДОСТИЖЕНИЯ (${unlockCount}/${achievementsList.length})</strong>
+                <div style="max-height:200px; overflow-y:auto;">${achievementsHtml}</div>
             </div>
-            <footer>Автосохранение в браузере. Античит отключается паролем "seal".</footer>
+            <footer>Автосохранение в облаке. Античит отключается по паролю "seal". Админ-пароль "seal123".</footer>
         `;
 
-        // События
+        // Обработчики
         document.getElementById('clickZone').onclick = () => {
             if (!registerClick()) return;
             let gain = getClickPower();
+            let isCrit = Math.random() < (getCritChance() / 100);
+            if (isCrit) gain *= 2;
             addFish(gain, true);
             const seal = document.getElementById('sealEmoji');
             if (seal) {
                 seal.classList.add('click-effect');
                 setTimeout(() => seal.classList.remove('click-effect'), 100);
+                if (isCrit) showToast("✨ КРИТ! x2 ✨");
                 playSound(600, 0.08);
             }
         };
-        document.getElementById('logoutBtn').onclick = () => {
-            game.nickname = null;
-            if (passiveInterval) clearInterval(passiveInterval);
-            renderUI();
-        };
-        document.getElementById('prestigeBtn').onclick = doPrestige;
+        document.getElementById('logoutBtn').onclick = () => { game.nickname = null; if (passiveInterval) clearInterval(passiveInterval); renderUI(); };
+        document.getElementById('disableAnticheatBtn').onclick = showDisableAnticheatModal;
+        document.getElementById('adminPanelBtn').onclick = showAdminModal;
+        document.getElementById('profileBtn').onclick = showProfileModal;
         document.getElementById('leaderboardBtn').onclick = showLeaderboardModal;
-        document.getElementById('disableAntibotBtn').onclick = () => {
-            const pass = document.getElementById('antibotPass').value;
-            disableAnticheat(pass);
-        };
-        document.getElementById('buyClickBtn').onclick = () => buyUpgrade('clickPower', 20, 'Острый зуб');
-        document.getElementById('buyAutoBtn').onclick = () => buyUpgrade('autoClicker', 25, 'Автокормушка');
+        document.getElementById('prestigeBtn').onclick = doPrestige;
+        document.querySelectorAll('.buy-btn').forEach(btn => {
+            const id = btn.dataset.upgrade;
+            const price = parseInt(btn.dataset.price);
+            btn.onclick = () => buyUpgrade(id, price, upgradesList.find(u => u.id === id).name);
+        });
+        document.querySelectorAll('.help-icon').forEach(icon => {
+            const id = icon.dataset.help;
+            icon.onclick = (e) => { e.stopPropagation(); showUpgradeHelp(id); };
+        });
     }
 
-    // -------------------- Звук --------------------
+    // ========== ЗВУКИ ==========
     let audioCtx = null;
     function playSound(freq, duration) {
         if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -551,16 +828,31 @@
         return str.replace(/[&<>]/g, m => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;' }[m]));
     }
 
-    // -------------------- Игровой цикл --------------------
+    // ========== ИГРОВОЙ ЦИКЛ ==========
     let passiveInterval = null;
+    let eventInterval = null;
     function startGameLoop() {
         if (passiveInterval) clearInterval(passiveInterval);
-        passiveInterval = setInterval(() => {
+        if (eventInterval) clearInterval(eventInterval);
+        passiveInterval = setInterval(async () => {
             if (game.nickname) {
                 let income = getPassiveIncome();
-                if (income > 0) addFish(income, false);
+                if (income > 0) await addFish(income, false);
             }
         }, 1000);
+        eventInterval = setInterval(async () => {
+            if (game.nickname && Math.random() < 0.4) {
+                const events = [
+                    { msg: "🐟 Косяк рыбы! +50", gain: 50 },
+                    { msg: "💎 Золотая рыбка! +200", gain: 200 },
+                    { msg: "🎣 Рыбак поделился +30", gain: 30 },
+                ];
+                const ev = events[Math.floor(Math.random() * events.length)];
+                let gain = ev.gain * getEventBonus();
+                await addFish(gain, false);
+                showToast(ev.msg + " " + Math.floor(gain) + " рыб!");
+            }
+        }, 25000);
     }
 
     // Инициализация
