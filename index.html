@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>🦭 SEAL CLICKER | Чистая версия</title>
+    <title>🦭 SEAL CLICKER | Без тостов</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; user-select: none; }
         body { background: #1e6b3e; font-family: 'Segoe UI', system-ui; min-height: 100vh; display: flex; justify-content: center; align-items: center; padding: 20px; }
@@ -48,48 +48,32 @@
 
 <script>
     // --------------------------------------------------------------
-    // 1. Хранилище данных и сессия (чистая реализация)
+    // 1. Хранилище
     // --------------------------------------------------------------
-    let accounts = {};          // { ник: { password, fish, totalFish, upgrades, stats, achievements, anticheatDisabled, ... } }
-    let currentUser = null;     // текущий ник
-    let syncInterval = null;    // для автообновления
+    let accounts = {};
+    let currentUser = null;
+    let syncInterval = null;
+    let passiveInterval = null, eventInterval = null;
+    let renderScheduled = false; // для оптимизации рендера
 
-    // Загрузка из localStorage
     function loadData() {
         const raw = localStorage.getItem('seal_accounts');
-        if (raw) {
-            try { accounts = JSON.parse(raw); } catch(e) { accounts = {}; }
-        } else {
-            accounts = {};
-        }
+        if (raw) try { accounts = JSON.parse(raw); } catch(e) { accounts = {}; }
+        else accounts = {};
         const saved = localStorage.getItem('seal_current_user');
-        if (saved && accounts[saved]) {
-            currentUser = saved;
-        } else {
-            currentUser = null;
-            localStorage.removeItem('seal_current_user');
-        }
+        if (saved && accounts[saved]) currentUser = saved;
+        else currentUser = null;
     }
-
-    // Сохранение всех аккаунтов и сессии
     function saveData() {
         localStorage.setItem('seal_accounts', JSON.stringify(accounts));
         if (currentUser) localStorage.setItem('seal_current_user', currentUser);
         else localStorage.removeItem('seal_current_user');
     }
-
-    // Получить данные текущего игрока
-    function getUser() {
-        return currentUser ? accounts[currentUser] : null;
-    }
-
-    // Сохранить данные текущего игрока (обёртка)
-    function saveUser() {
-        if (currentUser) saveData();
-    }
+    function getUser() { return currentUser ? accounts[currentUser] : null; }
+    function saveUser() { if (currentUser) saveData(); }
 
     // --------------------------------------------------------------
-    // 2. Достижения (60+)
+    // 2. Достижения
     // --------------------------------------------------------------
     function generateAchievements() {
         const list = [];
@@ -116,7 +100,6 @@
         if (!data.achievements) data.achievements = {};
         achievementsList.forEach(ach => { if (data.achievements[ach.id] === undefined) data.achievements[ach.id] = false; });
     }
-
     function checkAchievements(data) {
         let changed = false;
         for (let ach of achievementsList) {
@@ -157,11 +140,11 @@
         if (fromClick) data.stats.totalClicks++;
         saveUser();
         checkAchievements(data);
-        renderUI(); // обновляем интерфейс сразу
+        scheduleRender();
     }
 
     // --------------------------------------------------------------
-    // 4. Анти-автоклик
+    // 4. Античит
     // --------------------------------------------------------------
     function isBlocked(data) {
         if (data.anticheatDisabled) return false;
@@ -185,7 +168,7 @@
             data.clickTimestamps = [];
             showToast("⚠️ Слишком быстро! Блокировка на 8 секунд.");
             saveUser();
-            renderUI();
+            scheduleRender();
             return false;
         }
         return true;
@@ -199,7 +182,7 @@
             data.clickTimestamps = [];
             saveUser();
             showToast("✅ Защита отключена. Клики больше не блокируются.");
-            renderUI();
+            scheduleRender();
         } else showToast("❌ Неверный пароль");
     }
     function enableAnticheat() {
@@ -210,12 +193,12 @@
             data.clickTimestamps = [];
             saveUser();
             showToast("🛡️ Защита включена.");
-            renderUI();
+            scheduleRender();
         }
     }
 
     // --------------------------------------------------------------
-    // 5. Магазин улучшений
+    // 5. Магазин
     // --------------------------------------------------------------
     function buyUpgrade(id, basePrice, name) {
         let data = getUser();
@@ -226,7 +209,7 @@
         data.upgrades[id]++;
         saveUser();
         checkAchievements(data);
-        renderUI();
+        scheduleRender();
         showToast(`🎉 ${name} → ур.${data.upgrades[id]}`);
     }
 
@@ -244,13 +227,13 @@
             data.stats.prestigeCount = (data.stats.prestigeCount || 0) + 1;
             saveUser();
             checkAchievements(data);
-            renderUI();
+            scheduleRender();
             showToast("🌟 Престиж! +50% к силе клика");
         }
     }
 
     // --------------------------------------------------------------
-    // 7. Аватарка (фото)
+    // 7. Аватар
     // --------------------------------------------------------------
     function changeAvatar(file) {
         if (!file) return;
@@ -259,7 +242,7 @@
             let data = getUser();
             data.avatar = e.target.result;
             saveUser();
-            renderUI();
+            scheduleRender();
             showToast("Фото профиля обновлено!");
         };
         reader.readAsDataURL(file);
@@ -337,7 +320,6 @@
                 </div>
             `).join('');
             
-            // Роли
             container.querySelectorAll('.role-select').forEach(sel => {
                 sel.onchange = () => {
                     const nick = sel.dataset.nick;
@@ -347,11 +329,10 @@
                         saveData();
                         showToast(`Роль ${nick} изменена на ${newRole}`);
                         renderAdminPlayerList(modal);
-                        if (currentUser === nick) renderUI();
+                        if (currentUser === nick) scheduleRender();
                     }
                 };
             });
-            // Выдать рыбу
             container.querySelectorAll('.giveFishSmall').forEach(btn => {
                 btn.onclick = () => {
                     const nick = btn.dataset.nick;
@@ -361,12 +342,11 @@
                         accounts[nick].totalFish += amount;
                         saveData();
                         showToast(`Выдано ${amount} рыбы игроку ${nick}`);
-                        if (currentUser === nick) renderUI();
+                        if (currentUser === nick) scheduleRender();
                         renderAdminPlayerList(modal);
                     }
                 };
             });
-            // Выдать уровни
             container.querySelectorAll('.giveUpgradeSmall').forEach(btn => {
                 btn.onclick = () => {
                     const nick = btn.dataset.nick;
@@ -376,14 +356,13 @@
                         accounts[nick].upgrades[upgrade] = (accounts[nick].upgrades[upgrade] || 0) + levels;
                         saveData();
                         showToast(`Улучшение ${upgrade} +${levels} для ${nick}`);
-                        if (currentUser === nick) renderUI();
+                        if (currentUser === nick) scheduleRender();
                         renderAdminPlayerList(modal);
                     }
                 };
             });
         }
         
-        // Отдельные кнопки для выдачи по нику
         modal.querySelector('#giveFishBtn').onclick = () => {
             const nick = modal.querySelector('#targetNick').value.trim();
             const amount = parseInt(modal.querySelector('#giveFish').value);
@@ -393,7 +372,7 @@
                 accounts[nick].totalFish += amount;
                 saveData();
                 showToast(`Выдано ${amount} рыбы игроку ${nick}`);
-                if (currentUser === nick) renderUI();
+                if (currentUser === nick) scheduleRender();
                 if (modal.querySelector('#adminControls').style.display === 'block') renderAdminPlayerList(modal);
             } else showToast("Игрок не найден");
         };
@@ -406,7 +385,7 @@
                 accounts[nick].upgrades[up] = (accounts[nick].upgrades[up] || 0) + levels;
                 saveData();
                 showToast(`Улучшение ${up} +${levels} для ${nick}`);
-                if (currentUser === nick) renderUI();
+                if (currentUser === nick) scheduleRender();
                 if (modal.querySelector('#adminControls').style.display === 'block') renderAdminPlayerList(modal);
             } else showToast("Игрок не найден");
         };
@@ -419,7 +398,7 @@
     }
 
     // --------------------------------------------------------------
-    // 9. Список игроков (только просмотр)
+    // 9. Список игроков (просмотр)
     // --------------------------------------------------------------
     function showPlayersList() {
         const modal = document.createElement('div');
@@ -453,7 +432,7 @@
     }
 
     // --------------------------------------------------------------
-    // 10. Профиль (смена ника, фото)
+    // 10. Профиль
     // --------------------------------------------------------------
     function showProfileModal() {
         const data = getUser();
@@ -504,12 +483,12 @@
             saveData();
             showToast("Ник изменён!");
             modal.remove();
-            renderUI();
+            scheduleRender();
         };
     }
 
     // --------------------------------------------------------------
-    // 11. Лидерборд (топ по общей рыбе)
+    // 11. Лидерборд
     // --------------------------------------------------------------
     function showLeaderboard() {
         const sorted = Object.entries(accounts)
@@ -522,7 +501,7 @@
     }
 
     // --------------------------------------------------------------
-    // 12. Регистрация / Логин / Выход
+    // 12. Регистрация / логин
     // --------------------------------------------------------------
     function register(nick, pass) {
         if (accounts[nick]) { showToast("Ник уже занят"); return false; }
@@ -543,9 +522,9 @@
         initAchievements(accounts[nick]);
         saveData();
         currentUser = nick;
-        saveData(); // фиксируем сессию
+        saveData();
         showToast("Регистрация успешна!");
-        renderUI();
+        scheduleRender();
         startGameLoops();
         return true;
     }
@@ -555,7 +534,7 @@
         currentUser = nick;
         saveData();
         showToast("Вход выполнен");
-        renderUI();
+        scheduleRender();
         startGameLoops();
         return true;
     }
@@ -563,11 +542,11 @@
         currentUser = null;
         saveData();
         if (syncInterval) clearInterval(syncInterval);
-        renderUI();
+        scheduleRender();
     }
 
     // --------------------------------------------------------------
-    // 13. Автосинхронизация данных (каждые 3 секунды)
+    // 13. Автосинхронизация (без тостов, только фон)
     // --------------------------------------------------------------
     let lastDataHash = "";
     function startDataSync() {
@@ -587,8 +566,7 @@
                     avatar: data.avatar,
                 });
                 if (lastDataHash !== "" && lastDataHash !== hash) {
-                    renderUI();
-                    showToast("🔄 Данные обновлены автоматически");
+                    scheduleRender(); // просто обновляем UI, без тоста
                 }
                 lastDataHash = hash;
             }
@@ -596,39 +574,18 @@
     }
 
     // --------------------------------------------------------------
-    // 14. Игровые циклы (пассивный доход, события)
+    // 14. Оптимизированный рендер (без лагов)
     // --------------------------------------------------------------
-    let passiveInterval = null, eventInterval = null;
-    function startGameLoops() {
-        if (passiveInterval) clearInterval(passiveInterval);
-        if (eventInterval) clearInterval(eventInterval);
-        passiveInterval = setInterval(() => {
-            if (currentUser) {
-                const d = getUser();
-                const inc = getPassiveIncome(d);
-                if (inc > 0) addFish(inc, false);
-            }
-        }, 1000);
-        eventInterval = setInterval(() => {
-            if (currentUser && Math.random() < 0.4) {
-                const d = getUser();
-                const events = [
-                    { msg: "🐟 Косяк рыбы! +50", gain: 50 },
-                    { msg: "💎 Золотая рыбка! +200", gain: 200 },
-                    { msg: "🎣 Рыбак поделился +30", gain: 30 },
-                ];
-                const ev = events[Math.floor(Math.random() * events.length)];
-                let gain = ev.gain * getEventBonus(d);
-                addFish(gain, false);
-                showToast(ev.msg + " " + Math.floor(gain) + " рыб!");
-            }
-        }, 25000);
-        startDataSync();
+    function scheduleRender() {
+        if (!renderScheduled) {
+            renderScheduled = true;
+            requestAnimationFrame(() => {
+                renderUI();
+                renderScheduled = false;
+            });
+        }
     }
 
-    // --------------------------------------------------------------
-    // 15. Отрисовка интерфейса (рендер)
-    // --------------------------------------------------------------
     function renderUI() {
         const root = document.getElementById('app');
         if (!currentUser) {
@@ -749,7 +706,7 @@
             <footer>Автосохранение. Админ-пароль: ***. Отключение защиты: ***</footer>
         `;
 
-        // Обработчики
+        // Привязка обработчиков
         document.getElementById('clickZone').onclick = () => {
             if (!registerClick()) return;
             let gain = getClickPower(getUser());
@@ -825,9 +782,33 @@
     }
     function escapeHtml(str) { return str.replace(/[&<>]/g, m => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;' }[m])); }
 
-    // --------------------------------------------------------------
-    // 16. Инициализация и старт
-    // --------------------------------------------------------------
+    function startGameLoops() {
+        if (passiveInterval) clearInterval(passiveInterval);
+        if (eventInterval) clearInterval(eventInterval);
+        passiveInterval = setInterval(() => {
+            if (currentUser) {
+                const d = getUser();
+                const inc = getPassiveIncome(d);
+                if (inc > 0) addFish(inc, false);
+            }
+        }, 1000);
+        eventInterval = setInterval(() => {
+            if (currentUser && Math.random() < 0.4) {
+                const d = getUser();
+                const events = [
+                    { msg: "🐟 Косяк рыбы! +50", gain: 50 },
+                    { msg: "💎 Золотая рыбка! +200", gain: 200 },
+                    { msg: "🎣 Рыбак поделился +30", gain: 30 },
+                ];
+                const ev = events[Math.floor(Math.random() * events.length)];
+                let gain = ev.gain * getEventBonus(d);
+                addFish(gain, false);
+                showToast(ev.msg + " " + Math.floor(gain) + " рыб!");
+            }
+        }, 25000);
+        startDataSync();
+    }
+
     loadData();
     if (currentUser) startGameLoops();
     renderUI();
