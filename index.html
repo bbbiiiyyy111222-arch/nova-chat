@@ -3,298 +3,239 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Seal Clicker: Battle Edition</title>
-    <!-- Используем другой CDN для надежности -->
-    <script src="https://unpkg.com"></script>
+    <title>Seal Clicker: Neon Evolution</title>
+    <!-- Библиотека Supabase -->
+    <script src="https://jsdelivr.net"></script>
     <style>
         :root {
-            --bg-color: #e8f5e9;
-            --accent: #2ecc71;
-            --accent-dark: #27ae60;
-            --text-dark: #2c3e50;
-            --boss-red: #ff4757;
-            --card-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            --neon-green: #2ecc71;
+            --neon-blue: #00d2ff;
+            --neon-red: #ff4757;
+            --dark-bg: #0f172a;
+            --glass: rgba(255, 255, 255, 0.05);
+            --glass-border: rgba(255, 255, 255, 0.1);
         }
 
         body {
-            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-            background-color: var(--bg-color);
-            color: var(--text-dark);
+            background-color: var(--dark-bg);
+            background-image: radial-gradient(circle at 50% 50%, #1e293b 0%, #0f172a 100%);
+            color: #f8fafc;
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
             margin: 0;
             display: flex;
             justify-content: center;
-            padding: 20px;
+            min-height: 100vh;
+            overflow-x: hidden;
         }
 
-        .main-container {
-            background: white;
+        .app-container {
             width: 100%;
-            max-width: 450px;
+            max-width: 480px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+
+        /* Glassmorphism Card */
+        .glass-card {
+            background: var(--glass);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--glass-border);
             border-radius: 24px;
-            box-shadow: var(--card-shadow);
-            padding: 25px;
+            padding: 24px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.3);
             text-align: center;
             position: relative;
-            overflow: hidden;
         }
 
         .hidden { display: none !important; }
 
-        /* Дизайн кнопок */
-        button {
-            background: var(--accent);
+        /* Inputs & Buttons */
+        input {
+            width: 100%;
+            background: rgba(0,0,0,0.2);
+            border: 1px solid var(--glass-border);
+            padding: 14px;
+            border-radius: 12px;
             color: white;
+            margin-bottom: 12px;
+            box-sizing: border-box;
+            transition: 0.3s;
+        }
+        input:focus { border-color: var(--neon-blue); outline: none; box-shadow: 0 0 15px rgba(0,210,255,0.3); }
+
+        button {
+            cursor: pointer;
             border: none;
-            padding: 12px 20px;
+            padding: 12px 24px;
             border-radius: 12px;
             font-weight: 700;
-            cursor: pointer;
-            transition: all 0.2s;
-            box-shadow: 0 4px 0 var(--accent-dark);
-            margin: 5px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             text-transform: uppercase;
-            font-size: 13px;
+            letter-spacing: 1px;
+            font-size: 12px;
         }
 
-        button:active {
-            transform: translateY(3px);
-            box-shadow: 0 1px 0 var(--accent-dark);
+        .btn-primary { background: linear-gradient(135deg, var(--neon-blue), #3a86ff); color: white; box-shadow: 0 4px 15px rgba(58,134,255,0.4); }
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(58,134,255,0.5); }
+
+        /* Seal Clicker Visuals */
+        .seal-wrapper {
+            position: relative;
+            margin: 40px auto;
+            width: 200px;
+            height: 200px;
         }
 
-        button:disabled { background: #bdc3c7; box-shadow: 0 4px 0 #95a5a6; cursor: not-allowed; }
-
-        input {
-            width: calc(100% - 30px);
-            padding: 12px;
-            margin: 10px 0;
-            border: 2px solid #eee;
-            border-radius: 12px;
-            outline: none;
-            font-size: 16px;
-        }
-
-        /* Кликер */
-        .seal-circle {
-            width: 180px;
-            height: 180px;
-            background: radial-gradient(circle, #fff, #f0f0f0);
-            border-radius: 50%;
+        .seal-main {
+            width: 100%;
+            height: 100%;
+            font-size: 100px;
             display: flex;
             align-items: center;
             justify-content: center;
-            margin: 20px auto;
-            font-size: 80px;
             cursor: pointer;
             user-select: none;
-            box-shadow: 0 8px 20px rgba(0,0,0,0.1);
-            transition: transform 0.05s;
+            filter: drop-shadow(0 0 20px rgba(255,255,255,0.2));
+            transition: transform 0.1s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        .seal-main:active { transform: scale(0.85); }
+
+        .floating-fish {
+            position: absolute;
+            pointer-events: none;
+            animation: floatUp 0.8s ease-out forwards;
+            font-weight: bold;
+            color: var(--neon-blue);
         }
 
-        .seal-circle:active { transform: scale(0.92); }
-
-        .fish-display {
-            font-size: 32px;
-            font-weight: 900;
-            color: var(--accent-dark);
-            margin: 10px 0;
+        @keyframes floatUp {
+            0% { transform: translateY(0) opacity(1); }
+            100% { transform: translateY(-100px) opacity(0); }
         }
 
-        /* Вкладки */
-        .tabs-nav {
+        /* Stats */
+        .stats-row {
             display: flex;
-            gap: 5px;
-            margin-top: 20px;
-            background: #f8f9fa;
-            padding: 5px;
-            border-radius: 15px;
+            justify-content: space-around;
+            background: rgba(0,0,0,0.2);
+            padding: 15px;
+            border-radius: 16px;
+            margin: 20px 0;
         }
+        .stat-item span { display: block; font-size: 10px; color: #94a3b8; text-transform: uppercase; }
+        .stat-item b { font-size: 18px; color: var(--neon-blue); }
 
-        .tabs-nav button {
-            flex: 1;
-            padding: 8px 5px;
-            font-size: 11px;
-            background: transparent;
-            color: #7f8c8d;
-            box-shadow: none;
-        }
+        /* Shop & Tabs */
+        .nav-tabs { display: flex; gap: 8px; margin-bottom: 20px; }
+        .nav-tabs button { flex: 1; background: var(--glass); color: #94a3b8; padding: 10px 5px; }
+        .nav-tabs button.active { background: rgba(255,255,255,0.1); color: white; border: 1px solid var(--neon-blue); }
 
-        .tabs-nav button.active {
-            background: white;
-            color: var(--accent-dark);
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-        }
-
-        /* Статистика и магазин */
-        .stats-bar {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
-            margin: 15px 0;
-            font-size: 13px;
-            background: #f1f8e9;
-            padding: 10px;
-            border-radius: 12px;
-        }
-
-        .item-card {
-            background: #fff;
-            border: 1px solid #eee;
-            padding: 12px;
-            border-radius: 15px;
-            margin-bottom: 8px;
+        .shop-list { max-height: 300px; overflow-y: auto; padding-right: 5px; }
+        .shop-card {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            padding: 12px 16px;
+            margin-bottom: 10px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            text-align: left;
+            transition: 0.2s;
         }
+        .shop-card:hover { background: rgba(255,255,255,0.07); }
 
-        .item-info b { display: block; font-size: 14px; }
-        .item-info span { font-size: 11px; color: #7f8c8d; }
-
-        /* Боевая зона */
-        .battle-zone {
-            background: #fff5f5;
-            border-radius: 18px;
-            padding: 15px;
-            border: 2px solid #ffebeb;
+        /* Battle Zone */
+        .boss-area {
+            background: linear-gradient(180deg, rgba(255,71,87,0.1) 0%, transparent 100%);
+            border-radius: 20px;
+            padding: 20px;
+            border: 1px solid rgba(255,71,87,0.2);
         }
+        .hp-bar { height: 10px; background: #1e293b; border-radius: 5px; overflow: hidden; margin: 10px 0; }
+        .hp-fill { height: 100%; transition: width 0.4s ease; }
 
-        .hp-container {
-            height: 12px;
-            background: #eee;
-            border-radius: 6px;
-            overflow: hidden;
-            margin: 5px 0;
-        }
-
-        .hp-fill { height: 100%; width: 100%; transition: width 0.3s; }
-        #boss-hp-bar { background: var(--boss-red); }
-        #player-hp-bar { background: var(--accent); }
-
-        .battle-log {
-            font-size: 11px;
-            height: 60px;
-            overflow-y: auto;
-            background: #333;
-            color: #0f0;
-            padding: 8px;
-            border-radius: 8px;
-            text-align: left;
-            font-family: monospace;
-            margin-top: 10px;
-        }
-
-        #anti-cheat-overlay {
-            position: absolute;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(255,255,255,0.9);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            z-index: 100;
-            color: var(--boss-red);
-            font-weight: bold;
-        }
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-thumb { background: var(--glass-border); border-radius: 10px; }
     </style>
 </head>
 <body>
 
-<div class="main-container">
-    <!-- Блок логина -->
-    <div id="auth-screen">
-        <h1 style="margin-bottom: 0;">🦭 Seal Clicker</h1>
-        <p style="color: #7f8c8d; font-size: 14px; margin-top: 5px;">Cloud Battle RPG</p>
-        <input type="text" id="nick" placeholder="Твой никнейм">
-        <input type="password" id="pass" placeholder="Пароль">
-        <div style="margin-top: 10px;">
-            <button onclick="handleAuth('login')" style="width: 45%;">Вход</button>
-            <button onclick="handleAuth('register')" style="width: 45%; background: #3498db; box-shadow: 0 4px 0 #2980b9;">Регистрация</button>
-        </div>
-    </div>
-
-    <!-- Основная игра -->
-    <div id="game-screen" class="hidden">
-        <div id="anti-cheat-overlay" class="hidden">
-            <h2>⚠️ ЧИТЕР?</h2>
-            <p>Клики заблокированы на 8 сек.</p>
+<div class="app-container">
+    <div class="glass-card">
+        <!-- Auth -->
+        <div id="auth-screen">
+            <h1 style="background: linear-gradient(to right, #00d2ff, #2ecc71); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">SEAL EVOLUTION</h1>
+            <input type="text" id="nick" placeholder="Username">
+            <input type="password" id="pass" placeholder="Password">
+            <button class="btn-primary" style="width: 100%;" onclick="handleAuth('login')">Войти в систему</button>
+            <p style="font-size: 12px; color: #64748b; margin-top: 15px; cursor: pointer;" onclick="handleAuth('register')">Создать новый аккаунт</p>
         </div>
 
-        <div style="display: flex; justify-content: space-between; align-items: center;">
-            <button onclick="toggleVisuals()" id="visual-toggle" style="background:#f1c40f; box-shadow: 0 4px 0 #f39c12; padding: 5px 10px; font-size: 10px;">🦭</button>
-            <span id="display-nick" style="font-weight: bold; font-size: 14px;">---</span>
-            <button onclick="showAdmin()" style="background:#95a5a6; box-shadow: 0 4px 0 #7f8c8d; padding: 5px 10px; font-size: 10px;">Админ</button>
-        </div>
+        <!-- Game -->
+        <div id="game-screen" class="hidden">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <button onclick="toggleVisuals()" style="background:none; border: 1px solid var(--glass-border); color: #94a3b8;">🦭</button>
+                <div id="display-nick" style="font-weight: 800; letter-spacing: 1px;">---</div>
+                <button onclick="showAdmin()" style="background:none; color: #64748b;">⚙️</button>
+            </div>
 
-        <div class="seal-circle" id="seal-btn" onclick="clickSeal()">🦭</div>
-        
-        <div class="fish-display">
-            <span id="fish-icon">🐟</span> <span id="fish-count">0</span>
-        </div>
+            <div class="seal-wrapper">
+                <div class="seal-main" id="seal-btn" onclick="clickSeal(event)">🦭</div>
+            </div>
 
-        <div class="stats-bar">
-            <span>Сила: <b id="click-power">1</b></span>
-            <span>Авто: <b id="auto-val">0</b>/с</span>
-        </div>
+            <div style="font-size: 40px; font-weight: 900; margin-bottom: 10px;">
+                <span id="fish-icon">🐟</span> <span id="fish-count">0</span>
+            </div>
 
-        <div class="tabs-nav">
-            <button id="btn-shop" class="active" onclick="showTab('shop')">Магазин</button>
-            <button id="btn-battle" onclick="showTab('battle')">БИТВА</button>
-            <button id="btn-leader" onclick="showTab('leaderboard')">ТОП-20</button>
-        </div>
+            <div class="stats-row">
+                <div class="stat-item"><span>Сила клика</span><b id="click-power">1</b></div>
+                <div class="stat-item"><span>Авто-добыча</span><b id="auto-val">0</b></div>
+            </div>
 
-        <!-- Магазин -->
-        <div id="tab-shop" class="tab-content">
-            <div style="margin-top: 15px;">
-                <div class="item-card">
-                    <div class="item-info"><b>Улучшить клик</b><span id="c-click">10 🐟</span></div>
-                    <button onclick="buyUpgrade('click_level')">UP</button>
-                </div>
-                <div class="item-card">
-                    <div class="item-info"><b>Авто-тюлень</b><span id="c-auto">50 🐟</span></div>
-                    <button onclick="buyUpgrade('auto_level')">UP</button>
-                </div>
-                <div class="item-card">
-                    <div class="item-info"><b>Крит. шанс</b><span id="c-crit">100 🐟</span></div>
-                    <button onclick="buyUpgrade('crit_level')">UP</button>
-                </div>
-                <div class="item-card">
-                    <div class="item-info"><b>Меч (Атака)</b><span id="c-atk">30 🐟</span></div>
-                    <button onclick="buyUpgrade('attack')">UP</button>
-                </div>
-                <div class="item-card">
-                    <div class="item-info"><b>Щит (Защита)</b><span id="c-def">30 🐟</span></div>
-                    <button onclick="buyUpgrade('defense')">UP</button>
+            <div class="nav-tabs">
+                <button id="t-shop" class="active" onclick="showTab('shop')">Магазин</button>
+                <button id="t-battle" onclick="showTab('battle')">Рейд</button>
+                <button id="t-top" onclick="showTab('leaderboard')">Топ</button>
+            </div>
+
+            <!-- Tab: Shop -->
+            <div id="tab-shop" class="tab-content shop-list">
+                <!-- Items generated by JS -->
+            </div>
+
+            <!-- Tab: Battle -->
+            <div id="tab-battle" class="tab-content hidden">
+                <div class="boss-area">
+                    <div style="display:flex; justify-content:space-between; font-size:12px;">
+                        <b style="color:var(--neon-red)">BOSS LVL.<span id="boss-lvl">1</span></b>
+                        <span id="boss-hp-text">0/0</span>
+                    </div>
+                    <div class="hp-bar"><div id="boss-hp-bar" class="hp-fill" style="background:var(--neon-red); width: 100%;"></div></div>
+                    
+                    <div style="display:flex; justify-content:space-between; font-size:12px; margin-top:15px;">
+                        <b>PLAYER HP</b>
+                        <span id="player-hp-text">100/100</span>
+                    </div>
+                    <div class="hp-bar"><div id="player-hp-bar" class="hp-fill" style="background:var(--neon-green); width: 100%;"></div></div>
+                    
+                    <button class="btn-primary" id="atk-btn" onclick="attackBoss()" style="width:100%; background: var(--neon-red); margin-top:10px;">Нанести удар</button>
+                    <div id="battle-log" style="font-family: monospace; font-size:10px; margin-top:10px; color:#94a3b8; height: 40px; overflow:hidden;"></div>
                 </div>
             </div>
-        </div>
 
-        <!-- Битва -->
-        <div id="tab-battle" class="tab-content hidden">
-            <div class="battle-zone" style="margin-top: 15px;">
-                <div style="display: flex; justify-content: space-between; font-size: 12px;">
-                    <b>БОСС УР.<span id="boss-lvl">1</span></b>
-                    <span id="boss-hp-text">0/0</span>
-                </div>
-                <div class="hp-container"><div id="boss-hp-bar" class="hp-fill"></div></div>
-
-                <div style="margin-top: 15px; display: flex; justify-content: space-between; font-size: 12px;">
-                    <b>ВАШЕ HP</b>
-                    <span id="player-hp-text">100/100</span>
-                </div>
-                <div class="hp-container"><div id="player-hp-bar" class="hp-fill"></div></div>
-
-                <button id="atk-btn" onclick="attackBoss()" style="width:100%; background:var(--boss-red); box-shadow: 0 4px 0 #c0392b; margin-top: 10px; height: 50px;">НАПАСТЬ</button>
-                <div class="battle-log" id="battle-log">Готов к бою?</div>
+            <!-- Tab: Leaderboard -->
+            <div id="tab-leaderboard" class="tab-content hidden shop-list">
+                <div id="leaderboard-list"></div>
             </div>
-        </div>
 
-        <!-- Лидеры -->
-        <div id="tab-leaderboard" class="tab-content hidden">
-            <div id="leaderboard-list" style="margin-top: 15px; text-align: left;"></div>
-        </div>
+            <div id="anticheat-ui" class="hidden" style="position:absolute; top:0; left:0; width:100%; height:100%; background:rgba(15,23,42,0.9); z-index:100; border-radius:24px; display:flex; flex-direction:column; justify-content:center; align-items:center;">
+                <h2 style="color:var(--neon-red)">SECURITY LOCK</h2>
+                <p>Too many clicks! Wait 8s...</p>
+            </div>
 
-        <button onclick="logout()" style="margin-top:20px; background:none; box-shadow:none; color:#bdc3c7; text-decoration: underline; font-size: 10px;">Сменить аккаунт</button>
+            <div style="margin-top: 20px; opacity: 0.3; font-size: 10px; cursor:pointer;" onclick="logout()">LOGOUT</div>
+        </div>
     </div>
 </div>
 
@@ -302,185 +243,181 @@
     const SUPABASE_URL = 'https://supabase.co';
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBtdmJoaGlkY29qa2twdW1zeHhiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzcyNzk3MjcsImV4cCI6MjA5Mjg1NTcyN30.1eKxcaqeClRdAVH8lVcOdYaV0o_PbRzjnM9vBUP15QQ';
     
-    let _supabase;
-    // Безопасная инициализация
-    try {
-        _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-    } catch(e) {
-        alert("Ошибка подключения к Supabase. Проверьте интернет или блокировщики рекламы.");
-    }
-
-    let user = null;
-    let boss = null;
-    let playerHP = 100;
-    let clickCount = 0;
-    let isBlocked = false;
-    let textMode = false;
-
-    async function handleAuth(type) {
-        const nick = document.getElementById('nick').value.trim();
-        const pass = document.getElementById('pass').value.trim();
-        if (!nick || !pass) return alert('Введите данные');
-
-        if (type === 'register') {
-            const { data: exist } = await _supabase.from('users').select('nickname').eq('nickname', nick).single();
-            if (exist) return alert('Ник занят');
-            const { error } = await _supabase.from('users').insert([{ nickname: nick, password: pass, attack: 5, defense: 5 }]);
-            if (error) return alert(error.message);
+    let _sb = null;
+    function getSB() {
+        if (!_sb && typeof supabase !== 'undefined') {
+            _sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
         }
-
-        const { data, error } = await _supabase.from('users').select('*').eq('nickname', nick).eq('password', pass).single();
-        if (error || !data) return alert('Неверный вход');
-
-        user = data;
-        localStorage.setItem('seal_user', JSON.stringify({nick, pass}));
-        startGame();
+        return _sb;
     }
 
-    function startGame() {
+    let user = null, boss = null, playerHP = 100, clicks = 0, isBlocked = false, textMode = false;
+
+    // --- Auth ---
+    async function handleAuth(mode) {
+        const sb = getSB();
+        if(!sb) return alert('Библиотека не загружена');
+        const n = document.getElementById('nick').value.trim();
+        const p = document.getElementById('pass').value.trim();
+        if(!n || !p) return alert('Заполни поля!');
+
+        try {
+            if(mode === 'register') {
+                const { error } = await sb.from('users').insert([{ nickname: n, password: p, attack: 5, defense: 5 }]);
+                if(error) return alert('Ник уже занят');
+                alert('Готово! Теперь войди.');
+            } else {
+                const { data, error } = await sb.from('users').select('*').eq('nickname', n).eq('password', p).single();
+                if(error || !data) return alert('Ошибка входа');
+                user = data;
+                localStorage.setItem('seal_user', JSON.stringify({n, p}));
+                start();
+            }
+        } catch(e) { alert(e.message); }
+    }
+
+    function start() {
         document.getElementById('auth-screen').classList.add('hidden');
         document.getElementById('game-screen').classList.remove('hidden');
-        document.getElementById('display-nick').innerText = user.nickname;
-        
+        document.getElementById('display-nick').innerText = user.nickname.toUpperCase();
+        renderShop();
         updateUI();
         syncBoss();
-        
-        setInterval(autoFarm, 1000);
-        setInterval(saveToCloud, 5000);
-        setInterval(() => clickCount = 0, 1000);
+        setInterval(() => { user.fish += user.auto_level; user.total_fish += user.auto_level; updateUI(); }, 1000);
+        setInterval(cloudSave, 7000);
+        setInterval(() => clicks = 0, 1000);
     }
 
-    function clickSeal() {
-        if (isBlocked) return;
-        clickCount++;
-        if (clickCount > 18 && !user.anticheat_disabled) {
+    // --- Clicker ---
+    function clickSeal(e) {
+        if(isBlocked) return;
+        clicks++;
+        if(clicks > 18 && !user.anticheat_disabled) {
             isBlocked = true;
-            document.getElementById('anti-cheat-overlay').classList.remove('hidden');
-            setTimeout(() => {
-                isBlocked = false;
-                document.getElementById('anti-cheat-overlay').classList.add('hidden');
-            }, 8000);
+            document.getElementById('anticheat-ui').classList.remove('hidden');
+            setTimeout(() => { isBlocked = false; document.getElementById('anticheat-ui').classList.add('hidden'); }, 8000);
             return;
         }
-        let p = 1 + (user.click_level - 1) * 2;
-        user.fish += p;
-        user.total_fish += p;
+
+        const p = 1 + (user.click_level - 1) * 2;
+        user.fish += p; user.total_fish += p;
+        
+        // FX
+        const float = document.createElement('div');
+        float.className = 'floating-fish';
+        float.innerText = '+' + p;
+        float.style.left = e.clientX - 20 + 'px';
+        float.style.top = e.clientY - 20 + 'px';
+        document.body.appendChild(float);
+        setTimeout(() => float.remove(), 800);
+        
         updateUI();
     }
 
-    function autoFarm() {
-        if (!user) return;
-        user.fish += (user.auto_level || 0);
-        user.total_fish += (user.auto_level || 0);
-        updateUI();
+    // --- Shop ---
+    const UPGRADES = [
+        { id: 'click_level', n: 'Сила клика', b: 10, m: 1.6 },
+        { id: 'auto_level', n: 'Авто-тюлень', b: 50, m: 1.6 },
+        { id: 'crit_level', n: 'Крит. шанс', b: 100, m: 1.2, flat: true },
+        { id: 'attack', n: 'Меч (Атака)', b: 30, m: 30, flat: true, offset: 4 },
+        { id: 'defense', n: 'Щит (Деф)', b: 30, m: 30, flat: true, offset: 4 }
+    ];
+
+    function renderShop() {
+        const container = document.getElementById('tab-shop');
+        container.innerHTML = UPGRADES.map(u => {
+            const cost = u.flat ? (user[u.id] - (u.offset||0) + 1) * u.b : Math.floor(u.b * Math.pow(u.m, user[u.id]));
+            return `
+                <div class="shop-card">
+                    <div style="text-align:left">
+                        <div style="font-weight:700; font-size:14px;">${u.n}</div>
+                        <div style="font-size:11px; color:var(--neon-blue)">Ур. ${user[u.id]} • ${cost} 🐟</div>
+                    </div>
+                    <button class="btn-primary" style="padding:8px 15px;" onclick="buy('${u.id}', ${cost})">UP</button>
+                </div>
+            `;
+        }).join('');
     }
 
+    function buy(id, cost) {
+        if(user.fish >= cost) {
+            user.fish -= cost;
+            user[id]++;
+            renderShop();
+            updateUI();
+        } else alert('Нужно больше рыбы!');
+    }
+
+    // --- Battle ---
     async function syncBoss() {
-        const { data } = await _supabase.from('boss').select('*').eq('id', 1).single();
-        boss = data;
-        updateUI();
+        const sb = getSB();
+        const { data } = await sb.from('boss').select('*').eq('id', 1).single();
+        if(data) { boss = data; updateUI(); }
     }
 
     async function attackBoss() {
-        if (!boss || playerHP <= 0) return;
-        
-        let crit = (Math.random() * 100 < (user.crit_level * 5)) ? 1.5 : 1;
-        let dmg = Math.max(1, Math.floor((user.attack - boss.defense + Math.random()*5) * crit));
+        if(!boss || playerHP <= 0) return;
+        const crit = (Math.random()*100 < (user.crit_level*5)) ? 1.5 : 1;
+        const dmg = Math.max(1, Math.floor((user.attack - boss.defense + Math.random()*5)*crit));
         boss.health -= dmg;
 
-        let log = `Урон: ${dmg} ${crit>1?'💥':''}. `;
-        
-        if (Math.random() > 0.15) {
-            let bDmg = Math.max(1, Math.floor(boss.attack - user.defense + Math.random()*5));
-            playerHP -= bDmg;
-            log += `Босс: -${bDmg} HP.`;
-        } else {
-            log += `БЛОК! 🛡️`;
-        }
+        let bDmg = Math.max(1, Math.floor(boss.attack - user.defense + Math.random()*5));
+        if(Math.random() < 0.15) bDmg = 0; // Block
+        playerHP -= bDmg;
 
-        if (boss.health <= 0) {
-            let win = boss.level * 100;
-            user.fish += win;
-            log = `ПОБЕДА! +${win} 🐟. Босс стал сильнее!`;
-            await _supabase.from('boss').update({
-                level: boss.level + 1,
-                max_health: boss.max_health + 200,
-                health: boss.max_health + 200,
-                attack: boss.attack + 2,
-                defense: boss.defense + 1
-            }).eq('id', 1);
+        document.getElementById('battle-log').innerText = `Вы: -${dmg} HP. Босс: -${bDmg} HP. ${crit>1?'CRIT!':''}`;
+
+        if(boss.health <= 0) {
+            user.fish += boss.level * 100;
+            await getSB().from('boss').update({ level: boss.level+1, max_health: boss.max_health+200, health: boss.max_health+200, attack: boss.attack+2 }).eq('id', 1);
             syncBoss();
         }
-
-        if (playerHP <= 0) {
-            playerHP = 0;
+        if(playerHP <= 0) {
             document.getElementById('atk-btn').disabled = true;
-            log = "Тюлень без сознания... (10с)";
-            setTimeout(() => { playerHP = 100; document.getElementById('atk-btn').disabled = false; updateUI(); }, 10000);
+            setTimeout(() => { playerHP=100; document.getElementById('atk-btn').disabled=false; updateUI(); }, 10000);
         }
-
-        document.getElementById('battle-log').innerText = log;
         updateUI();
-        _supabase.from('boss').update({ health: boss.health }).eq('id', 1);
+        getSB().from('boss').update({ health: boss.health }).eq('id', 1);
     }
 
-    function buyUpgrade(key) {
-        let cost = 0;
-        if(key==='click_level') cost = Math.floor(10 * Math.pow(1.6, user.click_level));
-        if(key==='auto_level') cost = Math.floor(50 * Math.pow(1.6, user.auto_level + 1));
-        if(key==='crit_level') cost = (user.crit_level + 1) * 100;
-        if(key==='attack') cost = (user.attack - 4) * 30;
-        if(key==='defense') cost = (user.defense - 4) * 30;
-
-        if (user.fish >= cost) {
-            user.fish -= cost;
-            user[key]++;
-            updateUI();
-        } else alert("Мало рыбы!");
-    }
-
-    async function saveToCloud() {
-        if (!user) return;
-        await _supabase.from('users').update({
-            fish: user.fish, total_fish: user.total_fish,
-            click_level: user.click_level, auto_level: user.auto_level,
-            crit_level: user.crit_level, attack: user.attack, defense: user.defense
-        }).eq('nickname', user.nickname);
-        _supabase.from('leaderboard').upsert({ nickname: user.nickname, total_fish: user.total_fish });
-    }
-
+    // --- System ---
     function updateUI() {
-        if (!user) return;
-        document.getElementById('fish-count').innerText = Math.floor(user.fish);
-        document.getElementById('click-power').innerText = 1 + (user.click_level - 1) * 2;
+        if(!user) return;
+        document.getElementById('fish-count').innerText = Math.floor(user.fish).toLocaleString();
+        document.getElementById('click-power').innerText = 1 + (user.click_level-1)*2;
         document.getElementById('auto-val').innerText = user.auto_level;
-        
-        document.getElementById('c-click').innerText = Math.floor(10 * Math.pow(1.6, user.click_level)) + ' 🐟';
-        document.getElementById('c-auto').innerText = Math.floor(50 * Math.pow(1.6, user.auto_level + 1)) + ' 🐟';
-        document.getElementById('c-crit').innerText = ((user.crit_level + 1) * 100) + ' 🐟';
-        document.getElementById('c-atk').innerText = ((user.attack - 4) * 30) + ' 🐟';
-        document.getElementById('c-def').innerText = ((user.defense - 4) * 30) + ' 🐟';
-
-        if (boss) {
+        if(boss) {
             document.getElementById('boss-lvl').innerText = boss.level;
             document.getElementById('boss-hp-text').innerText = `${boss.health}/${boss.max_health}`;
-            document.getElementById('boss-hp-bar').style.width = (boss.health/boss.max_health*100)+'%';
+            document.getElementById('boss-hp-bar').style.width = (boss.health/boss.max_health*100) + '%';
         }
-        document.getElementById('player-hp-text').innerText = `${playerHP}/100`;
         document.getElementById('player-hp-bar').style.width = playerHP + '%';
+        document.getElementById('player-hp-text').innerText = `${playerHP}/100`;
     }
 
     function showTab(t) {
-        document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
-        document.querySelectorAll('.tabs-nav button').forEach(el => el.classList.remove('active'));
-        document.getElementById('tab-' + t).classList.remove('hidden');
-        document.getElementById('btn-' + t).classList.add('active');
-        if (t === 'leaderboard') loadTops();
+        document.querySelectorAll('.tab-content').forEach(x => x.classList.add('hidden'));
+        document.querySelectorAll('.nav-tabs button').forEach(x => x.classList.remove('active'));
+        document.getElementById('tab-'+t).classList.remove('hidden');
+        document.getElementById('t-'+t).classList.add('active');
+        if(t === 'leaderboard') loadTops();
     }
 
     async function loadTops() {
-        const { data } = await _supabase.from('leaderboard').select('*').order('total_fish', {ascending:false}).limit(20);
-        document.getElementById('leaderboard-list').innerHTML = data.map((x,i) => `<div class="item-card"><b>${i+1}. ${x.nickname}</b> <span>${x.total_fish} 🐟</span></div>`).join('');
+        const { data } = await getSB().from('leaderboard').select('*').order('total_fish', {ascending:false}).limit(20);
+        document.getElementById('leaderboard-list').innerHTML = data.map((x,i) => `
+            <div class="shop-card">
+                <b>${i+1}. ${x.nickname}</b>
+                <span style="color:var(--neon-blue)">${x.total_fish.toLocaleString()} 🐟</span>
+            </div>
+        `).join('');
+    }
+
+    async function cloudSave() {
+        if(!user) return;
+        const sb = getSB();
+        await sb.from('users').update({ fish: user.fish, total_fish: user.total_fish, click_level: user.click_level, auto_level: user.auto_level, crit_level: user.crit_level, attack: user.attack, defense: user.defense }).eq('nickname', user.nickname);
+        await sb.from('leaderboard').upsert({ nickname: user.nickname, total_fish: user.total_fish });
     }
 
     function toggleVisuals() {
@@ -490,11 +427,10 @@
     }
 
     function showAdmin() {
-        if(prompt('Pass?')==='seal123') {
-            const n = prompt('Ник?');
-            const a = parseInt(prompt('Рыба?'));
-            _supabase.from('users').select('fish').eq('nickname', n).single().then(({data}) => {
-                if(data) _supabase.from('users').update({fish: data.fish + a}).eq('nickname', n).then(()=>alert('OK'));
+        if(prompt('Password?') === 'seal123') {
+            const n = prompt('Ник?'); const a = parseInt(prompt('Рыба?'));
+            getSB().from('users').select('fish').eq('nickname', n).single().then(({data}) => {
+                if(data) getSB().from('users').update({ fish: data.fish + a }).eq('nickname', n).then(() => alert('OK'));
             });
         }
     }
@@ -502,14 +438,17 @@
     function logout() { localStorage.removeItem('seal_user'); location.reload(); }
 
     window.onload = () => {
-        const s = localStorage.getItem('seal_user');
-        if(s) {
-            const {nick, pass} = JSON.parse(s);
-            document.getElementById('nick').value = nick;
-            document.getElementById('pass').value = pass;
-            handleAuth('login');
-        }
-    }
+        setTimeout(() => {
+            const s = localStorage.getItem('seal_user');
+            if(s) { 
+                const p = JSON.parse(s);
+                document.getElementById('nick').value = p.n;
+                document.getElementById('pass').value = p.p;
+                handleAuth('login');
+            }
+        }, 500);
+    };
 </script>
+
 </body>
 </html>
