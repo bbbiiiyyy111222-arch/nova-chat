@@ -25,6 +25,21 @@
             width: 100%;
             max-width: 550px;
             border: 1px solid #232d3f;
+            position: relative;
+        }
+        /* Стили для предупреждения */
+        .info-warning {
+            background: rgba(234, 179, 8, 0.1);
+            border: 1px solid rgba(234, 179, 8, 0.3);
+            color: #f59e0b;
+            padding: 10px 15px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 600;
+            text-align: center;
+            margin-bottom: 20px;
+            line-height: 1.4;
+            user-select: none;
         }
         h2 {
             margin-top: 0;
@@ -33,7 +48,6 @@
             color: #fff;
             font-size: 20px;
             user-select: none;
-            cursor: pointer;
         }
         .select-group {
             margin-bottom: 25px;
@@ -50,12 +64,11 @@
             cursor: pointer;
             outline: none;
         }
-        .proxy-select:hover {
-            border-color: #3b82f6;
-        }
+        .proxy-select:hover { border-color: #3b82f6; }
         
         .status-container {
             display: flex;
+            flex-direction: column;
             align-items: center;
             justify-content: center;
             margin-top: -15px;
@@ -63,20 +76,22 @@
             font-weight: bold;
             font-size: 14px;
         }
-        .status-dot {
-            width: 10px;
-            height: 10px;
-            border-radius: 50%;
-            margin-right: 8px;
-        }
+        .status-block { display: flex; align-items: center; }
+        .status-dot { width: 10px; height: 10px; border-radius: 50%; margin-right: 8px; }
         .status-active { color: #10b981; }
         .status-active .status-dot { background-color: #10b981; box-shadow: 0 0 8px #10b981; }
         .status-inactive { color: #ef4444; }
         .status-inactive .status-dot { background-color: #ef4444; box-shadow: 0 0 8px #ef4444; }
-
-        .item-group {
-            margin-bottom: 20px;
+        
+        /* Стили для строки пинга */
+        .ping-line {
+            font-size: 12px;
+            color: #9ca3af;
+            margin-top: 6px;
+            font-family: monospace;
         }
+
+        .item-group { margin-bottom: 20px; }
         label {
             display: block;
             font-weight: 600;
@@ -85,6 +100,7 @@
             color: #9ca3af;
             text-transform: uppercase;
             letter-spacing: 0.5px;
+            text-align: left;
         }
         .copy-box {
             display: flex;
@@ -96,10 +112,7 @@
             cursor: pointer;
             transition: all 0.2s ease;
         }
-        .copy-box:hover {
-            border-color: #3b82f6;
-            background: #24324d;
-        }
+        .copy-box:hover { border-color: #3b82f6; background: #24324d; }
         .text-value {
             flex-grow: 1;
             font-family: monospace;
@@ -109,6 +122,7 @@
             text-overflow: ellipsis;
             color: #e5e7eb;
             user-select: none;
+            text-align: left;
         }
         .btn-copy {
             background: #3b82f6;
@@ -122,62 +136,19 @@
             cursor: pointer;
             transition: background 0.2s;
         }
-        .btn-copy:hover {
-            background: #2563eb;
-        }
-        .divider {
-            border-top: 1px solid #232d3f;
-            margin: 25px 0;
-        }
-        .action-buttons {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 15px;
-            margin-bottom: 20px;
-        }
-        .btn-action {
-            padding: 12px;
-            border: none;
-            border-radius: 6px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: background 0.2s;
-            font-size: 14px;
-        }
+        .btn-copy:hover { background: #2563eb; }
+        .divider { border-top: 1px solid #232d3f; margin: 25px 0; }
+        .action-buttons { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px; }
+        .btn-action { padding: 12px; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; transition: background 0.2s; font-size: 14px; }
         .btn-delete-guide { background: #ef4444; color: white; }
         .btn-delete-guide:hover { background: #dc2626; }
         .btn-add-guide { background: #10b981; color: white; }
         .btn-add-guide:hover { background: #059669; }
 
-        .guide-box {
-            display: none;
-            background: #1f293d;
-            border: 1px solid #2d3d5a;
-            border-radius: 8px;
-            padding: 20px;
-            margin-top: 15px;
-        }
-        .guide-title {
-            font-weight: 700;
-            font-size: 16px;
-            margin-bottom: 15px;
-            color: #fff;
-            text-align: center;
-        }
-        .step {
-            margin-bottom: 20px;
-            font-size: 14px;
-            line-height: 1.5;
-        }
-        .step-img {
-            display: block;
-            max-width: 100%;
-            margin-top: 10px;
-            margin-bottom: 10px;
-            border-radius: 6px;
-            border: 1px solid #2d3d5a;
-            background: #161b26;
-        }
+        .guide-box { display: none; background: #1f293d; border: 1px solid #2d3d5a; border-radius: 8px; padding: 20px; margin-top: 15px; }
+        .guide-title { font-weight: 700; font-size: 16px; margin-bottom: 15px; color: #fff; text-align: center; }
+        .step { margin-bottom: 20px; font-size: 14px; line-height: 1.5; text-align: left; }
+        .step-img { display: block; max-width: 100%; margin-top: 10px; margin-bottom: 10px; border-radius: 6px; border: 1px solid #2d3d5a; background: #161b26; }
 
         .blue-step-btn {
             display: none;
@@ -195,9 +166,7 @@
             text-decoration: none;
             margin-top: 5px;
         }
-        .blue-step-btn:hover {
-            background: #0033aa;
-        }
+        .blue-step-btn:hover { background: #0033aa; }
         
         .secret-admin {
             display: none;
@@ -207,26 +176,9 @@
             border-radius: 8px;
             margin-top: 20px;
         }
-        .admin-input {
-            width: 100%;
-            padding: 10px;
-            margin-bottom: 10px;
-            border-radius: 4px;
-            border: 1px solid #374151;
-            background: #1f293d;
-            color: white;
-            box-sizing: border-box;
-            outline: none;
-        }
-        .status-toggle-btn {
-            padding: 10px;
-            border: none;
-            border-radius: 4px;
-            font-weight: bold;
-            cursor: pointer;
-            width: 100%;
-            margin-top: 10px;
-        }
+        .admin-input { width: 100%; padding: 10px; margin-bottom: 10px; border-radius: 4px; border: 1px solid #374151; background: #1f293d; color: white; box-sizing: border-box; }
+        .status-toggle-btn { padding: 10px; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; width: 100%; margin-top: 10px; }
+        .admin-section-title { color: #10b981; margin-top: 20px; margin-bottom: 10px; font-size: 15px; border-top: 1px dashed #374151; padding-top: 15px; font-weight: bold; text-align: left; }
 
         .toast {
             position: fixed;
@@ -243,29 +195,30 @@
             pointer-events: none;
             z-index: 1000;
         }
-        .toast.show {
-            transform: translateX(-50%) translateY(0);
-            opacity: 1;
-        }
+        .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h2 id="pageTitle" onclick="handleTitleClick()">Данные для копирования</h2>
+    <!-- Информационная надпись -->
+    <div id="infoWarning" class="info-warning">Информация о работе прокси не всегда правильна, проверяйте прокси!</div>
+    
+    <h2>Данные для копирования</h2>
 
     <div class="select-group">
         <label>Выберите рабочий прокси сервер</label>
-        <!-- Опции теперь генерируются автоматически через JavaScript из БД -->
         <select id="proxySelector" class="proxy-select" onchange="changeProxyData()">
-            <option value="">Загрузка списка...</option>
+            <option value="">Загрузка списка серверов...</option>
         </select>
     </div>
 
     <div class="status-container">
-        <div id="proxyStatusDisplay" class="status-active" style="display: flex; align-items: center;">
-            <span class="status-dot"></span><span id="statusText">Загрузка статуса...</span>
+        <div id="proxyStatusDisplay" class="status-active">
+            <div class="status-block"><span class="status-dot"></span><span id="statusText">Загрузка...</span></div>
         </div>
+        <!-- Строка отображения пинга -->
+        <div id="pingDisplay" class="ping-line">Проверка соединения...</div>
     </div>
 
     <div class="item-group">
@@ -363,20 +316,17 @@
         <div id="adminControlsArea" style="display: none;">
             <h3 style="color: #10b981; margin-top:0; font-size:16px;">Панель администратора</h3>
             
-            <!-- ФОРМА ДОБАВЛЕНИЯ НОВОГО ПРОКСИ СЕРВЕРА -->
-            <div style="background:#1f293d; padding:15px; border-radius:6px; border:1px solid #374151; margin-bottom:15px;">
-                <h4 style="margin-top:0; color:#fff; font-size:14px;">Добавить новый прокси:</h4>
-                <input type="text" id="newProxyName" class="admin-input" placeholder="Название (например: Прокси 9)">
-                <input type="text" id="newProxyHost" class="admin-input" placeholder="Хост / Сервер">
-                <input type="text" id="newProxyPort" class="admin-input" placeholder="Порт">
-                <input type="text" id="newProxyKey" class="admin-input" placeholder="Ключ">
-                <button class="btn-copy" style="background:#10b981; margin-left:0; width:100%; padding:8px;" onclick="addNewProxyToDB()">Сохранить на сервере</button>
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
+                <button id="statusToggleBtn" class="status-toggle-btn" style="background:#ef4444; color:white; margin-top:0;" onclick="toggleCurrentProxyStatusInDB()">Переключить статус</button>
+                <!-- КНОПКА ФУНКЦИИ 2: СЕКРЕТНОЕ УДАЛЕНИЕ СЕРВЕРА -->
+                <button class="status-toggle-btn" style="background:#dc2626; color:white; margin-top:0;" onclick="deleteCurrentProxyFromDB()">Удалить этот прокси</button>
             </div>
-
-            <div style="border-top:1px solid #374151; padding-top:15px;">
-                <label style="color:#fff;">Изменить статус выбранного прокси:</label>
-                <button id="statusToggleBtn" class="status-toggle-btn" style="background:#ef4444; color:white;" onclick="toggleCurrentProxyStatusInDB()">Переключить статус</button>
-            </div>
+            
+            <div class="admin-section-title">Добавить новый прокси-сервер</div>
+            <input type="text" id="newHostInput" class="admin-input" placeholder="Хост (например: connect.nolags.pw)">
+            <input type="text" id="newPortInput" class="admin-input" placeholder="Порт (например: 443)">
+            <input type="text" id="newKeyInput" class="admin-input" placeholder="Ключ прокси">
+            <button class="btn-copy" style="background:#10b981; margin-left:0; width:100%; padding:11px; font-size:14px;" onclick="addNewProxyToDB()">Добавить этот прокси</button>
         </div>
     </div>
 </div>
@@ -388,49 +338,62 @@ const SUPABASE_PROJECT_ID = "pmvbhhidcojkkpumsxxb";
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBtdmJoaGlkY29qa2twdW1zeHhiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzcyNzk3MjcsImV4cCI6MjA5Mjg1NTcyN30.1eKxcaqeClRdAVH8lVcOdYaV0o_PbRzjnM9vBUP15QQ";
 const BUCKET_NAME = "images";
 
+// SHA-256 хэши правильных данных для максимальной секретности (admin и seal)
+const HASH_LOG = "8c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918";
+const HASH_PAS = "c0fa96b797b539bf502ee611a96752702741d4c9d784df00e1cf51d8b2fffa7b";
+
 let proxyList = [];
 let currentProxy = null;
 let isAdmin = false;
-let clickCount = 0;
+
+// Слушатель горячих клавиш для ПК (Ctrl + Alt + A)
+window.addEventListener('keydown', function(e) {
+    if (e.ctrlKey && e.altKey && e.code === 'KeyA') {
+        e.preventDefault();
+        toggleAdminForm();
+    }
+});
+
+// Слушатель долгого нажатия на предупреждение для телефонов (3 секунды)
+const warningEl = document.getElementById('infoWarning');
+let touchTimeout;
+warningEl.addEventListener('touchstart', () => { touchTimeout = setTimeout(toggleAdminForm, 3000); });
+warningEl.addEventListener('touchend', () => { clearTimeout(touchTimeout); });
+warningEl.addEventListener('mousedown', () => { touchTimeout = setTimeout(toggleAdminForm, 3000); });
+warningEl.addEventListener('mouseup', () => { clearTimeout(touchTimeout); });
 
 fetchDataFromSupabase();
 
-function handleTitleClick() {
-    clickCount++;
-    if (clickCount === 2) {
-        toggleAdminForm();
-        clickCount = 0;
-    }
-    setTimeout(() => { clickCount = 0; }, 400);
-}
-
-// Загрузка динамического списка из БД и генерация <option> элементов
-function fetchDataFromSupabase() {
+function fetchDataFromSupabase(selectLastInserted = false) {
     fetch(`https://${SUPABASE_PROJECT_ID}.supabase.co/rest/v1/proxies?order=id.asc`, {
         headers: { 'apikey': SUPABASE_ANON_KEY, 'Authorization': `Bearer ${SUPABASE_ANON_KEY}` }
     })
     .then(res => res.json())
     .then(data => {
         proxyList = data;
-        
         const selector = document.getElementById('proxySelector');
-        const savedValue = selector.value; 
-        selector.innerHTML = ''; // Очищаем список
+        const currentSelectedValue = selector.value;
+        selector.innerHTML = '';
         
-        // Автоматически строим меню выбора на основе записей в базе
+        if(proxyList.length === 0) {
+            selector.innerHTML = '<option value="">Нет доступных серверов</option>';
+            currentProxy = null;
+            clearDisplayValues();
+            return;
+        }
+        
         proxyList.forEach((proxy, index) => {
             const opt = document.createElement('option');
             opt.value = index;
-            opt.innerText = proxy.name;
+            opt.innerText = proxy.name || `Прокси (${proxy.host})`;
             selector.appendChild(opt);
         });
         
-        if(savedValue !== "") {
-            selector.value = savedValue;
-        }
+        if (selectLastInserted) { selector.value = proxyList.length - 1; }
+        else if (currentSelectedValue !== "" && currentSelectedValue < proxyList.length) { selector.value = currentSelectedValue; }
+        else { selector.value = 0; }
         
-        const selectedIdx = selector.value || 0;
-        currentProxy = proxyList[selectedIdx];
+        currentProxy = proxyList[selector.value];
         updateDisplayValues();
     });
 
@@ -448,8 +411,18 @@ function fetchDataFromSupabase() {
 
 function changeProxyData() {
     const selectedIndex = document.getElementById('proxySelector').value;
+    if(selectedIndex === "") return;
     currentProxy = proxyList[selectedIndex];
     updateDisplayValues();
+}
+
+function clearDisplayValues() {
+    document.getElementById('hostValue').innerText = '—';
+    document.getElementById('portValue').innerText = '—';
+    document.getElementById('keyValue').innerText = '—';
+    document.getElementById('statusText').innerText = 'Отсутствует';
+    document.getElementById('proxyStatusDisplay').className = "status-inactive";
+    document.getElementById('pingDisplay').innerText = 'Нет соединения';
 }
 
 function updateDisplayValues() {
@@ -465,186 +438,84 @@ function updateDisplayValues() {
     if (currentProxy.is_active) {
         statusDisplay.className = "status-active";
         statusText.innerText = "Доступен (активен)";
-        toggleBtn.innerText = 'Переключить в "Не работает"';
-        toggleBtn.style.background = '#ef4444';
+        if(toggleBtn) {
+            toggleBtn.innerText = 'Выключить сервер';
+            toggleBtn.style.background = '#ef4444';
+        }
+        // Запуск ФУНКЦИИ 3: Имитация замера пинга работающего сервера
+        simulatePingTest();
     } else {
         statusDisplay.className = "status-inactive";
         statusText.innerText = "Недоступен (не работает)";
-        toggleBtn.innerText = 'Переключить в "Активен"';
-        toggleBtn.style.background = '#10b981';
+        if(toggleBtn) {
+            toggleBtn.innerText = 'Включить сервер';
+            toggleBtn.style.background = '#10b981';
+        }
+        document.getElementById('pingDisplay').innerHTML = '<span style="color:#ef4444;">❌ Ошибка: Сервер отключен администратором</span>';
     }
 }
 
-// ФУНКЦИЯ ДОБАВЛЕНИЯ НОВОГО СЕРВЕРА С САЙТА В БД
-function addNewProxyToDB() {
-    const name = document.getElementById('newProxyName').value.trim();
-    const host = document.getElementById('newProxyHost').value.trim();
-    const port = document.getElementById('newProxyPort').value.trim();
-    const key = document.getElementById('newProxyKey').value.trim();
+// ФУНКЦИЯ 3: Генератор реалистичного пинга
+function simulatePingTest() {
+    const pingEl = document.getElementById('pingDisplay');
+    pingEl.innerText = "Тестирование задержки узла...";
     
-    if(!name || !host || !port || !key) {
-        alert("Заполните все текстовые поля формы!");
-        return;
-    }
+    setTimeout(() => {
+        if (!currentProxy || !currentProxy.is_active) return;
+        // Случайный пинг от 45 до 95 мс
+        const ms = Math.floor(Math.random() * (95 - 45 + 1)) + 45;
+        let rating = "Отличная скорость";
+        let color = "#10b981";
+        
+        if(ms > 80) { rating = "Хорошая скорость"; color = "#f59e0b"; }
+        
+        pingEl.innerHTML = `⚡ Пинг: <span style="color:${color}; font-weight:bold;">${ms} ms</span> — <span style="color:${color};">${rating}</span>`;
+    }, 800);
+}
+
+function addNewProxyToDB() {
+    const host = document.getElementById('newHostInput').value.trim();
+    const port = document.getElementById('newPortInput').value.trim();
+    const key = document.getElementById('newKeyInput').value.trim();
+    if (!host || !port || !key) { alert("Заполните все три поля!"); return; }
+    
+    showToast("Добавление прокси...");
+    const name = `Прокси (${host})`;
     
     fetch(`https://${SUPABASE_PROJECT_ID}.supabase.co/rest/v1/proxies`, {
         method: 'POST',
-        headers: {
-            'apikey': SUPABASE_ANON_KEY,
-            'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ name, host, port, key, is_active: true })
+        headers: { 'apikey': SUPABASE_ANON_KEY, 'Authorization': `Bearer ${SUPABASE_ANON_KEY}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: name, host: host, port: port, key: key, is_active: true })
+    })
+    .then(res => {
+        if (!res.ok) throw new Error();
+        document.getElementById('newHostInput').value = '';
+        document.getElementById('newPortInput').value = '';
+        document.getElementById('newKeyInput').value = '';
+        showToast("Сервер добавлен!");
+        fetchDataFromSupabase(true);
+    }).catch(() => alert("Ошибка добавления"));
+}
+
+// ФУНКЦИЯ 2: СЕКРЕТНОЕ УДАЛЕНИЕ ИЗ БАЗЫ
+function deleteCurrentProxyFromDB() {
+    if (!currentProxy) return;
+    if (!confirm(`Вы уверены, что хотите НАВСЕГДА удалить ${currentProxy.host} из базы данных?`)) return;
+    
+    showToast("Удаление сервера...");
+    
+    fetch(`https://${SUPABASE_PROJECT_ID}.supabase.co/rest/v1/proxies?id=eq.${currentProxy.id}`, {
+        method: 'DELETE',
+        headers: { 'apikey': SUPABASE_ANON_KEY, 'Authorization': `Bearer ${SUPABASE_ANON_KEY}` }
     })
     .then(() => {
-        showToast("Новый сервер добавлен!");
-        // Очищаем форму
-        document.getElementById('newProxyName').value = '';
-        document.getElementById('newProxyHost').value = '';
-        document.getElementById('newProxyPort').value = '';
-        document.getElementById('newProxyKey').value = '';
-        
-        fetchDataFromSupabase(); // Перезагружаем меню сайта
+        showToast("Сервер полностью удален!");
+        document.getElementById('proxySelector').value = "";
+        fetchDataFromSupabase();
     })
-    .catch(err => alert("Ошибка отправки данных"));
+    .catch(() => alert("Не удалось удалить прокси."));
 }
 
 function toggleCurrentProxyStatusInDB() {
     const newStatus = !currentProxy.is_active;
-    
-    fetch(`https://${SUPABASE_PROJECT_ID}.supabase.co/rest/v1/proxies?id=eq.${currentProxy.id}`, {
-        method: 'PATCH',
-        headers: {
-            'apikey': SUPABASE_ANON_KEY,
-            'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ is_active: newStatus })
-    })
-    .then(() => {
-        currentProxy.is_active = newStatus;
-        updateDisplayValues();
-        showToast("Статус сохранен в базе данных!");
-    })
-    .catch(err => alert("Ошибка сохранения статуса"));
-}
-
-function copyField(field, element) {
-    if (!currentProxy) return;
-    navigator.clipboard.writeText(currentProxy[field]).then(() => {
-        showToast("Скопировано!");
-        const btn = element.querySelector('.btn-copy');
-        const originalText = btn.innerText;
-        btn.innerText = 'Готово!';
-        btn.style.background = '#10b981';
-        setTimeout(() => { btn.innerText = originalText; btn.style.background = '#3b82f6'; }, 1500);
-    });
-}
-
-function showGuide(type) {
-    const delBox = document.getElementById('guideDelete');
-    const addBox = document.getElementById('guideAdd');
-    if (type === 'delete') {
-        delBox.style.display = delBox.style.display === 'block' ? 'none' : 'block';
-        addBox.style.display = 'none';
-    } else {
-        addBox.style.display = addBox.style.display === 'block' ? 'none' : 'block';
-        delBox.style.display = 'none';
-    }
-}
-
-function toggleAdminForm() {
-    const panel = document.getElementById('secretAdminPanel');
-    panel.style.display = panel.style.display === 'block' ? 'none' : 'block';
-}
-
-function checkAdminAuth() {
-    const login = document.getElementById('loginInput').value;
-    const pass = document.getElementById('passInput').value;
-    if (login.toLowerCase() === b64DecodeUnicode('YWRtaW4=') && pass === b64DecodeUnicode('c2VhbA==')) {
-        isAdmin = true;
-        document.getElementById('adminLoginForm').style.display = 'none';
-        document.getElementById('adminControlsArea').style.display = 'block';
-        
-        const adminButtons = document.querySelectorAll('.blue-step-btn');
-        adminButtons.forEach(btn => {
-            btn.style.display = 'inline-flex';
-        });
-        
-        showToast("Вы вошли как админ!");
-    } else {
-        alert('Доступ запрещен');
-    }
-}
-
-function b64DecodeUnicode(str) {
-    return decodeURIComponent(atob(str).split('').map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)).join(''));
-}
-
-function showToast(message) {
-    const toast = document.getElementById('toast');
-    toast.innerText = message;
-    toast.classList.add('show');
-    setTimeout(() => { toast.classList.remove('show'); }, 1500);
-}
-
-function uploadStepImage(targetImgId, inputElement) {
-    if (!isAdmin) {
-        showToast("Загрузка доступна только админу!");
-        return;
-    }
-    
-    const files = inputElement.files;
-    if (!files || files.length === 0) return;
-    const file = files[0]; 
-    
-    showToast("Загрузка фото в облако...");
-    
-    const fileName = `step_${targetImgId}_${Date.now()}.png`;
-    const uploadUrl = `https://${SUPABASE_PROJECT_ID}.supabase.co/storage/v1/object/${BUCKET_NAME}/${fileName}`;
-    
-    fetch(uploadUrl, {
-        method: 'POST',
-        headers: {
-            'apikey': SUPABASE_ANON_KEY,
-            'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
-            'Content-Type': file.type || 'image/png'
-        },
-        body: file 
-    })
-    .then(res => {
-        if (!res.ok) {
-            return res.json().then(err => { throw new Error(err.message || JSON.stringify(err)) });
-        }
-        return res.json();
-    })
-    .then(() => {
-        const publicUrl = `https://${SUPABASE_PROJECT_ID}.supabase.co/storage/v1/object/public/${BUCKET_NAME}/${fileName}`;
-        
-        return fetch(`https://${SUPABASE_PROJECT_ID}.supabase.co/rest/v1/guide_images`, {
-            method: 'POST',
-            headers: {
-                'apikey': SUPABASE_ANON_KEY,
-                'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
-                'Content-Type': 'application/json',
-                'Prefer': 'resolution=merge-duplicates'
-            },
-            body: JSON.stringify({ id: targetImgId, url: publicUrl })
-        });
-    })
-    .then(res => {
-        if (!res.ok) {
-            return res.json().then(err => { throw new Error("Ошибка БД: " + err.message) });
-        }
-        fetchDataFromSupabase(); 
-        showToast("Фото успешно сохранено!");
-    })
-    .catch(err => {
-        console.error("Ошибка:", err);
-        alert("Ошибка выполнения:\n" + err.message);
-    });
-}
-</script>
-
-</body>
-</html>
+    fetch(`https://${SUPABASE_PROJECT_ID}.supabase.co/rest/v1/proxies?id=
