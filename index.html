@@ -1,1 +1,156 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Данные для копирования</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #f4f5f7;
+            color: #333;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+        }
+        .container {
+            background: #ffffff;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            width: 100%;
+            max-width: 500px;
+        }
+        h2 {
+            margin-top: 0;
+            margin-bottom: 25px;
+            text-align: center;
+            color: #111;
+        }
+        .item-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 8px;
+            font-size: 14px;
+            color: #555;
+        }
+        .copy-box {
+            display: flex;
+            align-items: center;
+            background: #f8f9fa;
+            border: 1px solid #e1e4e8;
+            border-radius: 6px;
+            padding: 10px 12px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .copy-box:hover {
+            border-color: #0070f3;
+            background: #f0f7ff;
+        }
+        .text-value {
+            flex-grow: 1;
+            font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+            font-size: 14px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            user-select: none;
+        }
+        .btn-copy {
+            background: #0070f3;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 500;
+            margin-left: 10px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .btn-copy:hover {
+            background: #0051a8;
+        }
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background: #333;
+            color: #fff;
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-size: 14px;
+            opacity: 0;
+            transition: transform 0.3s, opacity 0.3s;
+            pointer-events: none;
+        }
+        .toast.show {
+            transform: translateX(-50%) translateY(0);
+            opacity: 1;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>Нажмите для копирования</h2>
+
+    <div class="item-group">
+        <label>Хост</label>
+        <div class="copy-box" onclick="copyText('VIP.alotaxi.info', this)">
+            <span class="text-value">VIP.alotaxi.info</span>
+            <button class="btn-copy">Копировать</button>
+        </div>
+    </div>
+
+    <div class="item-group">
+        <label>Порт</label>
+        <div class="copy-box" onclick="copyText('4515', this)">
+            <span class="text-value">4515</span>
+            <button class="btn-copy">Копировать</button>
+        </div>
+    </div>
+
+    <div class="item-group">
+        <label>Ключ</label>
+        <div class="copy-box" onclick="copyText('eee9a4f23b1d768c04a8d7f39120ca5b6e626973636f7474692e79656b74616e65742e636f6d', this)">
+            <span class="text-value">eee9a4f23...</span>
+            <button class="btn-copy">Копировать</button>
+        </div>
+    </div>
+</div>
+
+<div id="toast" class="toast">Скопировано!</div>
+
+<script>
+function copyText(text, element) {
+    navigator.clipboard.writeText(text).then(() => {
+        const toast = document.getElementById('toast');
+        toast.classList.add('show');
+        
+        const btn = element.querySelector('.btn-copy');
+        const originalText = btn.innerText;
+        btn.innerText = 'Готово!';
+        btn.style.background = '#00cc66';
+
+        setTimeout(() => {
+            toast.classList.remove('show');
+            btn.innerText = originalText;
+            btn.style.background = '#0070f3';
+        }, 1500);
+    }).catch(err => {
+        console.error('Ошибка копирования: ', err);
+    });
+}
+</script>
+
+</body>
+</html>
 
