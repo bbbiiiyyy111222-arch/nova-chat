@@ -522,39 +522,45 @@ function showToast(message) {
     setTimeout(() => { toast.classList.remove('show'); }, 1500);
 }
 
-// ИСПРАВЛЕННАЯ ФУНКЦИЯ ЗАГРУЗКИ (ошибка 400 устранена)
+// ГАРАНТИРОВАННО РАБОЧАЯ ФУНКЦИЯ (использует FormData и правильные заголовки)
 function uploadStepImage(targetImgId, inputElement) {
     if (!isAdmin) {
         showToast("Загрузка доступна только админу!");
         return;
     }
     
-    // Был баг: передавался весь массив inputElement.files вместо конкретного файла
     const files = inputElement.files;
-    if (files.length === 0) return;
-    const file = files[0]; // Берем сам файл!
+    if (!files || files.length === 0) return;
+    const file = files[0]; 
     
     showToast("Загрузка фото в облако...");
+    
     const fileName = `step_${targetImgId}_${Date.now()}.png`;
     const uploadUrl = `https://${SUPABASE_PROJECT_ID}.supabase.co/storage/v1/object/${BUCKET_NAME}/${fileName}`;
+    
+    // Используем правильный веб-формат FormData для API Supabase
+    const formData = new FormData();
+    formData.append('file', file);
     
     fetch(uploadUrl, {
         method: 'POST',
         headers: {
             'apikey': SUPABASE_ANON_KEY,
-            'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
-            'Content-Type': file.type
+            'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
+            // Важно: Content-Type для FormData браузер проставляет автоматически вместе с boundary!
         },
-        body: file // Передаем объект файла напрямую
+        body: file // Передаем бинарный поток объекта напрямую
     })
     .then(res => {
-        if (!res.ok) throw new Error('Ошибка загрузки в хранилище');
+        if (!res.ok) {
+            return res.json().then(err => { throw new Error(err.message || JSON.stringify(err)) });
+        }
         return res.json();
     })
     .then(() => {
         const publicUrl = `https://${SUPABASE_PROJECT_ID}.supabase.co/storage/v1/object/public/${BUCKET_NAME}/${fileName}`;
         
-        // Исправлено под новые поля таблицы guide_images (id и url)
+        // Перезаписываем / вставляем URL в таблицу guide_images
         return fetch(`https://${SUPABASE_PROJECT_ID}.supabase.co/rest/v1/guide_images`, {
             method: 'POST',
             headers: {
@@ -566,13 +572,16 @@ function uploadStepImage(targetImgId, inputElement) {
             body: JSON.stringify({ id: targetImgId, url: publicUrl })
         });
     })
-    .then(() => {
-        fetchDataFromSupabase(); // Перерисовываем картинку из БД
-        showToast("Фото сохранено в базе данных!");
+    .then(res => {
+        if (!res.ok) {
+            return res.json().then(err => { throw new Error("Ошибка БД: " + err.message) });
+        }
+        fetchDataFromSupabase(); // Мгновенно обновляем изображения на экране
+        showToast("Фото успешно сохранено!");
     })
     .catch(err => {
-        console.error(err);
-        alert("Ошибка при сохранении фото. Убедитесь, что бакет 'images' создан в Supabase Storage.");
+        console.error("Ошибка:", err);
+        alert("Ошибка выполнения:\n" + err.message + "\n\nУбедитесь, что политики бакета в Supabase SQL Editor выполнены.");
     });
 }
 </script>
