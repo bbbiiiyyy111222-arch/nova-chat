@@ -33,22 +33,23 @@
         .guide-box { display: none; background: #1f293d; border: 1px solid #2d3d5a; border-radius: 8px; padding: 20px; margin-top: 15px; text-align: left; }
         .guide-title { font-weight: 700; font-size: 16px; margin-bottom: 15px; color: #fff; text-align: center; }
         .step { margin-bottom: 20px; font-size: 14px; line-height: 1.5; }
-        .step-img { display: block; max-width: 100%; margin-top: 10px; margin-bottom: 10px; border-radius: 6px; border: 1px solid #2d3d5a; background: #161b26; height: auto; }
-        .blue-step-btn { display: inline-flex; align-items: center; justify-content: center; background: #0044cc; color: white; border: none; padding: 8px 16px; border-radius: 6px; font-size: 14px; font-weight: 600; cursor: pointer; margin-top: 5px; }
+        .step-img { display: block; max-width: 100%; margin-top: 10px; margin-bottom: 10px; border-radius: 6px; border: 1px solid #2d3d5a; background: #161b26; min-height: 50px; }
+        .blue-step-btn { display: none; align-items: center; justify-content: center; background: #0044cc; color: white; border: none; padding: 8px 16px; border-radius: 6px; font-size: 14px; font-weight: 600; cursor: pointer; margin-top: 5px; }
         .secret-admin { display: none; background: #111827; border: 2px dashed #ef4444; padding: 20px; border-radius: 8px; margin-top: 20px; text-align: left; }
         .admin-input { width: 100%; padding: 10px; margin-bottom: 10px; border-radius: 4px; border: 1px solid #374151; background: #1f293d; color: white; box-sizing: border-box; }
-        .status-toggle-btn { padding: 10px; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; width: 100%; margin-top: 10px; color: white; }
+        .status-toggle-btn { padding: 10px; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; width: 100%; margin-top: 10px; background: #374151; color: white; }
         .btn-delete-proxy { background: #b91c1c; color: white; width: 100%; padding: 10px; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; margin-top: 15px; }
+        .btn-save-admin { background: #10b981; color: white; width: 100%; padding: 12px; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; margin-top: 10px; }
         .info-footer { margin-top: 25px; font-size: 12px; color: #4b5563; user-select: none; cursor: pointer; font-weight: 500; }
         .toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%) translateY(100px); background: #10b981; color: #fff; padding: 10px 20px; border-radius: 20px; font-size: 14px; opacity: 0; transition: transform 0.3s, opacity 0.3s; pointer-events: none; z-index: 1000; }
         .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
-        .divider { height: 1px; background: #232d3f; margin: 20px 0; }
+        .divider { height: 1px; background: #2d3d5a; margin: 20px 0; }
     </style>
 </head>
 <body>
 <div class="container">
     <h2>Данные для копирования</h2>
-    <div class="warning-text">Информация о работе прокси не всегда правильна проверяйте прокси!</div>
+    <div class="warning-text">Информация о работе прокси не всегда правильна, проверяйте прокси!</div>
     
     <div class="select-group">
         <label>Выберите рабочий прокси сервер</label>
@@ -60,9 +61,8 @@
     <button class="btn-smart" onclick="window.findBestProxy()">⚡ Найти лучший прокси автоматически</button>
     
     <div class="status-container">
-        <div id="proxyStatusDisplay" class="status-item status-active">
-            <span class="status-dot"></span>
-            <span id="statusText">Проверка...</span>
+        <div id="proxyStatusDisplay" class="status-item status-inactive">
+            <span class="status-dot"></span><span id="statusText">Проверка...</span>
         </div>
         <div id="pingDisplay" class="ping-badge">ping: -- ms</div>
     </div>
@@ -100,440 +100,323 @@
         <button class="btn-action btn-add-guide" onclick="window.showGuide('add')">Как добавить прокси?</button>
     </div>
     
-    <!-- Инструкции -->
+    <!-- Инструкция: Удаление -->
     <div id="guideDelete" class="guide-box">
-        <div class="guide-title">Инструкция: Удаление прокси</div>
-        <div class="step">
-            1. Откройте Настройки Telegram -> Продвинутые настройки -> Тип подключения -> Прокси.
-            <img id="img_del_1" class="step-img" src="https://placeholder.com" alt="Шаг 1">
-            <input type="file" class="admin-input style-upload" style="display:none;" onchange="window.saveGuideImage('del_1', this)">
-        </div>
-        <div class="step">
-            2. Нажмите кнопку «Изменить» и удалите старый нерабочий профиль.
-            <img id="img_del_2" class="step-img" src="https://placeholder.com" alt="Шаг 2">
-            <input type="file" class="admin-input style-upload" style="display:none;" onchange="window.saveGuideImage('del_2', this)">
-        </div>
+        <div class="guide-title">Инструкция: Ошибка «Недоступен»</div>
+        <div class="step">1. Нажмите на значок <strong>щита</strong> в настройках или чатах.<img id="img_del_1" class="step-img" alt="Шаг 1"></div>
+        <div class="step">2. Выберите старый прокси и нажмите кнопку удаления.<img id="img_del_2" class="step-img" alt="Шаг 2"></div>
     </div>
 
+    <!-- Инструкция: Добавление -->
     <div id="guideAdd" class="guide-box">
-        <div class="guide-title">Инструкция: Добавление прокси</div>
-        <div class="step">
-            1. Нажмите синюю кнопку ниже или перейдите по ссылке «Подключить в один клик».
-            <button class="blue-step-btn" onclick="window.location.href=document.getElementById('tgConnectBtn').href">Подключить автоматически</button>
-            <img id="img_add_1" class="step-img" src="https://placeholder.com" alt="Шаг 1">
-            <input type="file" class="admin-input style-upload" style="display:none;" onchange="window.saveGuideImage('add_1', this)">
-        </div>
-        <div class="step">
-            2. В открывшемся окне Telegram подтвердите сохранение настроек, нажав «Готово».
-            <img id="img_add_2" class="step-img" src="https://placeholder.com" alt="Шаг 2">
-            <input type="file" class="admin-input style-upload" style="display:none;" onchange="window.saveGuideImage('add_2', this)">
-        </div>
+        <div class="guide-title">Инструкция: Добавление нового прокси</div>
+        <div class="step">1. Нажмите на ссылку «Подключить в один клик» выше.<img id="img_add_1" class="step-img" alt="Шаг 1"></div>
+        <div class="step">2. В открывшемся Telegram подтвердите сохранение настроек.<img id="img_add_2" class="step-img" alt="Шаг 2"></div>
     </div>
 
-    <!-- Тайная админ-панель -->
-    <div id="adminPanel" class="secret-admin">
-        <h3 style="color: #ef4444; margin-top: 0;">Панель управления прокси</h3>
+    <!-- Секретная Админ-панель -->
+    <div id="secretAdmin" class="secret-admin">
+        <h3 style="color: #ef4444; margin-top:0;">Панель управления (Supabase)</h3>
         <label>Добавить новый прокси</label>
-        <input type="text" id="newHost" class="admin-input" placeholder="Хост (например, ://example.com)">
-        <input type="number" id="newPort" class="admin-input" placeholder="Порт (например, 443)">
-        <input type="text" id="newKey" class="admin-input" placeholder="Секретный ключ (hex-строка)">
-        <button class="status-toggle-btn" style="background: #10b981;" onclick="window.addNewProxy()">➕ Сохранить новый прокси</button>
+        <input type="text" id="adminHost" class="admin-input" placeholder="Хост (например, ://example.com)">
+        <input type="number" id="adminPort" class="admin-input" placeholder="Порт (например, 443)">
+        <input type="text" id="adminKey" class="admin-input" placeholder="Ключ (Secret)">
+        <button class="btn-save-admin" onclick="window.addProxyToDatabase()">Сохранить прокси</button>
         
         <div class="divider"></div>
-        
-        <label>Управление текущим прокси</label>
-        <button id="toggleStatusBtn" class="status-toggle-btn" style="background: #fbbf24; color: #111827;" onclick="window.toggleProxyStatus()">Переключить статус (On/Off)</button>
-        <button class="btn-delete-proxy" onclick="window.deleteCurrentProxy()">❌ Удалить этот прокси из базы данных</button>
+        <button id="deleteProxyBtn" class="btn-delete-proxy" onclick="window.deleteCurrentProxy()">Удалить текущий выбранный прокси</button>
     </div>
-
-    <div class="info-footer" onclick="window.toggleAdminMode()">© Telegram Proxy Configuration System</div>
+    
+    <div class="info-footer" onclick="window.toggleAdminPanel()">Конфигуратор MTPROTO Proxy v1.2</div>
 </div>
 
 <div id="toast" class="toast">Скопировано!</div>
 
 <script>
-    // --- КОНФИГУРАЦИЯ SUPABASE REST API ---
-    // Замените URL и KEY на актуальные значения вашего проекта Supabase
-    const SUPABASE_URL = "https://supabase.co";
-    const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...Ваш_Анонимный_Ключ";
+    // --- КОНФИГУРАЦИЯ SUPABASE ---
+    // Функция безопасной очистки строк для заголовков HTTP (удаляет кириллицу и лишние пробелы)
+    function sanitizeHeaderString(str) {
+        if (!str) return '';
+        // Удаляем любые символы, выходящие за пределы ISO-8859-1 (коды > 255)
+        return str.trim().replace(/[^\x00-\xFF]/g, '');
+    }
 
-    const HEADERS = {
-        "apikey": SUPABASE_KEY,
-        "Authorization": `Bearer ${SUPABASE_KEY}`,
-        "Content-Type": "application/json",
-        "Prefer": "return=representation"
-    };
+    const SUPABASE_URL = "https://supabase.co"; 
+    // Замените на ваши реальные данные. Строки обязательно очищаются через функцию:
+    const SUPABASE_KEY = sanitizeHeaderString("YOUR_SUPABASE_ANON_KEY"); 
 
-    let proxiesList = [];
-    let currentProxyIndex = 0;
-    let clickCount = 0;
-    let adminModeActive = false;
+    const PROXIES_TABLE_URL = `${SUPABASE_URL}/rest/v1/proxies`;
+    const IMAGES_TABLE_URL = `${SUPABASE_URL}/rest/v1/guide_images`;
+
+    let proxyList = [];
+
+    // Безопасное создание заголовков для Supabase REST API
+    function getSupabaseHeaders() {
+        const headers = {
+            "Content-Type": "application/json"
+        };
+        if (SUPABASE_KEY) {
+            headers["apikey"] = SUPABASE_KEY;
+            headers["Authorization"] = `Bearer ${SUPABASE_KEY}`;
+        }
+        return headers;
+    }
 
     // --- ИНИЦИАЛИЗАЦИЯ ПРИ ЗАГРУЗКЕ СТРАНИЦЫ ---
-    document.addEventListener("DOMContentLoaded", () => {
-        loadProxiesFromSupabase();
-        loadGuideImagesFromSupabase();
+    document.addEventListener("DOMContentLoaded", async () => {
+        await loadProxiesFromSupabase();
+        await loadGuideImagesFromSupabase();
     });
 
-    // --- ФУНКЦИИ РАБОТЫ С СЕТЬЮ (SUPABASE) ---
+    // --- ПОЛУЧЕНИЕ ДАННЫХ ИЗ БАЗЫ ДАННЫХ ---
     async function loadProxiesFromSupabase() {
+        const selector = document.getElementById("proxySelector");
         try {
-            const response = await fetch(`${SUPABASE_URL}/rest/v1/proxies?select=*&order=id.desc`, {
+            const response = await fetch(`${PROXIES_TABLE_URL}?select=*`, {
                 method: "GET",
-                headers: HEADERS
+                headers: getSupabaseHeaders()
             });
-            if (!response.ok) throw new Error("Ошибка получения прокси");
-            proxiesList = await response.json();
+            if (!response.ok) throw new Error(`Ошибка сервера: ${response.status}`);
             
-            renderProxySelector();
+            proxyList = await response.json();
+            
+            selector.innerHTML = "";
+            if (proxyList.length === 0) {
+                selector.innerHTML = '<option value="">Нет доступных серверов</option>';
+                return;
+            }
+
+            proxyList.forEach((proxy, index) => {
+                const opt = document.createElement("option");
+                opt.value = index;
+                opt.textContent = `${proxy.host}:${proxy.port} (${proxy.country || 'Зарубежный'})`;
+                selector.appendChild(opt);
+            });
+
+            window.changeProxyData();
         } catch (error) {
-            console.error(error);
-            showToast("Ошибка соединения с базой данных", "#ef4444");
+            console.error("Ошибка загрузки прокси из Supabase:", error);
+            selector.innerHTML = '<option value="">Ошибка загрузки данных</option>';
         }
     }
 
     async function loadGuideImagesFromSupabase() {
         try {
-            const response = await fetch(`${SUPABASE_URL}/rest/v1/guides?select=*`, {
+            const response = await fetch(`${IMAGES_TABLE_URL}?select=*`, {
                 method: "GET",
-                headers: HEADERS
+                headers: getSupabaseHeaders()
             });
-            if (response.ok) {
-                const data = await response.json();
-                data.forEach(guide => {
-                    const imgElement = document.getElementById(`img_${guide.step_id}`);
-                    if (imgElement && guide.image_url) {
-                        imgElement.src = guide.image_url;
-                    }
-                });
-            }
-        } catch (err) {
-            console.error("Ошибка загрузки картинок инструкций:", err);
+            if (!response.ok) throw new Error(`Ошибка сервера картинок: ${response.status}`);
+            
+            const images = await response.json();
+            images.forEach(img => {
+                const element = document.getElementById(img.element_id);
+                if (element) {
+                    element.src = img.image_url;
+                }
+            });
+        } catch (error) {
+            console.error("Ошибка загрузки картинок инструкций:", error);
         }
     }
 
-    // --- РЕНДЕРИНГ И ИНТЕРФЕЙС ---
-    function renderProxySelector() {
+    // --- ОСНОВНЫЕ СИСТЕМНЫЕ ФУНКЦИИ (ПРИВЯЗКА К WINDOW) ---
+    window.changeProxyData = function() {
         const selector = document.getElementById("proxySelector");
-        selector.innerHTML = "";
+        if (!selector.value || proxyList.length === 0) return;
 
-        if (proxiesList.length === 0) {
-            selector.innerHTML = '<option value="">Нет доступных серверов</option>';
-            return;
-        }
+        const proxy = proxyList[selector.value];
+        document.getElementById("hostValue").textContent = proxy.host || '';
+        document.getElementById("portValue").textContent = proxy.port || '';
+        document.getElementById("keyValue").textContent = proxy.key || '';
 
-        // Фильтруем для обычных пользователей (только активные), админы видят все
-        const visibleProxies = adminModeActive ? proxiesList : proxiesList.filter(p => p.is_active !== false);
-
-        if (visibleProxies.length === 0) {
-            selector.innerHTML = '<option value="">Все прокси временно отключены</option>';
-            return;
-        }
-
-        visibleProxies.forEach((proxy, idx) => {
-            const opt = document.createElement("option");
-            opt.value = idx;
-            opt.textContent = `${proxy.host}:${proxy.port} ${proxy.is_active === false ? '[ВЫКЛ]' : ''}`;
-            selector.appendChild(opt);
-        });
-
-        // Установка первой записи
-        updateFields(visibleProxies[0]);
-    }
-
-    function updateFields(proxy) {
-        if (!proxy) return;
-        document.getElementById("hostValue").textContent = proxy.host || "—";
-        document.getElementById("portValue").textContent = proxy.port || "—";
-        document.getElementById("keyValue").textContent = proxy.key || "—";
-        
-        // Генерация ссылки для подключения в TG
         const tgLink = `https://t.me{encodeURIComponent(proxy.host)}&port=${encodeURIComponent(proxy.port)}&secret=${encodeURIComponent(proxy.key)}`;
         document.getElementById("tgConnectBtn").href = tgLink;
 
-        // Обновление состояния статуса
-        const statusBox = document.getElementById("proxyStatusDisplay");
-        const statusTxt = document.getElementById("statusText");
-        
-        if (proxy.is_active !== false) {
-            statusBox.className = "status-item status-active";
-            statusTxt.textContent = "Активен";
-        } else {
-            statusBox.className = "status-item status-inactive";
-            statusTxt.textContent = "Отключен в панели";
-        }
-
-        // Запуск измерения пинга
-        checkProxyPing(proxy.host, proxy.port);
-    }
-
-    // --- ПРИВЯЗКА К WINDOW: СМЕНА ПРОКСИ ---
-    window.changeProxyData = function() {
-        const selector = document.getElementById("proxySelector");
-        const selectedIdx = selector.value;
-        if (selectedIdx !== "") {
-            const visibleProxies = adminModeActive ? proxiesList : proxiesList.filter(p => p.is_active !== false);
-            currentProxyIndex = proxiesList.indexOf(visibleProxies[selectedIdx]);
-            updateFields(visibleProxies[selectedIdx]);
-        }
+        window.checkProxyPing(proxy.host, proxy.port);
     };
 
-    // --- ИСПРАВЛЕННЫЙ ТАЙМАУТ ПИНГА ЧЕРЕЗ FETCH И ABORTCONTROLLER ---
-    async function checkProxyPing(host, port) {
+    window.checkProxyPing = async function(host, port) {
+        const statusContainer = document.getElementById("proxyStatusDisplay");
+        const statusText = document.getElementById("statusText");
         const pingDisplay = document.getElementById("pingDisplay");
-        pingDisplay.textContent = "ping: ...";
-        
+
+        statusContainer.className = "status-item status-inactive";
+        statusText.textContent = "Проверка...";
+        pingDisplay.textContent = "ping: -- ms";
+
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 2500); // Таймаут 2.5 секунды
-        
+        const timeoutId = setTimeout(() => controller.abort(), 4000); // Таймаут 4 секунды
+
         const startTime = performance.now();
-        
         try {
-            // Запрос идет по HTTP протоколу на порт прокси. Нам важен сам факт TCP-ответа или сброса, а не HTTP-код.
-            // Использование режима no-cors предотвращает лишние ошибки политик безопасности.
-            await fetch(`http://${host}:${port}`, { 
-                mode: 'no-cors', 
+            // Делаем легкий fetch запрос к HTTP/HTTPS эндпоинту хоста прокси (или прокси-панели)
+            // Использование mode: 'no-cors' позволяет избежать ошибок политики безопасности браузера
+            await fetch(`https://${host}:${port}/`, { 
+                method: "GET", 
+                mode: "no-cors",
                 signal: controller.signal 
             });
             
             const endTime = performance.now();
             const duration = Math.round(endTime - startTime);
+            
+            statusContainer.className = "status-item status-active";
+            statusText.textContent = "Доступен";
             pingDisplay.textContent = `ping: ${duration} ms`;
-        } catch (error) {
-            if (error.name === 'AbortError') {
-                pingDisplay.textContent = "ping: timeout";
-            } else {
-                // Если соединение закрыто удаленным хостом (ERR_CONNECTION_CLOSED), значит порт открыт и прокси ответил на TCP-рукопожатие
+        } catch (err) {
+            // Если соединение просто сброшено (no-cors), но ответ пришел быстрее таймаута — сервер жив
+            if (err.name !== 'AbortError') {
                 const duration = Math.round(performance.now() - startTime);
-                pingDisplay.textContent = duration < 2500 ? `ping: ${duration} ms` : "ping: ошиб.";
+                if (duration < 3800) {
+                    statusContainer.className = "status-item status-active";
+                    statusText.textContent = "Доступен";
+                    pingDisplay.textContent = `ping: ${duration} ms`;
+                    clearTimeout(timeoutId);
+                    return;
+                }
             }
+            statusContainer.className = "status-item status-inactive";
+            statusText.textContent = "Недоступен";
+            pingDisplay.textContent = "ping: timeout";
         } finally {
             clearTimeout(timeoutId);
         }
-    }
+    };
 
-    // --- ПРИВЯЗКА К WINDOW: УМНЫЙ ПОИСК ЛУЧШЕГО ПРОКСИ ---
     window.findBestProxy = async function() {
-        const btn = document.querySelector(".btn-smart");
-        btn.textContent = "🔄 Анализ сетевой доступности...";
-        btn.disabled = true;
+        const selector = document.getElementById("proxySelector");
+        if (proxyList.length === 0) return;
 
-        const activeProxies = proxiesList.filter(p => p.is_active !== false);
-        if (activeProxies.length === 0) {
-            showToast("Нет серверов для теста", "#ef4444");
-            btn.textContent = "⚡ Найти лучший прокси автоматически";
-            btn.disabled = false;
-            return;
-        }
-
-        let bestProxy = null;
+        let bestIndex = 0;
         let minPing = 99999;
+        
+        showToast("Сканирование сети серверов...");
 
-        for (let proxy of activeProxies) {
+        for (let i = 0; i < proxyList.length; i++) {
+            const proxy = proxyList[i];
             const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), 1500);
-            const start = performance.now();
+            const timeoutId = setTimeout(() => controller.abort(), 2000);
+            const startTime = performance.now();
+            
             try {
-                await fetch(`http://${proxy.host}:${proxy.port}`, { mode: 'no-cors', signal: controller.signal });
-                const diff = performance.now() - start;
-                if (diff < minPing) {
-                    minPing = diff;
-                    bestProxy = proxy;
+                await fetch(`https://${proxy.host}:${proxy.port}/`, { method: "GET", mode: "no-cors", signal: controller.signal });
+                const ping = performance.now() - startTime;
+                if (ping < minPing) {
+                    minPing = ping;
+                    bestIndex = i;
                 }
             } catch (e) {
-                // Обработка TCP отклика при сбросе
-                const diff = performance.now() - start;
-                if (e.name !== 'AbortError' && diff < minPing) {
-                    minPing = diff;
-                    bestProxy = proxy;
+                // Обработка быстрых ответов
+                const ping = performance.now() - startTime;
+                if (e.name !== 'AbortError' && ping < minPing && ping < 1800) {
+                    minPing = ping;
+                    bestIndex = i;
                 }
             } finally {
                 clearTimeout(timeoutId);
             }
         }
 
-        if (bestProxy) {
-            const selector = document.getElementById("proxySelector");
-            const targetIndex = activeProxies.indexOf(bestProxy);
-            selector.value = targetIndex;
-            currentProxyIndex = proxiesList.indexOf(bestProxy);
-            updateFields(bestProxy);
-            showToast(`Выбран лучший сервер с пингом: ${Math.round(minPing)}ms!`);
-        } else {
-            showToast("Все прокси превысили таймаут. Выбран первый.", "#fbbf24");
-            if (activeProxies.length > 0) updateFields(activeProxies[0]);
-        }
-
-        btn.textContent = "⚡ Найти лучший прокси автоматически";
-        btn.disabled = false;
+        selector.value = bestIndex;
+        window.changeProxyData();
+        showToast("Выбран оптимальный сервер!");
     };
 
-    // --- ПРИВЯЗКА К WINDOW: КОПИРОВАНИЕ ПОЛЕЙ ---
-    window.copyField = function(fieldType, element) {
-        let textToCopy = "";
-        if (fieldType === 'host') textToCopy = document.getElementById("hostValue").textContent;
-        if (fieldType === 'port') textToCopy = document.getElementById("portValue").textContent;
-        if (fieldType === 'key') textToCopy = document.getElementById("keyValue").textContent;
+    window.copyField = function(type, element) {
+        let value = "";
+        if (type === 'host') value = document.getElementById("hostValue").textContent;
+        if (type === 'port') value = document.getElementById("portValue").textContent;
+        if (type === 'key') value = document.getElementById("keyValue").textContent;
 
-        if (!textToCopy || textToCopy === "—") return;
+        if (!value) return;
 
-        navigator.clipboard.writeText(textToCopy).then(() => {
-            showToast("Успешно скопировано!");
+        navigator.clipboard.writeText(value).then(() => {
+            showToast("Скопировано!");
         }).catch(err => {
-            console.error("Ошибка копирования: ", err);
+            console.error("Не удалось скопировать текст: ", err);
         });
     };
 
-    // --- ПРИВЯЗКА К WINDOW: ПОКАЗ ИНСТРУКЦИЙ ---
     window.showGuide = function(type) {
         const delBox = document.getElementById("guideDelete");
         const addBox = document.getElementById("guideAdd");
 
         if (type === 'delete') {
-            delBox.style.display = delBox.style.display === 'block' ? 'none' : 'block';
-            addBox.style.display = 'none';
+            delBox.style.display = delBox.style.display === "block" ? "none" : "block";
+            addBox.style.display = "none";
         } else if (type === 'add') {
-            addBox.style.display = addBox.style.display === 'block' ? 'none' : 'block';
-            delBox.style.display = 'none';
+            addBox.style.display = addBox.style.display === "block" ? "none" : "block";
+            delBox.style.display = "none";
         }
     };
 
     // --- АДМИНИСТРАТИВНЫЙ ФУНКЦИОНАЛ ---
-    window.toggleAdminMode = function() {
-        clickCount++;
-        if (clickCount >= 5) {
-            adminModeActive = !adminModeActive;
-            const panel = document.getElementById("adminPanel");
-            panel.style.display = adminModeActive ? "block" : "none";
-            
-            // Показываем инпуты загрузки картинок для админа
-            document.querySelectorAll(".style-upload").forEach(el => {
-                el.style.display = adminModeActive ? "block" : "none";
-            });
-
-            showToast(adminModeActive ? "Режим администратора включен" : "Режим администратора выключен", adminModeActive ? "#3b82f6" : "#4b5563");
-            renderProxySelector();
-            clickCount = 0;
-        }
+    window.toggleAdminPanel = function() {
+        const panel = document.getElementById("secretAdmin");
+        panel.style.display = panel.style.display === "block" ? "none" : "block";
     };
 
-    window.addNewProxy = async function() {
-        const host = document.getElementById("newHost").value.trim();
-        const port = parseInt(document.getElementById("newPort").value.trim());
-        const key = document.getElementById("newKey").value.trim();
+    window.addProxyToDatabase = async function() {
+        const host = document.getElementById("adminHost").value.trim();
+        const port = parseInt(document.getElementById("adminPort").value);
+        const key = document.getElementById("adminKey").value.trim();
 
         if (!host || !port || !key) {
-            showToast("Заполните все три поля!", "#ef4444");
+            showToast("Заполните все поля админа!");
             return;
         }
 
         try {
-            const response = await fetch(`${SUPABASE_URL}/rest/v1/proxies`, {
+            const response = await fetch(PROXIES_TABLE_URL, {
                 method: "POST",
-                headers: HEADERS,
-                body: JSON.stringify({ host, port, key, is_active: true })
+                headers: getSupabaseHeaders(),
+                body: JSON.stringify({ host, port, key, country: "RU" })
             });
 
-            if (response.ok) {
-                showToast("Новый прокси успешно сохранен в Supabase!");
-                document.getElementById("newHost").value = "";
-                document.getElementById("newPort").value = "";
-                document.getElementById("newKey").value = "";
-                await loadProxiesFromSupabase();
-            } else {
-                throw new Error("Не удалось добавить прокси");
-            }
-        } catch (err) {
-            showToast("Ошибка сохранения", "#ef4444");
-        }
-    };
+            if (!response.ok) throw new Error("Ошибка сохранения");
 
-    window.toggleProxyStatus = async function() {
-        const currentProxy = proxiesList[currentProxyIndex];
-        if (!currentProxy) return;
-
-        const updatedStatus = !(currentProxy.is_active !== false);
-
-        try {
-            const response = await fetch(`${SUPABASE_URL}/rest/v1/proxies?id=eq.${currentProxy.id}`, {
-                method: "PATCH",
-                headers: HEADERS,
-                body: JSON.stringify({ is_active: updatedStatus })
-            });
-
-            if (response.ok) {
-                showToast(`Статус изменен на: ${updatedStatus ? "ВКЛ" : "ВЫКЛ"}`);
-                await loadProxiesFromSupabase();
-            }
-        } catch (err) {
-            showToast("Ошибка изменения статуса", "#ef4444");
+            showToast("Сервер добавлен!");
+            document.getElementById("adminHost").value = "";
+            document.getElementById("adminPort").value = "";
+            document.getElementById("adminKey").value = "";
+            await loadProxiesFromSupabase();
+        } catch (error) {
+            console.error(error);
+            showToast("Не удалось сохранить в БД");
         }
     };
 
     window.deleteCurrentProxy = async function() {
-        const currentProxy = proxiesList[currentProxyIndex];
-        if (!currentProxy) return;
+        const selector = document.getElementById("proxySelector");
+        if (!selector.value || proxyList.length === 0) return;
 
-        if (!confirm(`Вы действительно хотите безвозвратно удалить прокси ${currentProxy.host}?`)) return;
+        const proxy = proxyList[selector.value];
+        if (!confirm(`Удалить сервер ${proxy.host}?`)) return;
 
         try {
-            const response = await fetch(`${SUPABASE_URL}/rest/v1/proxies?id=eq.${currentProxy.id}`, {
+            const response = await fetch(`${PROXIES_TABLE_URL}?host=eq.${encodeURIComponent(proxy.host)}`, {
                 method: "DELETE",
-                headers: HEADERS
+                headers: getSupabaseHeaders()
             });
 
-            if (response.ok) {
-                showToast("Прокси успешно удален!", "#ef4444");
-                await loadProxiesFromSupabase();
-            }
-        } catch (err) {
-            showToast("Ошибка удаления", "#ef4444");
+            if (!response.ok) throw new Error("Ошибка удаления");
+
+            showToast("Сервер удален!");
+            await loadProxiesFromSupabase();
+        } catch (error) {
+            console.error(error);
+            showToast("Ошибка удаления из БД");
         }
     };
 
-    // Сохранение картинок гайдов в формате Base64 прямо в БД Supabase
-    window.saveGuideImage = async function(stepId, inputElement) {
-        const file = inputElement.files[0];
-        if (!file) return;
-
-        const reader = new FileReader();
-        reader.onloadend = async function() {
-            const base64String = reader.result;
-            
-            try {
-                // Сначала пробуем сделать UPSERT (в Supabase REST выполняется через POST со специальным заголовком или методом RPC)
-                // Для простоты — удаляем старую запись по step_id, если она есть, и вставляем новую
-                await fetch(`${SUPABASE_URL}/rest/v1/guides?step_id=eq.${stepId}`, {
-                    method: "DELETE",
-                    headers: HEADERS
-                });
-
-                const response = await fetch(`${SUPABASE_URL}/rest/v1/guides`, {
-                    method: "POST",
-                    headers: HEADERS,
-                    body: JSON.stringify({ step_id: stepId, image_url: base64String })
-                });
-
-                if (response.ok) {
-                    document.getElementById(`img_${stepId}`).src = base64String;
-                    showToast("Скриншот инструкции обновлен!");
-                }
-            } catch (err) {
-                showToast("Ошибка отправки скриншота", "#ef4444");
-            }
-        };
-        reader.readAsDataURL(file);
-    };
-
-    // --- ВСПОМОГАТЕЛЬНЫЙ ЭЛЕМЕНТ TOAST ---
-    function showToast(message, bgColor = "#10b981") {
+    function showToast(message) {
         const toast = document.getElementById("toast");
         toast.textContent = message;
-        toast.style.background = bgColor;
         toast.classList.add("show");
         setTimeout(() => {
             toast.classList.remove("show");
-        }, 2500);
+        }, 2000);
     }
 </script>
 </body>
