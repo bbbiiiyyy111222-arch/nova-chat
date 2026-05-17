@@ -179,8 +179,9 @@
             background: #161b26;
         }
 
+        /* Изначально СКРЫВАЕМ синие кнопки добавления фото для обычных людей */
         .blue-step-btn {
-            display: inline-flex;
+            display: none; /* Изменено с inline-flex на none */
             align-items: center;
             justify-content: center;
             background: #0044cc;
@@ -306,25 +307,25 @@
         <div class="step">
             1. Нажмите на значок <strong>щита</strong>.
             <img id="img_del_1" class="step-img" src="https://placehold.co" alt="Нажатие на щит">
-            <label id="lbl_del_1" for="file_del_1" class="blue-step-btn">Нажатие на щит</label>
+            <label id="lbl_del_1" for="file_del_1" class="blue-step-btn">Загрузить фото</label>
             <input type="file" id="file_del_1" accept="image/*" style="display:none;" onchange="uploadStepImage('img_del_1', this)">
         </div>
         <div class="step">
             2. Выберите прокси, напротив которого написано <strong>«недоступен»</strong>.
             <img id="img_del_2" class="step-img" src="https://placehold.co" alt="Недоступный прокси">
-            <label id="lbl_del_2" for="file_del_2" class="blue-step-btn">Недоступный прокси</label>
+            <label id="lbl_del_2" for="file_del_2" class="blue-step-btn">Загрузить фото</label>
             <input type="file" id="file_del_2" accept="image/*" style="display:none;" onchange="uploadStepImage('img_del_2', this)">
         </div>
         <div class="step">
             3. Нажмите на значок <strong>трёх точек</strong> справа от него.
             <img id="img_del_3" class="step-img" src="https://placehold.co" alt="Три точки">
-            <label id="lbl_del_3" for="file_del_3" class="blue-step-btn">Нажатие на 3 точки</label>
+            <label id="lbl_del_3" for="file_del_3" class="blue-step-btn">Загрузить фото</label>
             <input type="file" id="file_del_3" accept="image/*" style="display:none;" onchange="uploadStepImage('img_del_3', this)">
         </div>
         <div class="step">
             4. В выпадающем меню нажмите кнопку <strong>Удалить</strong>.
             <img id="img_del_4" class="step-img" src="https://placehold.co" alt="Удаление">
-            <label id="lbl_del_4" for="file_del_4" class="blue-step-btn">Кнопка удалить</label>
+            <label id="lbl_del_4" for="file_del_4" class="blue-step-btn">Загрузить фото</label>
             <input type="file" id="file_del_4" accept="image/*" style="display:none;" onchange="uploadStepImage('img_del_4', this)">
         </div>
     </div>
@@ -335,19 +336,19 @@
         <div class="step">
             1. Откройте настройки прокси, нажав на значок <strong>щита</strong>.
             <img id="img_add_1" class="step-img" src="https://placehold.co" alt="Значок щита">
-            <label id="lbl_add_1" for="file_add_1" class="blue-step-btn">Значок щита</label>
+            <label id="lbl_add_1" for="file_add_1" class="blue-step-btn">Загрузить фото</label>
             <input type="file" id="file_add_1" accept="image/*" style="display:none;" onchange="uploadStepImage('img_add_1', this)">
         </div>
         <div class="step">
             2. Нажмите на кнопку <strong>Добавить прокси</strong> в самом низу списка.
             <img id="img_add_2" class="step-img" src="https://placehold.co" alt="Добавить прокси">
-            <label id="lbl_add_2" for="file_add_2" class="blue-step-btn">Добавить прокси</label>
+            <label id="lbl_add_2" for="file_add_2" class="blue-step-btn">Загрузить фото</label>
             <input type="file" id="file_add_2" accept="image/*" style="display:none;" onchange="uploadStepImage('img_add_2', this)">
         </div>
         <div class="step">
             3. Выберите тип <strong>MTPROTO</strong> и вставьте скопированные параметры.
             <img id="img_add_3" class="step-img" src="https://placehold.co" alt="Вставка конфигурации">
-            <label id="lbl_add_3" for="file_add_3" class="blue-step-btn">Вставка данных</label>
+            <label id="lbl_add_3" for="file_add_3" class="blue-step-btn">Загрузить фото</label>
             <input type="file" id="file_add_3" accept="image/*" style="display:none;" onchange="uploadStepImage('img_add_3', this)">
         </div>
     </div>
@@ -363,7 +364,7 @@
         
         <div id="adminControlsArea" style="display: none;">
             <h3 style="color: #10b981; margin-top:0; font-size:16px;">Управление сервером и фото</h3>
-            <p style="font-size:12px; color:#9ca3af;">Для замены скриншота: просто нажмите синюю кнопку под нужным шагом инструкции.</p>
+            <p style="font-size:12px; color:#9ca3af;">Теперь синие кнопки загрузки фото появились под каждым шагом инструкций выше!</p>
             
             <div style="margin-top:15px; border-top:1px solid #374151; padding-top:15px;">
                 <label style="color:#fff;">Изменить статус выбранного прокси:</label>
@@ -505,6 +506,13 @@ function checkAdminAuth() {
         isAdmin = true;
         document.getElementById('adminLoginForm').style.display = 'none';
         document.getElementById('adminControlsArea').style.display = 'block';
+        
+        // ВКЛЮЧАЕМ синие кнопки загрузки фото ТОЛЬКО для админа
+        const adminButtons = document.querySelectorAll('.blue-step-btn');
+        adminButtons.forEach(btn => {
+            btn.style.display = 'inline-flex';
+        });
+        
         showToast("Вы вошли как админ!");
     } else {
         alert('Доступ запрещен');
@@ -522,7 +530,6 @@ function showToast(message) {
     setTimeout(() => { toast.classList.remove('show'); }, 1500);
 }
 
-// ГАРАНТИРОВАННО РАБОЧАЯ ФУНКЦИЯ (использует FormData и правильные заголовки)
 function uploadStepImage(targetImgId, inputElement) {
     if (!isAdmin) {
         showToast("Загрузка доступна только админу!");
@@ -538,18 +545,14 @@ function uploadStepImage(targetImgId, inputElement) {
     const fileName = `step_${targetImgId}_${Date.now()}.png`;
     const uploadUrl = `https://${SUPABASE_PROJECT_ID}.supabase.co/storage/v1/object/${BUCKET_NAME}/${fileName}`;
     
-    // Используем правильный веб-формат FormData для API Supabase
-    const formData = new FormData();
-    formData.append('file', file);
-    
     fetch(uploadUrl, {
         method: 'POST',
         headers: {
             'apikey': SUPABASE_ANON_KEY,
-            'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
-            // Важно: Content-Type для FormData браузер проставляет автоматически вместе с boundary!
+            'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+            'Content-Type': file.type || 'image/png'
         },
-        body: file // Передаем бинарный поток объекта напрямую
+        body: file 
     })
     .then(res => {
         if (!res.ok) {
@@ -560,7 +563,6 @@ function uploadStepImage(targetImgId, inputElement) {
     .then(() => {
         const publicUrl = `https://${SUPABASE_PROJECT_ID}.supabase.co/storage/v1/object/public/${BUCKET_NAME}/${fileName}`;
         
-        // Перезаписываем / вставляем URL в таблицу guide_images
         return fetch(`https://${SUPABASE_PROJECT_ID}.supabase.co/rest/v1/guide_images`, {
             method: 'POST',
             headers: {
@@ -576,12 +578,12 @@ function uploadStepImage(targetImgId, inputElement) {
         if (!res.ok) {
             return res.json().then(err => { throw new Error("Ошибка БД: " + err.message) });
         }
-        fetchDataFromSupabase(); // Мгновенно обновляем изображения на экране
+        fetchDataFromSupabase(); 
         showToast("Фото успешно сохранено!");
     })
     .catch(err => {
         console.error("Ошибка:", err);
-        alert("Ошибка выполнения:\n" + err.message + "\n\nУбедитесь, что политики бакета в Supabase SQL Editor выполнены.");
+        alert("Ошибка выполнения:\n" + err.message);
     });
 }
 </script>
