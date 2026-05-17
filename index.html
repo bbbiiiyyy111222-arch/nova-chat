@@ -25,26 +25,25 @@
             width: 100%;
             max-width: 550px;
             border: 1px solid #232d3f;
+            text-align: center;
         }
         h2 {
             margin-top: 0;
             margin-bottom: 20px;
-            text-align: center;
             color: #fff;
             font-size: 20px;
             user-select: none;
-            cursor: pointer;
         }
         .warning-text {
-            background: rgba(234, 179, 8, 0.1);
-            border: 1px solid #eab308;
             color: #fbbf24;
-            padding: 12px;
-            border-radius: 6px;
             font-size: 13px;
             font-weight: 600;
-            text-align: center;
             margin-bottom: 20px;
+            background: rgba(251, 191, 36, 0.1);
+            padding: 10px;
+            border-radius: 6px;
+            border: 1px solid rgba(251, 191, 36, 0.2);
+            line-height: 1.4;
         }
         .select-group {
             margin-bottom: 15px;
@@ -61,55 +60,43 @@
             cursor: pointer;
             outline: none;
         }
-        .proxy-select:hover { border-color: #3b82f6; }
-        
-        /* Смарт-фильтр кнопка */
-        .btn-smart-filter {
+        .btn-smart {
             width: 100%;
-            background: linear-gradient(135deg, #a855f7, #3b82f6);
+            background: linear-gradient(135deg, #a855f7, #06b6d4);
             color: white;
             border: none;
-            padding: 10px;
+            padding: 12px;
             border-radius: 6px;
+            font-size: 14px;
             font-weight: 700;
-            font-size: 13px;
             cursor: pointer;
-            margin-bottom: 25px;
+            margin-bottom: 20px;
             transition: opacity 0.2s;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
         }
-        .btn-smart-filter:hover { opacity: 0.9; }
-
+        .btn-smart:hover { opacity: 0.9; }
+        
         .status-container {
             display: flex;
-            flex-direction: column;
             align-items: center;
             justify-content: center;
-            margin-top: -10px;
             margin-bottom: 20px;
             font-weight: bold;
             font-size: 14px;
-            gap: 5px;
+            gap: 15px;
         }
-        .status-row { display: flex; align-items: center; }
+        .status-item { display: flex; align-items: center; }
         .status-dot { width: 10px; height: 10px; border-radius: 50%; margin-right: 8px; }
+        
         .status-active { color: #10b981; }
         .status-active .status-dot { background-color: #10b981; box-shadow: 0 0 8px #10b981; }
         .status-inactive { color: #ef4444; }
         .status-inactive .status-dot { background-color: #ef4444; box-shadow: 0 0 8px #ef4444; }
-        .ping-badge { font-family: monospace; font-size: 12px; color: #9ca3af; }
+        
+        .ping-badge { background: #1f293d; padding: 4px 10px; border-radius: 4px; font-size: 12px; color: #9ca3af; border: 1px solid #2d3d5a; }
 
-        .item-group { margin-bottom: 20px; }
-        label {
-            display: block;
-            font-weight: 600;
-            margin-bottom: 8px;
-            font-size: 13px;
-            color: #9ca3af;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
+        .item-group { margin-bottom: 20px; text-align: left; }
+        label { display: block; font-weight: 600; margin-bottom: 8px; font-size: 13px; color: #9ca3af; text-transform: uppercase; letter-spacing: 0.5px; }
+        
         .copy-box {
             display: flex;
             align-items: center;
@@ -121,81 +108,32 @@
             transition: all 0.2s ease;
         }
         .copy-box:hover { border-color: #3b82f6; background: #24324d; }
-        .text-value {
-            flex-grow: 1;
-            font-family: monospace;
-            font-size: 14px;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            color: #e5e7eb;
-            user-select: none;
-        }
-        .btn-copy {
-            background: #3b82f6;
-            color: white;
-            border: none;
-            padding: 6px 12px;
-            border-radius: 4px;
-            font-size: 12px;
-            font-weight: 600;
-            margin-left: 10px;
-            cursor: pointer;
-            transition: background 0.2s;
-        }
-        .btn-copy:hover { background: #2563eb; }
+        .text-value { flex-grow: 1; font-family: monospace; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: #e5e7eb; user-select: none; }
         
         .btn-tg-connect {
-            display: block;
-            background: #24a1de;
-            color: white;
-            text-align: center;
-            text-decoration: none;
-            padding: 12px;
-            border-radius: 6px;
-            font-weight: 700;
-            font-size: 15px;
-            margin-bottom: 25px;
-            transition: background 0.2s;
+            display: block; width: 100%; background: #24a1de; color: white; border: none; padding: 12px;
+            border-radius: 6px; font-size: 15px; font-weight: 700; cursor: pointer; text-decoration: none; margin-bottom: 20px; box-sizing: border-box;
         }
         .btn-tg-connect:hover { background: #1d82b3; }
 
-        .divider { border-top: 1px solid #232d3f; margin: 25px 0; }
         .action-buttons { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px; }
-        .btn-action { padding: 12px; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; transition: background 0.2s; font-size: 14px; }
+        .btn-action { padding: 12px; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; font-size: 14px; }
         .btn-delete-guide { background: #ef4444; color: white; }
-        .btn-delete-guide:hover { background: #dc2626; }
         .btn-add-guide { background: #10b981; color: white; }
-        .btn-add-guide:hover { background: #059669; }
 
-        .guide-box { display: none; background: #1f293d; border: 1px solid #2d3d5a; border-radius: 8px; padding: 20px; margin-top: 15px; }
+        .guide-box { display: none; background: #1f293d; border: 1px solid #2d3d5a; border-radius: 8px; padding: 20px; margin-top: 15px; text-align: left; }
         .guide-title { font-weight: 700; font-size: 16px; margin-bottom: 15px; color: #fff; text-align: center; }
         .step { margin-bottom: 20px; font-size: 14px; line-height: 1.5; }
         .step-img { display: block; max-width: 100%; margin-top: 10px; margin-bottom: 10px; border-radius: 6px; border: 1px solid #2d3d5a; background: #161b26; }
 
-        .blue-step-btn {
-            display: none;
-            align-items: center;
-            justify-content: center;
-            background: #0044cc;
-            color: white;
-            border: none;
-            padding: 8px 16px;
-            border-radius: 6px;
-            font-size: 14px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: background 0.2s;
-            text-decoration: none;
-            margin-top: 5px;
-        }
-        .blue-step-btn:hover { background: #0033aa; }
+        .blue-step-btn { display: none; align-items: center; justify-content: center; background: #0044cc; color: white; border: none; padding: 8px 16px; border-radius: 6px; font-size: 14px; font-weight: 600; cursor: pointer; margin-top: 5px; }
         
         .secret-admin { display: none; background: #111827; border: 2px dashed #ef4444; padding: 20px; border-radius: 8px; margin-top: 20px; }
         .admin-input { width: 100%; padding: 10px; margin-bottom: 10px; border-radius: 4px; border: 1px solid #374151; background: #1f293d; color: white; box-sizing: border-box; }
         .status-toggle-btn { padding: 10px; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; width: 100%; margin-top: 10px; }
-        .admin-section-title { color: #10b981; margin-top: 20px; margin-bottom: 10px; font-size: 15px; border-top: 1px dashed #374151; padding-top: 15px; font-weight: bold; text-align: left; }
-        .btn-delete-proxy { width: 100%; background: #ef4444; color: white; border: none; padding: 10px; border-radius: 4px; font-weight: bold; margin-top: 10px; cursor: pointer; }
+        .btn-delete-proxy { background: #b91c1c; color: white; width: 100%; padding: 10px; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; margin-top: 15px; }
+
+        .info-footer { margin-top: 25px; font-size: 12px; color: #4b5563; user-select: none; cursor: pointer; font-weight: 500; }
 
         .toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%) translateY(100px); background: #10b981; color: #fff; padding: 10px 20px; border-radius: 20px; font-size: 14px; opacity: 0; transition: transform 0.3s, opacity 0.3s; pointer-events: none; z-index: 1000; }
         .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
@@ -204,11 +142,10 @@
 <body>
 
 <div class="container">
-    <h2 id="pageTitle" onclick="handleTitleClick()">Данные для копирования</h2>
-
-    <!-- Надпись-предупреждение -->
+    <h2>Данные для копирования</h2>
+    
     <div class="warning-text">
-        Информация о работе прокси не всегда правильна, проверяйте прокси!
+        Информация о работе прокси не всегда правильна проверяйте прокси!
     </div>
 
     <div class="select-group">
@@ -218,15 +155,13 @@
         </select>
     </div>
 
-    <!-- Кнопка смарт-фильтра -->
-    <button class="btn-smart-filter" onclick="findBestProxy()">⚡ Найти самый быстрый прокси</button>
+    <button class="btn-smart" onclick="findBestProxy()">⚡ Найти лучший прокси автоматичеки</button>
 
     <div class="status-container">
-        <div id="proxyStatusDisplay" class="status-active" style="display: flex; align-items: center;">
-            <span class="status-dot"></span><span id="statusText">Загрузка статуса...</span>
+        <div id="proxyStatusDisplay" class="status-item status-active">
+            <span class="status-dot"></span><span id="statusText">Проверка...</span>
         </div>
-        <!-- Задержка пинга (Реальный чекер) -->
-        <div id="pingDisplay" class="ping-badge">Проверка пинга...</div>
+        <div id="pingDisplay" class="ping-badge">ping: -- ms</div>
     </div>
 
     <div class="item-group">
@@ -253,8 +188,7 @@
         </div>
     </div>
 
-    <!-- Автоматическое подключение -->
-    <a href="#" id="tgConnectBtn" class="btn-tg-connect">🚀 Подключить в Telegram в 1 клик</a>
+    <a id="tgConnectBtn" href="#" class="btn-tg-connect">⚡ Подключить в один клик</a>
 
     <div class="divider"></div>
 
@@ -263,81 +197,84 @@
         <button class="btn-action btn-add-guide" onclick="showGuide('add')">Как добавить прокси?</button>
     </div>
 
-    <!-- Инструкции (Фото скрыты для админа) -->
+    <!-- Инструкция по УДАЛЕНИЮ -->
     <div id="guideDelete" class="guide-box">
         <div class="guide-title">Инструкция: Ошибка «Недоступен»</div>
         <div class="step">
             1. Нажмите на значок <strong>щита</strong>.
-            <img id="img_del_1" class="step-img" src="https://placehold.co" alt="Шаг 1">
-            <label id="lbl_del_1" for="file_del_1" class="blue-step-btn">Загрузить фото</label>
+            <img id="img_del_1" class="step-img" src="https://placehold.co" alt="Нажатие на щит">
+            <label for="file_del_1" class="blue-step-btn">Загрузить фото</label>
             <input type="file" id="file_del_1" accept="image/*" style="display:none;" onchange="uploadStepImage('img_del_1', this)">
         </div>
         <div class="step">
             2. Выберите прокси, напротив которого написано <strong>«недоступен»</strong>.
-            <img id="img_del_2" class="step-img" src="https://placehold.co" alt="Шаг 2">
-            <label id="lbl_del_2" for="file_del_2" class="blue-step-btn">Загрузить фото</label>
+            <img id="img_del_2" class="step-img" src="https://placehold.co" alt="Недоступный прокси">
+            <label for="file_del_2" class="blue-step-btn">Загрузить фото</label>
             <input type="file" id="file_del_2" accept="image/*" style="display:none;" onchange="uploadStepImage('img_del_2', this)">
         </div>
         <div class="step">
             3. Нажмите на значок <strong>трёх точек</strong> справа от него.
-            <img id="img_del_3" class="step-img" src="https://placehold.co" alt="Шаг 3">
-            <label id="lbl_del_3" for="file_del_3" class="blue-step-btn">Загрузить фото</label>
+            <img id="img_del_3" class="step-img" src="https://placehold.co" alt="Три точки">
+            <label for="file_del_3" class="blue-step-btn">Загрузить фото</label>
             <input type="file" id="file_del_3" accept="image/*" style="display:none;" onchange="uploadStepImage('img_del_3', this)">
         </div>
         <div class="step">
             4. В выпадающем меню нажмите кнопку <strong>Удалить</strong>.
-            <img id="img_del_4" class="step-img" src="https://placehold.co" alt="Шаг 4">
-            <label id="lbl_del_4" for="file_del_4" class="blue-step-btn">Загрузить фото</label>
+            <img id="img_del_4" class="step-img" src="https://placehold.co" alt="Удаление">
+            <label for="file_del_4" class="blue-step-btn">Загрузить фото</label>
             <input type="file" id="file_del_4" accept="image/*" style="display:none;" onchange="uploadStepImage('img_del_4', this)">
         </div>
     </div>
 
+    <!-- Инструкция по ДОБАВЛЕНИЮ -->
     <div id="guideAdd" class="guide-box">
         <div class="guide-title">Инструкция: Добавление прокси</div>
         <div class="step">
             1. Откройте настройки прокси, нажав на значок <strong>щита</strong>.
-            <img id="img_add_1" class="step-img" src="https://placehold.co" alt="Шаг 1">
-            <label id="lbl_add_1" for="file_add_1" class="blue-step-btn">Загрузить фото</label>
+            <img id="img_add_1" class="step-img" src="https://placehold.co" alt="Значок щита">
+            <label for="file_add_1" class="blue-step-btn">Загрузить фото</label>
             <input type="file" id="file_add_1" accept="image/*" style="display:none;" onchange="uploadStepImage('img_add_1', this)">
         </div>
         <div class="step">
             2. Нажмите на кнопку <strong>Добавить прокси</strong> в самом низу списка.
-            <img id="img_add_2" class="step-img" src="https://placehold.co" alt="Шаг 2">
-            <label id="lbl_add_2" for="file_add_2" class="blue-step-btn">Загрузить фото</label>
+            <img id="img_add_2" class="step-img" src="https://placehold.co" alt="Добавить прокси">
+            <label for="file_add_2" class="blue-step-btn">Загрузить фото</label>
             <input type="file" id="file_add_2" accept="image/*" style="display:none;" onchange="uploadStepImage('img_add_2', this)">
         </div>
         <div class="step">
-            3. Выберите тип <strong>MTPROTO</strong> и вставьте скопированные параметры.
-            <img id="img_add_3" class="step-img" src="https://placehold.co" alt="Шаг 3">
-            <label id="lbl_add_3" for="file_add_3" class="blue-step-btn">Загрузить фото</label>
+            3. Выберите тип <strong>MTPROTO</strong> и вставьте параметры.
+            <img id="img_add_3" class="step-img" src="https://placehold.co" alt="Вставка конфигурации">
+            <label for="file_add_3" class="blue-step-btn">Загрузить фото</label>
             <input type="file" id="file_add_3" accept="image/*" style="display:none;" onchange="uploadStepImage('img_add_3', this)">
         </div>
     </div>
 
-    <!-- Усиленная секретная админка (без текста паролей) -->
+    <!-- Скрытая панель админки -->
     <div id="secretAdminPanel" class="secret-admin">
         <div id="adminLoginForm">
             <h3 style="color: #ef4444; margin-top:0; font-size:16px;">Вход в секретную зону</h3>
             <input type="text" id="loginInput" class="admin-input" placeholder="Логин">
             <input type="password" id="passInput" class="admin-input" placeholder="Пароль">
-            <button class="btn-copy" style="background:#ef4444; margin-left:0; width:100%; padding:10px;" onclick="checkAdminAuth()">Войти</button>
+            <button class="btn-action" style="background:#ef4444; color:white; width:100%;" onclick="checkAdminAuth()">Войти</button>
         </div>
         
         <div id="adminControlsArea" style="display: none;">
             <h3 style="color: #10b981; margin-top:0; font-size:16px;">Панель администратора</h3>
             
-            <div>
-                <label style="color:#fff;">Управление статусом текущего прокси:</label>
-                <button id="statusToggleBtn" class="status-toggle-btn" onclick="toggleCurrentProxyStatusInDB()">Переключить статус</button>
-                <button class="btn-delete-proxy" onclick="deleteCurrentProxyFromDB()">🗑️ Удалить этот прокси полностью</button>
-            </div>
+            <button id="statusToggleBtn" class="status-toggle-btn" onclick="toggleCurrentProxyStatusInDB()">Переключить статус</button>
+            <button class="btn-delete-proxy" onclick="deleteCurrentProxyFromDB()">🗑️ Полностью удалить этот прокси</button>
             
-            <div class="admin-section-title">Добавить новый прокси-сервер</div>
+            <h4 style="color: #fff; margin-top: 20px; margin-bottom: 10px; border-top: 1px dashed #374151; padding-top: 15px; text-align: left;">Добавить новый сервер:</h4>
             <input type="text" id="newHostInput" class="admin-input" placeholder="Хост (например: connect.nolags.pw)">
             <input type="text" id="newPortInput" class="admin-input" placeholder="Порт (например: 443)">
-            <input type="text" id="newKeyInput" class="admin-input" placeholder="Ключ прокси">
-            <button class="btn-copy" style="background:#10b981; margin-left:0; width:100%; padding:11px; font-size:14px;" onclick="addNewProxyToDB()">Добавить этот прокси</button>
+            <input type="text" id="newKeyInput" class="admin-input" placeholder="Ключ">
+            <button class="btn-action" style="background:#10b981; color:white; width:100%;" onclick="addNewProxyToDB()">Добавить прокси</button>
         </div>
+    </div>
+
+    <!-- Секретный триггер для админки -->
+    <div class="info-footer" onclick="handleFooterClick()">
+        Информация о работе прокси сохраняется в облачной базе данных.
     </div>
 </div>
 
@@ -351,20 +288,20 @@ const BUCKET_NAME = "images";
 let proxyList = [];
 let currentProxy = null;
 let isAdmin = false;
-let clickCount = 0;
+let footerClickCount = 0;
 
 fetchDataFromSupabase();
 
-function handleTitleClick() {
-    clickCount++;
-    if (clickCount === 4) { // Увеличили сложность: теперь нужно 4 клика вместо 2
+function handleFooterClick() {
+    footerClickCount++;
+    if (footerClickCount === 3) {
         toggleAdminForm();
-        clickCount = 0;
+        footerClickCount = 0;
     }
-    setTimeout(() => { clickCount = 0; }, 600);
+    setTimeout(() => { footerClickCount = 0; }, 600);
 }
 
-function fetchDataFromSupabase(selectLastInserted = false) {
+function fetchDataFromSupabase(selectLast = false) {
     fetch(`https://${SUPABASE_PROJECT_ID}.supabase.co/rest/v1/proxies?order=id.asc`, {
         headers: { 'apikey': SUPABASE_ANON_KEY, 'Authorization': `Bearer ${SUPABASE_ANON_KEY}` }
     })
@@ -372,31 +309,22 @@ function fetchDataFromSupabase(selectLastInserted = false) {
     .then(data => {
         proxyList = data;
         const selector = document.getElementById('proxySelector');
-        const prevValue = selector.value;
-        selector.innerHTML = '';
+        const oldVal = selector.value;
         
-        if(proxyList.length === 0) {
-            selector.innerHTML = '<option value="">Нет доступных прокси</option>';
-            currentProxy = null;
-            clearDisplay();
-            return;
-        }
-
-        proxyList.forEach((proxy, index) => {
+        selector.innerHTML = '';
+        proxyList.forEach((proxy, idx) => {
             const opt = document.createElement('option');
-            opt.value = index;
+            opt.value = idx;
             opt.innerText = proxy.name || `Прокси (${proxy.host})`;
             selector.appendChild(opt);
         });
         
-        if (selectLastInserted) selector.value = proxyList.length - 1;
-        else if (prevValue !== "" && prevValue < proxyList.length) selector.value = prevValue;
-        else selector.value = 0;
+        if (selectLast) { selector.value = proxyList.length - 1; }
+        else if (oldVal !== "" && proxyList[oldVal]) { selector.value = oldVal; }
+        else { selector.value = 0; }
         
         currentProxy = proxyList[selector.value];
         updateDisplayValues();
-    }).catch(() => {
-        document.getElementById('proxySelector').innerHTML = '<option value="">Ошибка сети Supabase</option>';
     });
 
     fetch(`https://${SUPABASE_PROJECT_ID}.supabase.co/rest/v1/guide_images`, {
@@ -411,180 +339,188 @@ function fetchDataFromSupabase(selectLastInserted = false) {
     });
 }
 
-function clearDisplay() {
-    document.getElementById('hostValue').innerText = '—';
-    document.getElementById('portValue').innerText = '—';
-    document.getElementById('keyValue').innerText = '—';
-    document.getElementById('statusText').innerText = 'Выключен';
-    document.getElementById('pingDisplay').innerText = '';
-}
-
 function changeProxyData() {
     const selectedIndex = document.getElementById('proxySelector').value;
-    if(selectedIndex === "") return;
     currentProxy = proxyList[selectedIndex];
     updateDisplayValues();
 }
 
 function updateDisplayValues() {
-    if (!currentProxy) return;
+    if (!currentProxy) {
+        document.getElementById('hostValue').innerText = '--';
+        document.getElementById('portValue').innerText = '--';
+        document.getElementById('keyValue').innerText = '--';
+        document.getElementById('statusText').innerText = 'Нет прокси';
+        return;
+    }
     document.getElementById('hostValue').innerText = currentProxy.host;
     document.getElementById('portValue').innerText = currentProxy.port;
     document.getElementById('keyValue').innerText = currentProxy.key;
     
-    // Ссылка для автоподключения
     document.getElementById('tgConnectBtn').href = `tg://proxy?server=${currentProxy.host}&port=${currentProxy.port}&secret=${currentProxy.key}`;
     
+    checkRealPing(currentProxy.host, currentProxy.is_active);
+}
+
+// РЕАЛЬНЫЙ ЧЕКЕР СКОРОСТИ И ДОСТУПНОСТИ
+function checkRealPing(host, dbStatus) {
     const statusDisplay = document.getElementById('proxyStatusDisplay');
     const statusText = document.getElementById('statusText');
+    const pingDisplay = document.getElementById('pingDisplay');
     const toggleBtn = document.getElementById('statusToggleBtn');
     
-    if (currentProxy.is_active) {
-        statusDisplay.className = "status-active";
-        statusText.innerText = "Доступен (активен)";
-        toggleBtn.innerText = 'Переключить в "Не работает"';
-        toggleBtn.style.background = '#ef4444';
-    } else {
-        statusDisplay.className = "status-inactive";
-        statusText.innerText = "Недоступен (не работает)";
-        toggleBtn.innerText = 'Переключить в "Активен"';
-        toggleBtn.style.background = '#10b981';
-    }
+    statusText.innerText = "Тестирование...";
+    pingDisplay.innerText = "ping: -- ms";
     
-    // Запуск реального чекера скорости (Идея 1)
-    checkProxyPing(currentProxy.host);
-}
-
-// РЕАЛЬНЫЙ ЧЕКЕР СКОРОСТИ (Идея 1)
-function checkProxyPing(host) {
-    const pingDisplay = document.getElementById('pingDisplay');
-    pingDisplay.innerText = "Измерение отклика...";
-    pingDisplay.style.color = "#9ca3af";
-    
-    const startTime = performance.now();
-    // Делаем легкий сетевой запрос к хосту (имитируя пинг через проверку загрузки картинки-заглушки)
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 2500); // таймаут 2.5 сек
-    
-    fetch(`https://${host}/favicon.ico`, { mode: 'no-cors', signal: controller.signal })
-    .then(() => {
-        clearTimeout(timeoutId);
-        const duration = Math.round(performance.now() - startTime);
-        pingDisplay.innerText = `Пинг: ${duration} ms (Отличная скорость)`;
-        pingDisplay.style.color = "#10b981";
-    })
-    .catch(() => {
-        clearTimeout(timeoutId);
-        // Так как прокси часто режут внешние http-запросы браузера, замеряем время до отказа (TCP-отклик)
-        const duration = Math.round(performance.now() - startTime);
-        if (duration > 2000 || !currentProxy.is_active) {
-            pingDisplay.innerText = "Пинг: ❌ Тайм-аут (Сервер перегружен или заблокирован)";
-            pingDisplay.style.color = "#ef4444";
-        } else {
-            pingDisplay.innerText = `Пинг: ${duration} ms (Соединение установлено)`;
-            pingDisplay.style.color = "#3b82f6";
-        }
-    });
-}
-
-// АВТОМАТИЧЕСКИЙ СМАРТ-ФИЛЬТР (Идея 3)
-function findBestProxy() {
-    if (proxyList.length === 0) return;
-    showToast("Ищем лучший сервер...");
-    
-    // Фильтруем только активные прокси
-    const activeProxies = proxyList.filter(p => p.is_active);
-    if (activeProxies.length === 0) {
-        alert("Сейчас нет активных прокси в списке.");
+    if (!dbStatus) {
+        statusDisplay.className = "status-item status-inactive";
+        statusText.innerText = "Отключен в панели";
+        if (toggleBtn) { toggleBtn.innerText = 'Включить'; toggleBtn.style.background = '#10b981'; }
         return;
     }
     
-    // Автоматически выбираем случайный активный сервер (имитируем умный подбор по лучшему пингу)
-    const bestProxyIdx = proxyList.indexOf(activeProxies[Math.floor(Math.random() * activeProxies.length)]);
-    document.getElementById('proxySelector').value = bestProxyIdx;
-    currentProxy = proxyList[bestProxyIdx];
+    if (toggleBtn) { toggleBtn.innerText = 'Выключить'; toggleBtn.style.background = '#ef4444'; }
+    
+    const startTime = performance.now();
+    // Делаем легкий сетевой запрос без cors-блокировки через картинку-пингер к стандартному favicon хоста
+    const pingImg = new Image();
+    
+    const timeout = setTimeout(() => {
+        pingImg.src = "";
+        statusDisplay.className = "status-item status-inactive";
+        statusText.innerText = "Недоступен (Таймаут)";
+        pingDisplay.innerText = "ping: error";
+    }, 4500);
+
+    pingImg.onload = pingImg.onerror = function() {
+        clearTimeout(timeout);
+        const endTime = performance.now();
+        const pingTime = Math.round(endTime - startTime);
+        
+        statusDisplay.className = "status-item status-active";
+        statusText.innerText = "Доступен (Онлайн)";
+        pingDisplay.innerText = `ping: ${pingTime} ms`;
+    };
+    
+    pingImg.src = `https://${host}/favicon.ico?t=${Date.now()}`;
+}
+
+// СМАРТ-ФИЛЬТР ЛУЧШЕГО ПРОКСИ
+async function findBestProxy() {
+    showToast("🔍 Поиск самого быстрого сервера...");
+    let bestIndex = 0;
+    let lowestPing = 99999;
+    
+    for (let i = 0; i < proxyList.length; i++) {
+        if (!proxyList[i].is_active) continue;
+        
+        const ping = await new Promise((resolve) => {
+            const start = performance.now();
+            const img = new Image();
+            const t = setTimeout(() => { img.src = ""; resolve(99999); }, 1500);
+            img.onload = img.onerror = () => { clearTimeout(t); resolve(Math.round(performance.now() - start)); };
+            img.src = `https://${proxyList[i].host}/favicon.ico?t=${Date.now()}`;
+        });
+        
+        if (ping < lowestPing) { lowestPing = ping; bestIndex = i; }
+    }
+    
+    document.getElementById('proxySelector').value = bestIndex;
+    currentProxy = proxyList[bestIndex];
     updateDisplayValues();
-    showToast("Выбран самый стабильный сервер!");
+    showToast(`🎯 Выбран лучший прокси (${lowestPing} ms)!`);
+}
+
+function copyField(field, element) {
+    if (!currentProxy) return;
+    navigator.clipboard.writeText(currentProxy[field]).then(() => {
+        showToast("Скопировано!");
+        const btn = element.querySelector('.btn-copy');
+        const orig = btn.innerText; btn.innerText = 'Готово!'; btn.style.background = '#10b981';
+        setTimeout(() => { btn.innerText = orig; btn.style.background = '#3b82f6'; }, 1500);
+    });
 }
 
 function addNewProxyToDB() {
     const host = document.getElementById('newHostInput').value.trim();
     const port = document.getElementById('newPortInput').value.trim();
     const key = document.getElementById('newKeyInput').value.trim();
-    if (!host || !port || !key) { alert("Заполните все поля!"); return; }
+    if (!host || !port || !key) { alert("Заполните все три поля!"); return; }
     
-    showToast("Добавление...");
+    showToast("Сохранение...");
     fetch(`https://${SUPABASE_PROJECT_ID}.supabase.co/rest/v1/proxies`, {
         method: 'POST',
         headers: { 'apikey': SUPABASE_ANON_KEY, 'Authorization': `Bearer ${SUPABASE_ANON_KEY}`, 'Content-Type': 'application/json' },
         body: JSON.stringify({ name: `Прокси (${host})`, host: host, port: port, key: key, is_active: true })
-    })
-    .then(() => {
+    }).then(() => {
         document.getElementById('newHostInput').value = '';
         document.getElementById('newPortInput').value = '';
         document.getElementById('newKeyInput').value = '';
-        showToast("Сервер добавлен!");
         fetchDataFromSupabase(true);
     });
 }
 
 function toggleCurrentProxyStatusInDB() {
-    const newStatus = !currentProxy.is_active;
+    const newStat = !currentProxy.is_active;
     fetch(`https://${SUPABASE_PROJECT_ID}.supabase.co/rest/v1/proxies?id=eq.${currentProxy.id}`, {
         method: 'PATCH',
         headers: { 'apikey': SUPABASE_ANON_KEY, 'Authorization': `Bearer ${SUPABASE_ANON_KEY}`, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ is_active: newStatus })
-    }).then(() => {
-        currentProxy.is_active = newStatus;
-        updateDisplayValues();
-        showToast("Статус изменен!");
-    });
+        body: JSON.stringify({ is_active: newStat })
+    }).then(() => { currentProxy.is_active = newStat; updateDisplayValues(); });
 }
 
-// УДАЛЕНИЕ СЕРВЕРА (Идея 2)
+// 🗑️ ФУНКЦИЯ УДАЛЕНИЯ СЕРВЕРА
 function deleteCurrentProxyFromDB() {
-    if(!currentProxy) return;
-    if(!confirm(`Вы уверены, что хотите НАВСЕГДА удалить из базы прокси: ${currentProxy.host}?`)) return;
-    
+    if (!confirm(`Вы уверены, что хотите НАВСЕГДА удалить прокси ${currentProxy.host}?`)) return;
     fetch(`https://${SUPABASE_PROJECT_ID}.supabase.co/rest/v1/proxies?id=eq.${currentProxy.id}`, {
         method: 'DELETE',
         headers: { 'apikey': SUPABASE_ANON_KEY, 'Authorization': `Bearer ${SUPABASE_ANON_KEY}` }
-    }).then(() => {
-        showToast("Сервер удален из базы!");
-        fetchDataFromSupabase();
-    });
-}
-
-function copyField(field, element) {
-    if (!currentProxy) return;
-    // Поддержка копирования полей под имена в БД
-    const value = field === 'key' ? currentProxy.key : currentProxy[field];
-    navigator.clipboard.writeText(value).then(() => {
-        showToast("Скопировано!");
-        const btn = element.querySelector('.btn-copy');
-        const originalText = btn.innerText;
-        btn.innerText = 'Готово!';
-        btn.style.background = '#10b981';
-        setTimeout(() => { btn.innerText = originalText; btn.style.background = '#3b82f6'; }, 1500);
-    });
+    }).then(() => { showToast("Сервер удален!"); fetchDataFromSupabase(); });
 }
 
 function showGuide(type) {
-    const delBox = document.getElementById('guideDelete');
-    const addBox = document.getElementById('guideAdd');
-    if (type === 'delete') {
-        delBox.style.display = delBox.style.display === 'block' ? 'none' : 'block';
-        addBox.style.display = 'none';
-    } else {
-        addBox.style.display = addBox.style.display === 'block' ? 'none' : 'block';
-        delBox.style.display = 'none';
-    }
+    const delBox = document.getElementById('guideDelete'); const addBox = document.getElementById('guideAdd');
+    if (type === 'delete') { delBox.style.display = delBox.style.display === 'block' ? 'none' : 'block'; addBox.style.display = 'none'; }
+    else { addBox.style.display = addBox.style.display === 'block' ? 'none' : 'block'; delBox.style.display = 'none'; }
 }
 
-function toggleAdminForm() {
-    const panel = document.getElementById('secretAdminPanel');
-    panel.style.display = panel.style.display === 'block' ? 'none' : 'block';
-}
+function toggleAdminForm() { const panel = document.getElementById('secretAdminPanel'); panel.style.display = panel.style.display === 'block' ? 'none' : 'block'; }
 
 function checkAdminAuth() {
-    const login = document.getElementById('loginInput
+    const login = document.getElementById('loginInput').value; const pass = document.getElementById('passInput').value;
+    if (login.toLowerCase() === b64DecodeUnicode('YWRtaW4=') && pass === b64DecodeUnicode('c2VhbA==')) {
+        isAdmin = true; document.getElementById('adminLoginForm').style.display = 'none'; document.getElementById('adminControlsArea').style.display = 'block';
+        document.querySelectorAll('.blue-step-btn').forEach(btn => btn.style.display = 'inline-flex');
+        showToast("Вы вошли как админ!");
+    } else { alert('Доступ запрещен'); }
+}
+
+function b64DecodeUnicode(str) { return decodeURIComponent(atob(str).split('').map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)).join('')); }
+function showToast(m) { const t = document.getElementById('toast'); t.innerText = m; t.classList.add('show'); setTimeout(() => { t.classList.remove('show'); }, 1500); }
+
+function uploadStepImage(targetImgId, inputElement) {
+    if (!isAdmin) return;
+    const files = inputElement.files; if (!files || files.length === 0) return;
+    const file = files[0]; showToast("Загрузка фото...");
+    const fileName = `step_${targetImgId}_${Date.now()}.png`;
+    
+    fetch(`https://${SUPABASE_PROJECT_ID}.supabase.co/storage/v1/object/${BUCKET_NAME}/${fileName}`, {
+        method: 'POST',
+        headers: { 'apikey': SUPABASE_ANON_KEY, 'Authorization': `Bearer ${SUPABASE_ANON_KEY}`, 'Content-Type': file.type || 'image/png' },
+        body: file
+    })
+    .then(res => res.json())
+    .then(() => {
+        const publicUrl = `https://${SUPABASE_PROJECT_ID}.supabase.co/storage/v1/object/public/${BUCKET_NAME}/${fileName}`;
+        return fetch(`https://${SUPABASE_PROJECT_ID}.supabase.co/rest/v1/guide_images`, {
+            method: 'POST',
+            headers: { 'apikey': SUPABASE_ANON_KEY, 'Authorization': `Bearer ${SUPABASE_ANON_KEY}`, 'Content-Type': 'application/json', 'Prefer': 'resolution=merge-duplicates' },
+            body: JSON.stringify({ id: targetImgId, url: publicUrl })
+        });
+    })
+    .then(() => { fetchDataFromSupabase(); showToast("Фото успешно сохранено!"); });
+}
+</script>
+
+</body>
+</html>
