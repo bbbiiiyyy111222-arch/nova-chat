@@ -53,6 +53,27 @@
         .proxy-select:hover {
             border-color: #3b82f6;
         }
+        
+        .status-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-top: -15px;
+            margin-bottom: 20px;
+            font-weight: bold;
+            font-size: 14px;
+        }
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+        .status-active { color: #10b981; }
+        .status-active .status-dot { background-color: #10b981; box-shadow: 0 0 8px #10b981; }
+        .status-inactive { color: #ef4444; }
+        .status-inactive .status-dot { background-color: #ef4444; box-shadow: 0 0 8px #ef4444; }
+
         .item-group {
             margin-bottom: 20px;
         }
@@ -123,20 +144,11 @@
             transition: background 0.2s;
             font-size: 14px;
         }
-        .btn-delete-guide {
-            background: #ef4444;
-            color: white;
-        }
-        .btn-delete-guide:hover {
-            background: #dc2626;
-        }
-        .btn-add-guide {
-            background: #10b981;
-            color: white;
-        }
-        .btn-add-guide:hover {
-            background: #059669;
-        }
+        .btn-delete-guide { background: #ef4444; color: white; }
+        .btn-delete-guide:hover { background: #dc2626; }
+        .btn-add-guide { background: #10b981; color: white; }
+        .btn-add-guide:hover { background: #059669; }
+
         .guide-box {
             display: none;
             background: #1f293d;
@@ -153,18 +165,40 @@
             text-align: center;
         }
         .step {
-            margin-bottom: 15px;
+            margin-bottom: 20px;
             font-size: 14px;
             line-height: 1.5;
         }
         .step-img {
             display: block;
             max-width: 100%;
-            margin-top: 8px;
+            margin-top: 10px;
+            margin-bottom: 10px;
             border-radius: 6px;
-            border: 1px solid #3b82f6;
+            border: 1px solid #2d3d5a;
             background: #161b26;
         }
+
+        .blue-step-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background: #0044cc;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+            text-decoration: none;
+            margin-top: 5px;
+        }
+        .blue-step-btn:hover {
+            background: #0033aa;
+        }
+        
         .secret-admin {
             display: none;
             background: #111827;
@@ -183,24 +217,16 @@
             color: white;
             box-sizing: border-box;
         }
-        .file-input-label {
-            display: block;
-            background: #24a1de;
-            color: #fff;
-            padding: 12px;
-            border-radius: 6px;
-            font-weight: 600;
+        .status-toggle-btn {
+            padding: 10px;
+            border: none;
+            border-radius: 4px;
+            font-weight: bold;
             cursor: pointer;
-            text-align: center;
-            transition: background 0.2s;
+            width: 100%;
             margin-top: 10px;
         }
-        .file-input-label:hover {
-            background: #1d82b3;
-        }
-        #fileInput {
-            display: none;
-        }
+
         .toast {
             position: fixed;
             bottom: 20px;
@@ -225,22 +251,24 @@
 <body>
 
 <div class="container">
-    <!-- Двойной клик по этому заголовку откроет панель входа для админа -->
-    <h2 ondblclick="toggleAdminForm()">Данные для копирования</h2>
+    <h2 id="pageTitle" onclick="handleTitleClick()">Данные для копирования</h2>
 
-    <!-- Выбор прокси сервера из списка -->
     <div class="select-group">
         <label>Выберите рабочий прокси сервер</label>
         <select id="proxySelector" class="proxy-select" onchange="changeProxyData()">
-            <!-- Все отправленные вами прокси зашиты сюда -->
-            <option value="0">Прокси 1 (132.243.213.216)</option>
-            <option value="1">Прокси 2 (arixo.shop)</option>
+            <option value="0">Прокси 1 (ark.proxytg.space)</option>
+            <option value="1">Прокси 2 (132.243.213.216)</option>
             <option value="2">Прокси 3 (VIP.alotaxi.info)</option>
             <option value="3">Прокси 4 (2.26.82.210)</option>
         </select>
     </div>
 
-    <!-- Поля для копирования параметров -->
+    <div class="status-container">
+        <div id="proxyStatusDisplay" class="status-active" style="display: flex; align-items: center;">
+            <span class="status-dot"></span><span id="statusText">Активен</span>
+        </div>
+    </div>
+
     <div class="item-group">
         <label>Хост / Сервер</label>
         <div class="copy-box" onclick="copyField('host', this)">
@@ -267,51 +295,64 @@
 
     <div class="divider"></div>
 
-    <!-- Кнопки инструкций (доступны всем) -->
     <div class="action-buttons">
         <button class="btn-action btn-delete-guide" onclick="showGuide('delete')">Как удалить старый?</button>
         <button class="btn-action btn-add-guide" onclick="showGuide('add')">Как добавить прокси?</button>
     </div>
 
-    <!-- Раздел с фото-инструкцией по удалению -->
+    <!-- Инструкция по УДАЛЕНИЮ -->
     <div id="guideDelete" class="guide-box">
         <div class="guide-title">Инструкция: Ошибка «Недоступен»</div>
         <div class="step">
             1. Нажмите на значок <strong>щита</strong> в настройках или чатах.
-            <img class="step-img" src="https://placehold.co" alt="Нажатие на щит">
+            <img id="img_del_1" class="step-img" src="https://placehold.co" alt="Нажатие на щит">
+            <label id="lbl_del_1" for="file_del_1" class="blue-step-btn">Нажатие на щит</label>
+            <input type="file" id="file_del_1" accept="image/*" style="display:none;" onchange="uploadStepImage('img_del_1', this)">
         </div>
         <div class="step">
             2. Выберите прокси, напротив которого написано <strong>«недоступен»</strong>.
-            <img class="step-img" src="https://placehold.co" alt="Недоступный прокси">
+            <img id="img_del_2" class="step-img" src="https://placehold.co" alt="Недоступный прокси">
+            <label id="lbl_del_2" for="file_del_2" class="blue-step-btn">Недоступный прокси</label>
+            <input type="file" id="file_del_2" accept="image/*" style="display:none;" onchange="uploadStepImage('img_del_2', this)">
         </div>
         <div class="step">
             3. Нажмите на значок <strong>трёх точек</strong> справа от него.
-            <img class="step-img" src="https://placehold.co" alt="Три точки">
+            <img id="img_del_3" class="step-img" src="https://placehold.co" alt="Три точки">
+            <label id="lbl_del_3" for="file_del_3" class="blue-step-btn">Нажатие на 3 точки</label>
+            <input type="file" id="file_del_3" accept="image/*" style="display:none;" onchange="uploadStepImage('img_del_3', this)">
         </div>
         <div class="step">
             4. В выпадающем меню нажмите кнопку <strong>Удалить</strong>.
-            <img class="step-img" src="https://placehold.co" alt="Удаление">
+            <img id="img_del_4" class="step-img" src="https://placehold.co" alt="Удаление">
+            <label id="lbl_del_4" for="file_del_4" class="blue-step-btn">Кнопка удалить</label>
+            <input type="file" id="file_del_4" accept="image/*" style="display:none;" onchange="uploadStepImage('img_del_4', this)">
         </div>
     </div>
 
-    <!-- Раздел с фото-инструкцией по добавлению -->
+    <!-- Инструкция по ДОБАВЛЕНИЮ -->
     <div id="guideAdd" class="guide-box">
         <div class="guide-title">Инструкция: Добавление прокси</div>
         <div class="step">
             1. Откройте настройки прокси, нажав на значок <strong>щита</strong>.
-            <img class="step-img" src="https://placehold.co" alt="Значок щита">
+            <img id="img_add_1" class="step-img" src="https://placehold.co" alt="Значок щита">
+            <label id="lbl_add_1" for="file_add_1" class="blue-step-btn">Значок щита</label>
+            <input type="file" id="file_add_1" accept="image/*" style="display:none;" onchange="uploadStepImage('img_add_1', this)">
         </div>
         <div class="step">
             2. Нажмите на кнопку <strong>Добавить прокси</strong> в самом низу списка.
-            <img class="step-img" src="https://placehold.co" alt="Добавить прокси">
+            <img id="img_add_2" class="step-img" src="https://placehold.co" alt="Добавить прокси">
+            <label id="lbl_add_2" for="file_add_2" class="blue-step-btn">Добавить прокси</label>
+            <input type="file" id="file_add_2" accept="image/*" style="display:none;" onchange="uploadStepImage('img_add_2', this)">
         </div>
         <div class="step">
-            3. Выберите тип <strong>MTPROTO</strong> и поочередно вставьте скопированные сверху Хост, Порт и Ключ.
-            <img class="step-img" src="https://placehold.co" alt="Вставка конфигурации">
+            3. Выберите тип <strong>MTPROTO</strong> и вставьте скопированные параметры.
+            <img id="img_add_3" class="step-img" src="https://placehold.co" alt="Вставка конфигурации">
+            <label id="lbl_add_3" for="file_add_3" class="blue-step-btn">Вставка данных</label>
+            <input type="file" id="file_add_3" accept="image/*" style="display:none;" onchange="uploadStepImage('img_add_3', this)">
         </div>
     </div>
 
-    <!-- Скрытая панель входа в админку -->
+    <!-- Скрытая панель админки -->
     <div id="secretAdminPanel" class="secret-admin">
         <div id="adminLoginForm">
             <h3 style="color: #ef4444; margin-top:0; font-size:16px;">Вход в секретную зону</h3>
@@ -320,13 +361,14 @@
             <button class="btn-copy" style="background:#ef4444; margin-left:0; width:100%; padding:10px;" onclick="checkAdminAuth()">Войти</button>
         </div>
         
-        <!-- КНОПКА ЗАГРУЗКИ КАРТИНКИ (Доступна ТОЛЬКО авторизованному админу) -->
-        <div id="adminUploadArea" style="display: none;">
-            <h3 style="color: #10b981; margin-top:0; font-size:16px;">Загрузка скриншотов в Supabase</h3>
-            <p style="font-size:12px; color:#9ca3af; margin-bottom:5px;">Кнопка для загрузки новых картинок на сервер:</p>
-            <label for="fileInput" class="file-input-label">Загрузить новое фото</label>
-            <input type="file" id="fileInput" accept="image/*" onchange="uploadImage()">
-            <div id="uploadStatus" style="font-size: 13px; margin-top: 10px; color: #9ca3af;"></div>
+        <div id="adminControlsArea" style="display: none;">
+            <h3 style="color: #10b981; margin-top:0; font-size:16px;">Управление сервером и фото</h3>
+            <p style="font-size:12px; color:#9ca3af;">Для замены скриншота: просто нажмите синюю кнопку под нужным шагом инструкции.</p>
+            
+            <div style="margin-top:15px; border-top:1px solid #374151; padding-top:15px;">
+                <label style="color:#fff;">Изменить статус выбранного прокси:</label>
+                <button id="statusToggleBtn" class="status-toggle-btn" style="background:#ef4444; color:white;" onclick="toggleCurrentProxyStatus()">Переключить в "Не работает"</button>
+            </div>
         </div>
     </div>
 </div>
@@ -334,37 +376,32 @@
 <div id="toast" class="toast">Скопировано!</div>
 
 <script>
-// Список всех ваших прокси-серверов
+// Список прокси (без arixo.shop, добавлен ark.proxytg.space)
 const proxyList = [
-    {
-        host: "132.243.213.216",
-        port: "443",
-        key: "eea3f41c6c1aefca10e6a8c366158ae25d706574726f766963682e7275"
-    },
-    {
-        host: "arixo.shop",
-        port: "443",
-        key: "eec11798ab008831b474066c9e1ebf5c99617669746f2e7275"
-    },
-    {
-        host: "VIP.alotaxi.info",
-        port: "4515",
-        key: "eee9a4f23b1d768c04a8d7f39120ca5b6e626973636f7474692e79656b74616e65742e636f6d"
-    },
-    {
-        host: "2.26.82.210",
-        port: "443",
-        key: "bfb063cc6d861de10f6a39c795fc66e4"
-    }
+    { host: "ark.proxytg.space", port: "443", key: "eeb8df1294e7e13cd99e7a9144bae17db861726b2e7026f787974672e7370616365", isActive: true },
+    { host: "132.243.213.216", port: "443", key: "eea3f41c6c1aefca10e6a8c366158ae25d706574726f766963682e7275", isActive: true },
+    { host: "VIP.alotaxi.info", port: "4515", key: "eee9a4f23b1d768c04a8d7f39120ca5b6e626973636f7474692e79656b74616e65742e636f6d", isActive: true },
+    { host: "2.26.82.210", port: "443", key: "bfb063cc6d861de10f6a39c795fc66e4", isActive: true }
 ];
 
 const SUPABASE_PROJECT_ID = "pmvbhhidcojkkpumsxxb";
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBtdmJoaGlkY29qa2twdW1zeHhiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzcyNzk3MjcsImV4cCI6MjA5Mjg1NTcyN30.1eKxcaqeClRdAVH8lVcOdYaV0o_PbRzjnM9vBUP15QQ";
 const BUCKET_NAME = "images";
 
-// Инициализация страницы первым прокси из списка
 let currentProxy = proxyList[0];
+let isAdmin = false;
+let clickCount = 0;
+
 updateDisplayValues();
+
+function handleTitleClick() {
+    clickCount++;
+    if (clickCount === 2) {
+        toggleAdminForm();
+        clickCount = 0;
+    }
+    setTimeout(() => { clickCount = 0; }, 400);
+}
 
 function changeProxyData() {
     const selectedIndex = document.getElementById('proxySelector').value;
@@ -376,25 +413,38 @@ function updateDisplayValues() {
     document.getElementById('hostValue').innerText = currentProxy.host;
     document.getElementById('portValue').innerText = currentProxy.port;
     document.getElementById('keyValue').innerText = currentProxy.key;
+    
+    const statusDisplay = document.getElementById('proxyStatusDisplay');
+    const statusText = document.getElementById('statusText');
+    const toggleBtn = document.getElementById('statusToggleBtn');
+    
+    if (currentProxy.isActive) {
+        statusDisplay.className = "status-active";
+        statusText.innerText = "Доступен (активен)";
+        toggleBtn.innerText = 'Переключить в "Не работает"';
+        toggleBtn.style.background = '#ef4444';
+    } else {
+        statusDisplay.className = "status-inactive";
+        statusText.innerText = "Недоступен (не работает)";
+        toggleBtn.innerText = 'Переключить в "Активен"';
+        toggleBtn.style.background = '#10b981';
+    }
+}
+
+function toggleCurrentProxyStatus() {
+    currentProxy.isActive = !currentProxy.isActive;
+    updateDisplayValues();
+    showToast("Статус успешно обновлен!");
 }
 
 function copyField(field, element) {
-    const textToCopy = currentProxy[field];
-    navigator.clipboard.writeText(textToCopy).then(() => {
-        const toast = document.getElementById('toast');
-        toast.innerText = 'Скопировано!';
-        toast.classList.add('show');
-        
+    navigator.clipboard.writeText(currentProxy[field]).then(() => {
+        showToast("Скопировано!");
         const btn = element.querySelector('.btn-copy');
         const originalText = btn.innerText;
         btn.innerText = 'Готово!';
         btn.style.background = '#10b981';
-
-        setTimeout(() => {
-            toast.classList.remove('show');
-            btn.innerText = originalText;
-            btn.style.background = '#3b82f6';
-        }, 1500);
+        setTimeout(() => { btn.innerText = originalText; btn.style.background = '#3b82f6'; }, 1500);
     }).catch(err => console.error(err));
 }
 
@@ -419,8 +469,10 @@ function checkAdminAuth() {
     const login = document.getElementById('loginInput').value;
     const pass = document.getElementById('passInput').value;
     if (login.toLowerCase() === b64DecodeUnicode('YWRtaW4=') && pass === b64DecodeUnicode('c2VhbA==')) {
+        isAdmin = true;
         document.getElementById('adminLoginForm').style.display = 'none';
-        document.getElementById('adminUploadArea').style.display = 'block';
+        document.getElementById('adminControlsArea').style.display = 'block';
+        showToast("Вы вошли как админ!");
     } else {
         alert('Доступ запрещен');
     }
@@ -430,16 +482,24 @@ function b64DecodeUnicode(str) {
     return decodeURIComponent(atob(str).split('').map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)).join(''));
 }
 
-function uploadImage() {
-    const fileInput = document.getElementById('fileInput');
-    const statusDiv = document.getElementById('uploadStatus');
-    if (fileInput.files.length === 0) return;
+function showToast(message) {
+    const toast = document.getElementById('toast');
+    toast.innerText = message;
+    toast.classList.add('show');
+    setTimeout(() => { toast.classList.remove('show'); }, 1500);
+}
+
+function uploadStepImage(targetImgId, inputElement) {
+    if (!isAdmin) {
+        showToast("Загрузка доступна только админу!");
+        return;
+    }
     
-    const file = fileInput.files[0];
-    const fileName = `guide_${Date.now()}_${file.name}`;
-    statusDiv.innerText = "Загрузка изображения на сервер...";
-    statusDiv.style.color = "#9ca3af";
+    const file = inputElement.files[0];
+    if (!file) return;
     
+    showToast("Загрузка фото на сервер...");
+    const fileName = `step_${targetImgId}_${Date.now()}_${file.name}`;
     const uploadUrl = `https://${SUPABASE_PROJECT_ID}.supabase.co/storage/v1/object/${BUCKET_NAME}/${fileName}`;
     
     fetch(uploadUrl, {
@@ -452,17 +512,17 @@ function uploadImage() {
         body: file
     })
     .then(res => {
-        if (!res.ok) throw new Error('Ошибка сервера');
+        if (!res.ok) throw new Error('Ошибка загрузки');
         return res.json();
     })
     .then(data => {
         const publicUrl = `https://${SUPABASE_PROJECT_ID}.supabase.co/storage/v1/object/public/${BUCKET_NAME}/${fileName}`;
-        statusDiv.innerHTML = `Успешно загружено!<br><span style="font-size:11px; color:#10b981;">${publicUrl}</span>`;
-        statusDiv.style.color = "#10b981";
+        document.getElementById(targetImgId).src = publicUrl;
+        showToast("Фото успешно обновлено!");
     })
     .catch(err => {
-        statusDiv.innerText = "Ошибка загрузки. Проверьте бакет в Supabase.";
-        statusDiv.style.color = "#ef4444";
+        console.error(err);
+        alert("Ошибка при сохранении фото в Supabase.");
     });
 }
 </script>
