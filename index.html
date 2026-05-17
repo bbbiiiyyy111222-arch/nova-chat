@@ -155,7 +155,7 @@
         </select>
     </div>
 
-    <button class="btn-smart" onclick="findBestProxy()">⚡ Найти лучший прокси автоматичеки</button>
+    <button class="btn-smart" onclick="findBestProxy()">⚡ Найти лучший прокси автоматически</button>
 
     <div class="status-container">
         <div id="proxyStatusDisplay" class="status-item status-active">
@@ -362,7 +362,7 @@ function updateDisplayValues() {
     checkRealPing(currentProxy.host, currentProxy.is_active);
 }
 
-// РЕАЛЬНЫЙ ЧЕКЕР СКОРОСТИ И ДОСТУПНОСТИ
+// БЕЗОПАСНЫЙ ЧЕКЕР ПИНГА (Исключает появление красных сетевых ошибок)
 function checkRealPing(host, dbStatus) {
     const statusDisplay = document.getElementById('proxyStatusDisplay');
     const statusText = document.getElementById('statusText');
@@ -382,27 +382,31 @@ function checkRealPing(host, dbStatus) {
     if (toggleBtn) { toggleBtn.innerText = 'Выключить'; toggleBtn.style.background = '#ef4444'; }
     
     const startTime = performance.now();
-    // Делаем легкий сетевой запрос без cors-блокировки через картинку-пингер к стандартному favicon хоста
-    const pingImg = new Image();
     
-    const timeout = setTimeout(() => {
-        pingImg.src = "";
+    // Безопасный асинхронный метод проверки без генерации сетевых исключений в консоль
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => {
+        controller.abort();
         statusDisplay.className = "status-item status-inactive";
         statusText.innerText = "Недоступен (Таймаут)";
         pingDisplay.innerText = "ping: error";
-    }, 4500);
+    }, 2500);
 
-    pingImg.onload = pingImg.onerror = function() {
-        clearTimeout(timeout);
+    fetch(`https://${host}/favicon.ico?t=${Date.now()}`, { mode: 'no-cors', signal: controller.signal })
+    .then(() => {
+        clearTimeout(timeoutId);
         const endTime = performance.now();
         const pingTime = Math.round(endTime - startTime);
-        
         statusDisplay.className = "status-item status-active";
         statusText.innerText = "Доступен (Онлайн)";
         pingDisplay.innerText = `ping: ${pingTime} ms`;
-    };
-    
-    pingImg.src = `https://${host}/favicon.ico?t=${Date.now()}`;
+    })
+    .catch(() => {
+        clearTimeout(timeoutId);
+        statusDisplay.className = "status-item status-inactive";
+        statusText.innerText = "Недоступен";
+        pingDisplay.innerText = "ping: error";
+    });
 }
 
 // СМАРТ-ФИЛЬТР ЛУЧШЕГО ПРОКСИ
@@ -416,10 +420,12 @@ async function findBestProxy() {
         
         const ping = await new Promise((resolve) => {
             const start = performance.now();
-            const img = new Image();
-            const t = setTimeout(() => { img.src = ""; resolve(99999); }, 1500);
-            img.onload = img.onerror = () => { clearTimeout(t); resolve(Math.round(performance.now() - start)); };
-            img.src = `https://${proxyList[i].host}/favicon.ico?t=${Date.now()}`;
+            const controller = new AbortController();
+            const t = setTimeout(() => { controller.abort(); resolve(99999); }, 1200);
+            
+            fetch(`https://${proxyList[i].host}/favicon.ico?t=${Date.now()}`, { mode: 'no-cors', signal: controller.signal })
+            .then(() => { clearTimeout(t); resolve(Math.round(performance.now() - start)); })
+            .catch(() => { clearTimeout(t); resolve(99999); });
         });
         
         if (ping < lowestPing) { lowestPing = ping; bestIndex = i; }
@@ -428,7 +434,7 @@ async function findBestProxy() {
     document.getElementById('proxySelector').value = bestIndex;
     currentProxy = proxyList[bestIndex];
     updateDisplayValues();
-    showToast(`🎯 Выбран лучший прокси (${lowestPing} ms)!`);
+    showToast(`🎯 Выбран лучший прокси (${lowestPing === 99999 ? 'error' : lowestPing + ' ms'})!`);
 }
 
 function copyField(field, element) {
@@ -469,7 +475,6 @@ function toggleCurrentProxyStatusInDB() {
     }).then(() => { currentProxy.is_active = newStat; updateDisplayValues(); });
 }
 
-// 🗑️ ФУНКЦИЯ УДАЛЕНИЯ СЕРВЕРА
 function deleteCurrentProxyFromDB() {
     if (!confirm(`Вы уверены, что хотите НАВСЕГДА удалить прокси ${currentProxy.host}?`)) return;
     fetch(`https://${SUPABASE_PROJECT_ID}.supabase.co/rest/v1/proxies?id=eq.${currentProxy.id}`, {
@@ -512,15 +517,4 @@ function uploadStepImage(targetImgId, inputElement) {
     .then(res => res.json())
     .then(() => {
         const publicUrl = `https://${SUPABASE_PROJECT_ID}.supabase.co/storage/v1/object/public/${BUCKET_NAME}/${fileName}`;
-        return fetch(`https://${SUPABASE_PROJECT_ID}.supabase.co/rest/v1/guide_images`, {
-            method: 'POST',
-            headers: { 'apikey': SUPABASE_ANON_KEY, 'Authorization': `Bearer ${SUPABASE_ANON_KEY}`, 'Content-Type': 'application/json', 'Prefer': 'resolution=merge-duplicates' },
-            body: JSON.stringify({ id: targetImgId, url: publicUrl })
-        });
-    })
-    .then(() => { fetchDataFromSupabase(); showToast("Фото успешно сохранено!"); });
-}
-</script>
-
-</body>
-</html>
+        return fetch(`https://${SUPABASE_PROJECT_ID}.supabase.co/rest/v1/guide_images`,
