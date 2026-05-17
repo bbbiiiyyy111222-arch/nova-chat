@@ -28,12 +28,30 @@
         }
         h2 {
             margin-top: 0;
-            margin-bottom: 25px;
+            margin-bottom: 20px;
             text-align: center;
             color: #fff;
             font-size: 20px;
             user-select: none;
             cursor: pointer;
+        }
+        .select-group {
+            margin-bottom: 25px;
+        }
+        .proxy-select {
+            width: 100%;
+            padding: 12px;
+            border-radius: 6px;
+            border: 1px solid #2d3d5a;
+            background: #1f293d;
+            color: white;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            outline: none;
+        }
+        .proxy-select:hover {
+            border-color: #3b82f6;
         }
         .item-group {
             margin-bottom: 20px;
@@ -90,8 +108,6 @@
             border-top: 1px solid #232d3f;
             margin: 25px 0;
         }
-        
-        /* Стили кнопок управления инструкциями */
         .action-buttons {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -121,8 +137,6 @@
         .btn-add-guide:hover {
             background: #059669;
         }
-
-        /* Инструкции */
         .guide-box {
             display: none;
             background: #1f293d;
@@ -151,8 +165,6 @@
             border: 1px solid #3b82f6;
             background: #161b26;
         }
-
-        /* Секретная зона админки */
         .secret-admin {
             display: none;
             background: #111827;
@@ -173,22 +185,22 @@
         }
         .file-input-label {
             display: block;
-            background: #374151;
+            background: #24a1de;
             color: #fff;
-            padding: 10px;
+            padding: 12px;
             border-radius: 6px;
             font-weight: 600;
             cursor: pointer;
             text-align: center;
             transition: background 0.2s;
+            margin-top: 10px;
         }
         .file-input-label:hover {
-            background: #4b5563;
+            background: #1d82b3;
         }
         #fileInput {
             display: none;
         }
-        
         .toast {
             position: fixed;
             bottom: 20px;
@@ -213,42 +225,55 @@
 <body>
 
 <div class="container">
-    <!-- Двойной клик по этому заголовку откроет панель входа -->
+    <!-- Двойной клик по этому заголовку откроет панель входа для админа -->
     <h2 ondblclick="toggleAdminForm()">Данные для копирования</h2>
 
+    <!-- Выбор прокси сервера из списка -->
+    <div class="select-group">
+        <label>Выберите рабочий прокси сервер</label>
+        <select id="proxySelector" class="proxy-select" onchange="changeProxyData()">
+            <!-- Все отправленные вами прокси зашиты сюда -->
+            <option value="0">Прокси 1 (132.243.213.216)</option>
+            <option value="1">Прокси 2 (arixo.shop)</option>
+            <option value="2">Прокси 3 (VIP.alotaxi.info)</option>
+            <option value="3">Прокси 4 (2.26.82.210)</option>
+        </select>
+    </div>
+
+    <!-- Поля для копирования параметров -->
     <div class="item-group">
-        <label>Хост</label>
-        <div class="copy-box" onclick="copyText('arixo.shop', this)">
-            <span class="text-value">arixo.shop</span>
+        <label>Хост / Сервер</label>
+        <div class="copy-box" onclick="copyField('host', this)">
+            <span id="hostValue" class="text-value"></span>
             <button class="btn-copy">Копировать</button>
         </div>
     </div>
 
     <div class="item-group">
         <label>Порт</label>
-        <div class="copy-box" onclick="copyText('443', this)">
-            <span class="text-value">443</span>
+        <div class="copy-box" onclick="copyField('port', this)">
+            <span id="portValue" class="text-value"></span>
             <button class="btn-copy">Копировать</button>
         </div>
     </div>
 
     <div class="item-group">
         <label>Ключ</label>
-        <div class="copy-box" onclick="copyText('eec11798ab008831b474066c9e1ebf5c99617669746f2e7275', this)">
-            <span class="text-value">eec11798ab008831b474066c9e1ebf5c99617669746f2e7275</span>
+        <div class="copy-box" onclick="copyField('key', this)">
+            <span id="keyValue" class="text-value"></span>
             <button class="btn-copy">Копировать</button>
         </div>
     </div>
 
     <div class="divider"></div>
 
-    <!-- Кнопки инструкций -->
+    <!-- Кнопки инструкций (доступны всем) -->
     <div class="action-buttons">
         <button class="btn-action btn-delete-guide" onclick="showGuide('delete')">Как удалить старый?</button>
         <button class="btn-action btn-add-guide" onclick="showGuide('add')">Как добавить прокси?</button>
     </div>
 
-    <!-- Инструкция по УДАЛЕНИЮ -->
+    <!-- Раздел с фото-инструкцией по удалению -->
     <div id="guideDelete" class="guide-box">
         <div class="guide-title">Инструкция: Ошибка «Недоступен»</div>
         <div class="step">
@@ -269,7 +294,7 @@
         </div>
     </div>
 
-    <!-- Инструкция по ДОБАВЛЕНИЮ -->
+    <!-- Раздел с фото-инструкцией по добавлению -->
     <div id="guideAdd" class="guide-box">
         <div class="guide-title">Инструкция: Добавление прокси</div>
         <div class="step">
@@ -286,7 +311,7 @@
         </div>
     </div>
 
-    <!-- Полностью скрытая форма входа в админку -->
+    <!-- Скрытая панель входа в админку -->
     <div id="secretAdminPanel" class="secret-admin">
         <div id="adminLoginForm">
             <h3 style="color: #ef4444; margin-top:0; font-size:16px;">Вход в секретную зону</h3>
@@ -295,10 +320,11 @@
             <button class="btn-copy" style="background:#ef4444; margin-left:0; width:100%; padding:10px;" onclick="checkAdminAuth()">Войти</button>
         </div>
         
-        <!-- Панель загрузки файлов (откроется только после верного пароля) -->
+        <!-- КНОПКА ЗАГРУЗКИ КАРТИНКИ (Доступна ТОЛЬКО авторизованному админу) -->
         <div id="adminUploadArea" style="display: none;">
             <h3 style="color: #10b981; margin-top:0; font-size:16px;">Загрузка скриншотов в Supabase</h3>
-            <label for="fileInput" class="file-input-label">Выбрать скриншот для обновления</label>
+            <p style="font-size:12px; color:#9ca3af; margin-bottom:5px;">Кнопка для загрузки новых картинок на сервер:</p>
+            <label for="fileInput" class="file-input-label">Загрузить новое фото</label>
             <input type="file" id="fileInput" accept="image/*" onchange="uploadImage()">
             <div id="uploadStatus" style="font-size: 13px; margin-top: 10px; color: #9ca3af;"></div>
         </div>
@@ -308,12 +334,53 @@
 <div id="toast" class="toast">Скопировано!</div>
 
 <script>
+// Список всех ваших прокси-серверов
+const proxyList = [
+    {
+        host: "132.243.213.216",
+        port: "443",
+        key: "eea3f41c6c1aefca10e6a8c366158ae25d706574726f766963682e7275"
+    },
+    {
+        host: "arixo.shop",
+        port: "443",
+        key: "eec11798ab008831b474066c9e1ebf5c99617669746f2e7275"
+    },
+    {
+        host: "VIP.alotaxi.info",
+        port: "4515",
+        key: "eee9a4f23b1d768c04a8d7f39120ca5b6e626973636f7474692e79656b74616e65742e636f6d"
+    },
+    {
+        host: "2.26.82.210",
+        port: "443",
+        key: "bfb063cc6d861de10f6a39c795fc66e4"
+    }
+];
+
 const SUPABASE_PROJECT_ID = "pmvbhhidcojkkpumsxxb";
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBtdmJoaGlkY29qa2twdW1zeHhiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzcyNzk3MjcsImV4cCI6MjA5Mjg1NTcyN30.1eKxcaqeClRdAVH8lVcOdYaV0o_PbRzjnM9vBUP15QQ";
 const BUCKET_NAME = "images";
 
-function copyText(text, element) {
-    navigator.clipboard.writeText(text).then(() => {
+// Инициализация страницы первым прокси из списка
+let currentProxy = proxyList[0];
+updateDisplayValues();
+
+function changeProxyData() {
+    const selectedIndex = document.getElementById('proxySelector').value;
+    currentProxy = proxyList[selectedIndex];
+    updateDisplayValues();
+}
+
+function updateDisplayValues() {
+    document.getElementById('hostValue').innerText = currentProxy.host;
+    document.getElementById('portValue').innerText = currentProxy.port;
+    document.getElementById('keyValue').innerText = currentProxy.key;
+}
+
+function copyField(field, element) {
+    const textToCopy = currentProxy[field];
+    navigator.clipboard.writeText(textToCopy).then(() => {
         const toast = document.getElementById('toast');
         toast.innerText = 'Скопировано!';
         toast.classList.add('show');
@@ -331,11 +398,9 @@ function copyText(text, element) {
     }).catch(err => console.error(err));
 }
 
-// Переключение вкладок инструкций
 function showGuide(type) {
     const delBox = document.getElementById('guideDelete');
     const addBox = document.getElementById('guideAdd');
-    
     if (type === 'delete') {
         delBox.style.display = delBox.style.display === 'block' ? 'none' : 'block';
         addBox.style.display = 'none';
@@ -345,7 +410,6 @@ function showGuide(type) {
     }
 }
 
-// Скрытая логика админки
 function toggleAdminForm() {
     const panel = document.getElementById('secretAdminPanel');
     panel.style.display = panel.style.display === 'block' ? 'none' : 'block';
@@ -354,9 +418,6 @@ function toggleAdminForm() {
 function checkAdminAuth() {
     const login = document.getElementById('loginInput').value;
     const pass = document.getElementById('passInput').value;
-    
-    // Скрытая проверка хешей/значений без явного написания логина и пароля текстом
-    // admin -> длина 5, seal -> длина 4
     if (login.toLowerCase() === b64DecodeUnicode('YWRtaW4=') && pass === b64DecodeUnicode('c2VhbA==')) {
         document.getElementById('adminLoginForm').style.display = 'none';
         document.getElementById('adminUploadArea').style.display = 'block';
@@ -366,21 +427,16 @@ function checkAdminAuth() {
 }
 
 function b64DecodeUnicode(str) {
-    return decodeURIComponent(atob(str).split('').map(function(c) {
-        return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
-    }).join(''));
+    return decodeURIComponent(atob(str).split('').map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)).join(''));
 }
 
-// Загрузка скриншотов инструкций в бакет Supabase
 function uploadImage() {
     const fileInput = document.getElementById('fileInput');
     const statusDiv = document.getElementById('uploadStatus');
-    
     if (fileInput.files.length === 0) return;
     
     const file = fileInput.files[0];
     const fileName = `guide_${Date.now()}_${file.name}`;
-    
     statusDiv.innerText = "Загрузка изображения на сервер...";
     statusDiv.style.color = "#9ca3af";
     
