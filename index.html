@@ -179,9 +179,8 @@
             background: #161b26;
         }
 
-        /* Изначально СКРЫВАЕМ синие кнопки добавления фото для обычных людей */
         .blue-step-btn {
-            display: none; /* Изменено с inline-flex на none */
+            display: none;
             align-items: center;
             justify-content: center;
             background: #0044cc;
@@ -217,6 +216,7 @@
             background: #1f293d;
             color: white;
             box-sizing: border-box;
+            outline: none;
         }
         .status-toggle-btn {
             padding: 10px;
@@ -256,11 +256,9 @@
 
     <div class="select-group">
         <label>Выберите рабочий прокси сервер</label>
+        <!-- Опции теперь генерируются автоматически через JavaScript из БД -->
         <select id="proxySelector" class="proxy-select" onchange="changeProxyData()">
-            <option value="0">Прокси 1 (ark.proxytg.space)</option>
-            <option value="1">Прокси 2 (132.243.213.216)</option>
-            <option value="2">Прокси 3 (VIP.alotaxi.info)</option>
-            <option value="3">Прокси 4 (2.26.82.210)</option>
+            <option value="">Загрузка списка...</option>
         </select>
     </div>
 
@@ -363,10 +361,19 @@
         </div>
         
         <div id="adminControlsArea" style="display: none;">
-            <h3 style="color: #10b981; margin-top:0; font-size:16px;">Управление сервером и фото</h3>
-            <p style="font-size:12px; color:#9ca3af;">Теперь синие кнопки загрузки фото появились под каждым шагом инструкций выше!</p>
+            <h3 style="color: #10b981; margin-top:0; font-size:16px;">Панель администратора</h3>
             
-            <div style="margin-top:15px; border-top:1px solid #374151; padding-top:15px;">
+            <!-- ФОРМА ДОБАВЛЕНИЯ НОВОГО ПРОКСИ СЕРВЕРА -->
+            <div style="background:#1f293d; padding:15px; border-radius:6px; border:1px solid #374151; margin-bottom:15px;">
+                <h4 style="margin-top:0; color:#fff; font-size:14px;">Добавить новый прокси:</h4>
+                <input type="text" id="newProxyName" class="admin-input" placeholder="Название (например: Прокси 9)">
+                <input type="text" id="newProxyHost" class="admin-input" placeholder="Хост / Сервер">
+                <input type="text" id="newProxyPort" class="admin-input" placeholder="Порт">
+                <input type="text" id="newProxyKey" class="admin-input" placeholder="Ключ">
+                <button class="btn-copy" style="background:#10b981; margin-left:0; width:100%; padding:8px;" onclick="addNewProxyToDB()">Сохранить на сервере</button>
+            </div>
+
+            <div style="border-top:1px solid #374151; padding-top:15px;">
                 <label style="color:#fff;">Изменить статус выбранного прокси:</label>
                 <button id="statusToggleBtn" class="status-toggle-btn" style="background:#ef4444; color:white;" onclick="toggleCurrentProxyStatusInDB()">Переключить статус</button>
             </div>
@@ -397,6 +404,7 @@ function handleTitleClick() {
     setTimeout(() => { clickCount = 0; }, 400);
 }
 
+// Загрузка динамического списка из БД и генерация <option> элементов
 function fetchDataFromSupabase() {
     fetch(`https://${SUPABASE_PROJECT_ID}.supabase.co/rest/v1/proxies?order=id.asc`, {
         headers: { 'apikey': SUPABASE_ANON_KEY, 'Authorization': `Bearer ${SUPABASE_ANON_KEY}` }
@@ -404,7 +412,24 @@ function fetchDataFromSupabase() {
     .then(res => res.json())
     .then(data => {
         proxyList = data;
-        const selectedIdx = document.getElementById('proxySelector').value || 0;
+        
+        const selector = document.getElementById('proxySelector');
+        const savedValue = selector.value; 
+        selector.innerHTML = ''; // Очищаем список
+        
+        // Автоматически строим меню выбора на основе записей в базе
+        proxyList.forEach((proxy, index) => {
+            const opt = document.createElement('option');
+            opt.value = index;
+            opt.innerText = proxy.name;
+            selector.appendChild(opt);
+        });
+        
+        if(savedValue !== "") {
+            selector.value = savedValue;
+        }
+        
+        const selectedIdx = selector.value || 0;
         currentProxy = proxyList[selectedIdx];
         updateDisplayValues();
     });
@@ -448,6 +473,40 @@ function updateDisplayValues() {
         toggleBtn.innerText = 'Переключить в "Активен"';
         toggleBtn.style.background = '#10b981';
     }
+}
+
+// ФУНКЦИЯ ДОБАВЛЕНИЯ НОВОГО СЕРВЕРА С САЙТА В БД
+function addNewProxyToDB() {
+    const name = document.getElementById('newProxyName').value.trim();
+    const host = document.getElementById('newProxyHost').value.trim();
+    const port = document.getElementById('newProxyPort').value.trim();
+    const key = document.getElementById('newProxyKey').value.trim();
+    
+    if(!name || !host || !port || !key) {
+        alert("Заполните все текстовые поля формы!");
+        return;
+    }
+    
+    fetch(`https://${SUPABASE_PROJECT_ID}.supabase.co/rest/v1/proxies`, {
+        method: 'POST',
+        headers: {
+            'apikey': SUPABASE_ANON_KEY,
+            'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ name, host, port, key, is_active: true })
+    })
+    .then(() => {
+        showToast("Новый сервер добавлен!");
+        // Очищаем форму
+        document.getElementById('newProxyName').value = '';
+        document.getElementById('newProxyHost').value = '';
+        document.getElementById('newProxyPort').value = '';
+        document.getElementById('newProxyKey').value = '';
+        
+        fetchDataFromSupabase(); // Перезагружаем меню сайта
+    })
+    .catch(err => alert("Ошибка отправки данных"));
 }
 
 function toggleCurrentProxyStatusInDB() {
@@ -507,7 +566,6 @@ function checkAdminAuth() {
         document.getElementById('adminLoginForm').style.display = 'none';
         document.getElementById('adminControlsArea').style.display = 'block';
         
-        // ВКЛЮЧАЕМ синие кнопки загрузки фото ТОЛЬКО для админа
         const adminButtons = document.querySelectorAll('.blue-step-btn');
         adminButtons.forEach(btn => {
             btn.style.display = 'inline-flex';
