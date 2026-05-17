@@ -265,7 +265,7 @@
 
     <div class="status-container">
         <div id="proxyStatusDisplay" class="status-active" style="display: flex; align-items: center;">
-            <span class="status-dot"></span><span id="statusText">Активен</span>
+            <span class="status-dot"></span><span id="statusText">Загрузка статуса...</span>
         </div>
     </div>
 
@@ -304,7 +304,7 @@
     <div id="guideDelete" class="guide-box">
         <div class="guide-title">Инструкция: Ошибка «Недоступен»</div>
         <div class="step">
-            1. Нажмите на значок <strong>щита</strong> в настройках или чатах.
+            1. Нажмите на значок <strong>щита</strong>.
             <img id="img_del_1" class="step-img" src="https://placehold.co" alt="Нажатие на щит">
             <label id="lbl_del_1" for="file_del_1" class="blue-step-btn">Нажатие на щит</label>
             <input type="file" id="file_del_1" accept="image/*" style="display:none;" onchange="uploadStepImage('img_del_1', this)">
@@ -367,7 +367,7 @@
             
             <div style="margin-top:15px; border-top:1px solid #374151; padding-top:15px;">
                 <label style="color:#fff;">Изменить статус выбранного прокси:</label>
-                <button id="statusToggleBtn" class="status-toggle-btn" style="background:#ef4444; color:white;" onclick="toggleCurrentProxyStatus()">Переключить в "Не работает"</button>
+                <button id="statusToggleBtn" class="status-toggle-btn" style="background:#ef4444; color:white;" onclick="toggleCurrentProxyStatusInDB()">Переключить статус</button>
             </div>
         </div>
     </div>
@@ -376,23 +376,16 @@
 <div id="toast" class="toast">Скопировано!</div>
 
 <script>
-// Список прокси (без arixo.shop, добавлен ark.proxytg.space)
-const proxyList = [
-    { host: "ark.proxytg.space", port: "443", key: "eeb8df1294e7e13cd99e7a9144bae17db861726b2e7026f787974672e7370616365", isActive: true },
-    { host: "132.243.213.216", port: "443", key: "eea3f41c6c1aefca10e6a8c366158ae25d706574726f766963682e7275", isActive: true },
-    { host: "VIP.alotaxi.info", port: "4515", key: "eee9a4f23b1d768c04a8d7f39120ca5b6e626973636f7474692e79656b74616e65742e636f6d", isActive: true },
-    { host: "2.26.82.210", port: "443", key: "bfb063cc6d861de10f6a39c795fc66e4", isActive: true }
-];
-
 const SUPABASE_PROJECT_ID = "pmvbhhidcojkkpumsxxb";
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBtdmJoaGlkY29qa2twdW1zeHhiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzcyNzk3MjcsImV4cCI6MjA5Mjg1NTcyN30.1eKxcaqeClRdAVH8lVcOdYaV0o_PbRzjnM9vBUP15QQ";
 const BUCKET_NAME = "images";
 
-let currentProxy = proxyList[0];
+let proxyList = [];
+let currentProxy = null;
 let isAdmin = false;
 let clickCount = 0;
 
-updateDisplayValues();
+fetchDataFromSupabase();
 
 function handleTitleClick() {
     clickCount++;
@@ -403,6 +396,30 @@ function handleTitleClick() {
     setTimeout(() => { clickCount = 0; }, 400);
 }
 
+function fetchDataFromSupabase() {
+    fetch(`https://${SUPABASE_PROJECT_ID}.supabase.co/rest/v1/proxies?order=id.asc`, {
+        headers: { 'apikey': SUPABASE_ANON_KEY, 'Authorization': `Bearer ${SUPABASE_ANON_KEY}` }
+    })
+    .then(res => res.json())
+    .then(data => {
+        proxyList = data;
+        const selectedIdx = document.getElementById('proxySelector').value || 0;
+        currentProxy = proxyList[selectedIdx];
+        updateDisplayValues();
+    });
+
+    fetch(`https://${SUPABASE_PROJECT_ID}.supabase.co/rest/v1/guide_images`, {
+        headers: { 'apikey': SUPABASE_ANON_KEY, 'Authorization': `Bearer ${SUPABASE_ANON_KEY}` }
+    })
+    .then(res => res.json())
+    .then(images => {
+        images.forEach(img => {
+            const el = document.getElementById(img.id);
+            if (el) el.src = img.url;
+        });
+    });
+}
+
 function changeProxyData() {
     const selectedIndex = document.getElementById('proxySelector').value;
     currentProxy = proxyList[selectedIndex];
@@ -410,6 +427,7 @@ function changeProxyData() {
 }
 
 function updateDisplayValues() {
+    if (!currentProxy) return;
     document.getElementById('hostValue').innerText = currentProxy.host;
     document.getElementById('portValue').innerText = currentProxy.port;
     document.getElementById('keyValue').innerText = currentProxy.key;
@@ -418,7 +436,7 @@ function updateDisplayValues() {
     const statusText = document.getElementById('statusText');
     const toggleBtn = document.getElementById('statusToggleBtn');
     
-    if (currentProxy.isActive) {
+    if (currentProxy.is_active) {
         statusDisplay.className = "status-active";
         statusText.innerText = "Доступен (активен)";
         toggleBtn.innerText = 'Переключить в "Не работает"';
@@ -431,13 +449,28 @@ function updateDisplayValues() {
     }
 }
 
-function toggleCurrentProxyStatus() {
-    currentProxy.isActive = !currentProxy.isActive;
-    updateDisplayValues();
-    showToast("Статус успешно обновлен!");
+function toggleCurrentProxyStatusInDB() {
+    const newStatus = !currentProxy.is_active;
+    
+    fetch(`https://${SUPABASE_PROJECT_ID}.supabase.co/rest/v1/proxies?id=eq.${currentProxy.id}`, {
+        method: 'PATCH',
+        headers: {
+            'apikey': SUPABASE_ANON_KEY,
+            'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ is_active: newStatus })
+    })
+    .then(() => {
+        currentProxy.is_active = newStatus;
+        updateDisplayValues();
+        showToast("Статус сохранен в базе данных!");
+    })
+    .catch(err => alert("Ошибка сохранения статуса"));
 }
 
 function copyField(field, element) {
+    if (!currentProxy) return;
     navigator.clipboard.writeText(currentProxy[field]).then(() => {
         showToast("Скопировано!");
         const btn = element.querySelector('.btn-copy');
@@ -445,7 +478,7 @@ function copyField(field, element) {
         btn.innerText = 'Готово!';
         btn.style.background = '#10b981';
         setTimeout(() => { btn.innerText = originalText; btn.style.background = '#3b82f6'; }, 1500);
-    }).catch(err => console.error(err));
+    });
 }
 
 function showGuide(type) {
@@ -489,17 +522,20 @@ function showToast(message) {
     setTimeout(() => { toast.classList.remove('show'); }, 1500);
 }
 
+// ИСПРАВЛЕННАЯ ФУНКЦИЯ ЗАГРУЗКИ (ошибка 400 устранена)
 function uploadStepImage(targetImgId, inputElement) {
     if (!isAdmin) {
         showToast("Загрузка доступна только админу!");
         return;
     }
     
-    const file = inputElement.files[0];
-    if (!file) return;
+    // Был баг: передавался весь массив inputElement.files вместо конкретного файла
+    const files = inputElement.files;
+    if (files.length === 0) return;
+    const file = files[0]; // Берем сам файл!
     
-    showToast("Загрузка фото на сервер...");
-    const fileName = `step_${targetImgId}_${Date.now()}_${file.name}`;
+    showToast("Загрузка фото в облако...");
+    const fileName = `step_${targetImgId}_${Date.now()}.png`;
     const uploadUrl = `https://${SUPABASE_PROJECT_ID}.supabase.co/storage/v1/object/${BUCKET_NAME}/${fileName}`;
     
     fetch(uploadUrl, {
@@ -509,20 +545,34 @@ function uploadStepImage(targetImgId, inputElement) {
             'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
             'Content-Type': file.type
         },
-        body: file
+        body: file // Передаем объект файла напрямую
     })
     .then(res => {
-        if (!res.ok) throw new Error('Ошибка загрузки');
+        if (!res.ok) throw new Error('Ошибка загрузки в хранилище');
         return res.json();
     })
-    .then(data => {
+    .then(() => {
         const publicUrl = `https://${SUPABASE_PROJECT_ID}.supabase.co/storage/v1/object/public/${BUCKET_NAME}/${fileName}`;
-        document.getElementById(targetImgId).src = publicUrl;
-        showToast("Фото успешно обновлено!");
+        
+        // Исправлено под новые поля таблицы guide_images (id и url)
+        return fetch(`https://${SUPABASE_PROJECT_ID}.supabase.co/rest/v1/guide_images`, {
+            method: 'POST',
+            headers: {
+                'apikey': SUPABASE_ANON_KEY,
+                'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+                'Content-Type': 'application/json',
+                'Prefer': 'resolution=merge-duplicates'
+            },
+            body: JSON.stringify({ id: targetImgId, url: publicUrl })
+        });
+    })
+    .then(() => {
+        fetchDataFromSupabase(); // Перерисовываем картинку из БД
+        showToast("Фото сохранено в базе данных!");
     })
     .catch(err => {
         console.error(err);
-        alert("Ошибка при сохранении фото в Supabase.");
+        alert("Ошибка при сохранении фото. Убедитесь, что бакет 'images' создан в Supabase Storage.");
     });
 }
 </script>
