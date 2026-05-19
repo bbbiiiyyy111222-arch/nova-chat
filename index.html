@@ -1,1081 +1,736 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MTPROTO Конфигуратор прокси</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Unbounded:wght@400;700;900&display=swap" rel="stylesheet">
-    <style>
-        :root {
-            --bg: #060a12;
-            --surface: #0d1420;
-            --surface2: #121c2e;
-            --border: #1e2d45;
-            --border2: #243550;
-            --accent: #00d4ff;
-            --accent2: #a855f7;
-            --green: #00e5a0;
-            --red: #ff4d6d;
-            --yellow: #fbbf24;
-            --text: #e2e8f0;
-            --muted: #4a5f7a;
-            --mono: 'JetBrains Mono', monospace;
-            --display: 'Unbounded', sans-serif;
-        }
-
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-
-        body {
-            font-family: var(--mono);
-            background: var(--bg);
-            color: var(--text);
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 30px 16px 60px;
-            background-image:
-                radial-gradient(ellipse 80% 50% at 50% -10%, rgba(0,212,255,0.06) 0%, transparent 70%),
-                radial-gradient(ellipse 50% 30% at 90% 80%, rgba(168,85,247,0.04) 0%, transparent 60%);
-        }
-
-        /* Grid background lines */
-        body::before {
-            content: '';
-            position: fixed;
-            inset: 0;
-            background-image:
-                linear-gradient(rgba(0,212,255,0.025) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(0,212,255,0.025) 1px, transparent 1px);
-            background-size: 40px 40px;
-            pointer-events: none;
-            z-index: 0;
-        }
-
-        .container {
-            position: relative;
-            z-index: 1;
-            width: 100%;
-            max-width: 560px;
-        }
-
-        /* HEADER */
-        .header {
-            text-align: center;
-            margin-bottom: 28px;
-        }
-        .header-tag {
-            font-size: 10px;
-            letter-spacing: 4px;
-            color: var(--accent);
-            text-transform: uppercase;
-            margin-bottom: 8px;
-            opacity: 0.8;
-        }
-        .header h1 {
-            font-family: var(--display);
-            font-size: 22px;
-            font-weight: 900;
-            color: #fff;
-            letter-spacing: -0.5px;
-            line-height: 1.1;
-        }
-        .header h1 span {
-            background: linear-gradient(90deg, var(--accent), var(--accent2));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-
-        /* MAIN CARD */
-        .card {
-            background: var(--surface);
-            border: 1px solid var(--border);
-            border-radius: 16px;
-            overflow: hidden;
-            box-shadow: 0 0 0 1px rgba(0,212,255,0.04), 0 20px 60px rgba(0,0,0,0.5);
-        }
-
-        .card-inner {
-            padding: 24px;
-        }
-
-        /* WARNING */
-        .warning {
-            background: rgba(251,191,36,0.07);
-            border: 1px solid rgba(251,191,36,0.2);
-            border-radius: 8px;
-            padding: 10px 14px;
-            font-size: 11px;
-            color: var(--yellow);
-            line-height: 1.5;
-            margin-bottom: 20px;
-            display: flex;
-            align-items: flex-start;
-            gap: 8px;
-        }
-        .warning::before { content: '⚠'; font-size: 14px; flex-shrink: 0; margin-top: 1px; }
-
-        /* SELECTOR */
-        .field-label {
-            font-size: 9px;
-            letter-spacing: 2px;
-            text-transform: uppercase;
-            color: var(--muted);
-            margin-bottom: 6px;
-            display: block;
-        }
-
-        .proxy-select {
-            width: 100%;
-            padding: 11px 14px;
-            background: var(--surface2);
-            border: 1px solid var(--border2);
-            border-radius: 8px;
-            color: var(--text);
-            font-family: var(--mono);
-            font-size: 13px;
-            font-weight: 600;
-            cursor: pointer;
-            outline: none;
-            appearance: none;
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%234a5f7a' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
-            background-repeat: no-repeat;
-            background-position: right 14px center;
-            padding-right: 36px;
-            transition: border-color 0.2s;
-            margin-bottom: 14px;
-        }
-        .proxy-select:focus { border-color: var(--accent); }
-
-        /* AUTO FIND BUTTON */
-        .btn-auto {
-            width: 100%;
-            padding: 13px;
-            background: linear-gradient(135deg, rgba(0,212,255,0.12), rgba(168,85,247,0.12));
-            border: 1px solid rgba(0,212,255,0.25);
-            border-radius: 8px;
-            color: var(--accent);
-            font-family: var(--mono);
-            font-size: 12px;
-            font-weight: 700;
-            cursor: pointer;
-            letter-spacing: 0.5px;
-            margin-bottom: 18px;
-            transition: all 0.2s;
-            position: relative;
-            overflow: hidden;
-        }
-        .btn-auto::before {
-            content: '';
-            position: absolute;
-            inset: 0;
-            background: linear-gradient(135deg, rgba(0,212,255,0.1), rgba(168,85,247,0.1));
-            opacity: 0;
-            transition: opacity 0.2s;
-        }
-        .btn-auto:hover::before { opacity: 1; }
-        .btn-auto:hover { border-color: rgba(0,212,255,0.5); }
-
-        /* STATUS */
-        .status-row {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 10px 14px;
-            background: var(--surface2);
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            margin-bottom: 20px;
-        }
-        .status-dot-wrap { display: flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 600; }
-        .dot {
-            width: 8px; height: 8px; border-radius: 50%;
-            background: var(--muted);
-            transition: background 0.3s, box-shadow 0.3s;
-        }
-        .dot.active { background: var(--green); box-shadow: 0 0 8px var(--green); }
-        .dot.inactive { background: var(--red); box-shadow: 0 0 8px var(--red); }
-        .status-active-text { color: var(--green); }
-        .status-inactive-text { color: var(--red); }
-        .status-checking-text { color: var(--muted); }
-        .ping-tag {
-            font-size: 10px;
-            color: var(--muted);
-            background: var(--bg);
-            border: 1px solid var(--border);
-            border-radius: 4px;
-            padding: 3px 8px;
-            letter-spacing: 0.5px;
-        }
-
-        /* COPY FIELDS */
-        .field-group { margin-bottom: 14px; }
-        .copy-row {
-            display: flex;
-            align-items: center;
-            background: var(--surface2);
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            padding: 10px 12px;
-            cursor: pointer;
-            transition: border-color 0.2s;
-        }
-        .copy-row:hover { border-color: var(--accent); }
-        .copy-row:active { border-color: rgba(0,212,255,0.6); }
-        .field-val {
-            flex: 1;
-            font-family: var(--mono);
-            font-size: 13px;
-            color: var(--text);
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            user-select: none;
-        }
-        .btn-copy {
-            background: rgba(0,212,255,0.1);
-            border: 1px solid rgba(0,212,255,0.2);
-            color: var(--accent);
-            font-family: var(--mono);
-            font-size: 10px;
-            font-weight: 700;
-            letter-spacing: 1px;
-            padding: 5px 10px;
-            border-radius: 4px;
-            cursor: pointer;
-            margin-left: 10px;
-            flex-shrink: 0;
-            transition: all 0.15s;
-        }
-        .btn-copy:hover { background: rgba(0,212,255,0.2); }
-
-        /* CONNECT BUTTON */
-        .btn-connect {
-            display: block;
-            width: 100%;
-            padding: 14px;
-            background: linear-gradient(135deg, #0099cc, #0077aa);
-            color: #fff;
-            font-family: var(--mono);
-            font-size: 13px;
-            font-weight: 700;
-            text-decoration: none;
-            border-radius: 8px;
-            text-align: center;
-            margin: 20px 0;
-            letter-spacing: 0.5px;
-            transition: all 0.2s;
-            border: none;
-            cursor: pointer;
-            box-shadow: 0 4px 15px rgba(0,153,204,0.3);
-        }
-        .btn-connect:hover { box-shadow: 0 4px 25px rgba(0,153,204,0.5); transform: translateY(-1px); }
-
-        /* DIVIDER */
-        .divider {
-            height: 1px;
-            background: linear-gradient(90deg, transparent, var(--border2), transparent);
-            margin: 20px 0;
-        }
-
-        /* GUIDE BUTTONS — ADMIN ONLY */
-        .admin-guide-btns {
-            display: none;
-            grid-template-columns: 1fr 1fr;
-            gap: 12px;
-            margin-bottom: 16px;
-        }
-        .btn-guide {
-            padding: 11px;
-            border: none;
-            border-radius: 8px;
-            font-family: var(--mono);
-            font-size: 11px;
-            font-weight: 700;
-            cursor: pointer;
-            letter-spacing: 0.3px;
-            transition: all 0.2s;
-        }
-        .btn-guide-del {
-            background: rgba(255,77,109,0.12);
-            border: 1px solid rgba(255,77,109,0.3);
-            color: var(--red);
-        }
-        .btn-guide-del:hover { background: rgba(255,77,109,0.2); }
-        .btn-guide-add {
-            background: rgba(0,229,160,0.1);
-            border: 1px solid rgba(0,229,160,0.25);
-            color: var(--green);
-        }
-        .btn-guide-add:hover { background: rgba(0,229,160,0.18); }
-
-        /* GUIDE BOX */
-        .guide-box {
-            display: none;
-            background: var(--surface2);
-            border: 1px solid var(--border2);
-            border-radius: 10px;
-            padding: 18px;
-            margin-bottom: 14px;
-        }
-        .guide-title {
-            font-family: var(--display);
-            font-size: 13px;
-            font-weight: 700;
-            color: #fff;
-            text-align: center;
-            margin-bottom: 14px;
-        }
-        .step {
-            font-size: 12px;
-            line-height: 1.6;
-            color: var(--text);
-            margin-bottom: 12px;
-        }
-        .step strong { color: var(--accent); }
-        .step-img {
-            display: block;
-            max-width: 100%;
-            border-radius: 6px;
-            border: 1px solid var(--border);
-            margin: 10px 0;
-            min-height: 40px;
-            background: var(--bg);
-        }
-
-        /* ADMIN PANEL */
-        .admin-panel {
-            display: none;
-            background: var(--bg);
-            border: 1px dashed rgba(255,77,109,0.35);
-            border-radius: 10px;
-            padding: 20px;
-            margin-top: 16px;
-        }
-        .admin-section-title {
-            font-family: var(--display);
-            font-size: 11px;
-            font-weight: 700;
-            letter-spacing: 1px;
-            text-transform: uppercase;
-            margin-bottom: 12px;
-        }
-        .admin-section-title.red { color: var(--red); }
-        .admin-section-title.cyan { color: var(--accent); }
-        .admin-input {
-            width: 100%;
-            padding: 10px 12px;
-            background: var(--surface2);
-            border: 1px solid var(--border2);
-            border-radius: 6px;
-            color: var(--text);
-            font-family: var(--mono);
-            font-size: 12px;
-            outline: none;
-            margin-bottom: 10px;
-            transition: border-color 0.2s;
-        }
-        .admin-input:focus { border-color: var(--accent); }
-        .btn-admin-add {
-            width: 100%;
-            padding: 11px;
-            background: rgba(0,229,160,0.1);
-            border: 1px solid rgba(0,229,160,0.3);
-            color: var(--green);
-            font-family: var(--mono);
-            font-size: 12px;
-            font-weight: 700;
-            border-radius: 6px;
-            cursor: pointer;
-            margin-bottom: 20px;
-            transition: all 0.2s;
-        }
-        .btn-admin-add:hover { background: rgba(0,229,160,0.18); }
-        .file-upload-group {
-            background: var(--surface);
-            border: 1px solid var(--border);
-            border-radius: 6px;
-            padding: 12px;
-            margin-bottom: 10px;
-        }
-        .file-upload-group .field-label { margin-bottom: 8px; }
-        input[type="file"] {
-            font-family: var(--mono);
-            font-size: 11px;
-            color: var(--muted);
-            width: 100%;
-        }
-
-        /* FOOTER */
-        .footer {
-            text-align: center;
-            margin-top: 20px;
-            font-size: 10px;
-            color: var(--muted);
-            letter-spacing: 1px;
-            cursor: pointer;
-            transition: color 0.2s;
-            user-select: none;
-        }
-        .footer:hover { color: var(--accent); }
-
-        /* TOAST */
-        .toast {
-            position: fixed;
-            bottom: 24px;
-            left: 50%;
-            transform: translateX(-50%) translateY(80px);
-            background: var(--green);
-            color: #000;
-            font-family: var(--mono);
-            font-size: 12px;
-            font-weight: 700;
-            padding: 10px 20px;
-            border-radius: 20px;
-            opacity: 0;
-            transition: transform 0.3s, opacity 0.3s;
-            pointer-events: none;
-            z-index: 9999;
-            letter-spacing: 0.5px;
-        }
-        .toast.show {
-            transform: translateX(-50%) translateY(0);
-            opacity: 1;
-        }
-        .toast.error { background: var(--red); color: #fff; }
-
-        /* MODAL */
-        .modal-overlay {
-            display: none;
-            position: fixed;
-            inset: 0;
-            background: rgba(0,0,0,0.75);
-            backdrop-filter: blur(4px);
-            z-index: 5000;
-            justify-content: center;
-            align-items: center;
-        }
-        .modal-box {
-            background: var(--surface);
-            border: 1px solid var(--border2);
-            border-radius: 14px;
-            padding: 28px 24px;
-            width: 100%;
-            max-width: 320px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.7);
-        }
-        .modal-title {
-            font-family: var(--display);
-            font-size: 14px;
-            font-weight: 700;
-            color: #fff;
-            text-align: center;
-            margin-bottom: 20px;
-        }
-        .modal-btns {
-            display: flex;
-            gap: 10px;
-            margin-top: 14px;
-        }
-        .btn-modal-cancel {
-            flex: 1;
-            padding: 10px;
-            background: rgba(255,77,109,0.1);
-            border: 1px solid rgba(255,77,109,0.3);
-            color: var(--red);
-            font-family: var(--mono);
-            font-size: 12px;
-            font-weight: 700;
-            border-radius: 6px;
-            cursor: pointer;
-        }
-        .btn-modal-ok {
-            flex: 1;
-            padding: 10px;
-            background: rgba(0,229,160,0.1);
-            border: 1px solid rgba(0,229,160,0.3);
-            color: var(--green);
-            font-family: var(--mono);
-            font-size: 12px;
-            font-weight: 700;
-            border-radius: 6px;
-            cursor: pointer;
-        }
-
-        /* Scanning animation on auto find */
-        @keyframes scan {
-            0% { background-position: 0% 50%; }
-            100% { background-position: 100% 50%; }
-        }
-        .scanning {
-            background: linear-gradient(90deg, rgba(0,212,255,0.12), rgba(168,85,247,0.2), rgba(0,212,255,0.12));
-            background-size: 200% 100%;
-            animation: scan 1s linear infinite;
-            pointer-events: none;
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MTPROTO Прокси</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Unbounded:wght@700;900&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #07090f;
+  --s1: #0c1018;
+  --s2: #111825;
+  --s3: #18222f;
+  --b1: #1c2a3e;
+  --b2: #243650;
+  --cyan: #00d4ff;
+  --purple: #a855f7;
+  --green: #00e5a0;
+  --red: #ff4060;
+  --yellow: #fbbf24;
+  --orange: #f97316;
+  --text: #dde4f0;
+  --muted: #4a607c;
+  --mono: 'JetBrains Mono', monospace;
+  --head: 'Unbounded', sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body {
+  font-family: var(--mono);
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 24px 14px 70px;
+}
+body::before {
+  content:'';
+  position:fixed;
+  inset:0;
+  background:
+    radial-gradient(ellipse 70% 40% at 50% 0%, rgba(0,212,255,.07) 0%, transparent 65%),
+    radial-gradient(ellipse 40% 30% at 85% 85%, rgba(168,85,247,.05) 0%, transparent 55%),
+    linear-gradient(rgba(0,212,255,.018) 1px, transparent 1px) 0 0 / 36px 36px,
+    linear-gradient(90deg, rgba(0,212,255,.018) 1px, transparent 1px) 0 0 / 36px 36px;
+  pointer-events:none;
+  z-index:0;
+}
+.wrap {
+  position:relative;
+  z-index:1;
+  width:100%;
+  max-width:580px;
+  display:flex;
+  flex-direction:column;
+  gap:14px;
+}
+/* HEADER */
+.hdr { text-align:center; padding: 8px 0 4px; }
+.hdr-eyebrow { font-size:9px; letter-spacing:4px; color:var(--cyan); text-transform:uppercase; opacity:.7; margin-bottom:6px; }
+.hdr-title { font-family:var(--head); font-size:24px; font-weight:900; color:#fff; line-height:1; }
+.hdr-title span { background:linear-gradient(90deg,var(--cyan),var(--purple)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
+.hdr-sub { font-size:10px; color:var(--muted); margin-top:6px; letter-spacing:0.5px; }
+/* CARD */
+.card { background:var(--s1); border:1px solid var(--b1); border-radius:16px; overflow:hidden; box-shadow:0 0 0 1px rgba(0,212,255,.04), 0 24px 70px rgba(0,0,0,.55); }
+.card-body { padding:22px; }
+/* NOTICE */
+.notice { display:flex; align-items:flex-start; gap:10px; padding:11px 14px; border-radius:10px; font-size:11px; line-height:1.55; margin-bottom:18px; }
+.notice.warn { background:rgba(251,191,36,.06); border:1px solid rgba(251,191,36,.2); color:var(--yellow); }
+.notice.info { background:rgba(0,212,255,.05); border:1px solid rgba(0,212,255,.18); color:var(--cyan); }
+.notice-icon { font-size:15px; flex-shrink:0; margin-top:1px; }
+/* LABEL */
+.lbl { display:block; font-size:9px; letter-spacing:2.5px; text-transform:uppercase; color:var(--muted); margin-bottom:6px; }
+/* SELECT */
+.proxy-select {
+  width:100%; padding:12px 38px 12px 14px;
+  background:var(--s2); border:1px solid var(--b2); border-radius:9px;
+  color:var(--text); font-family:var(--mono); font-size:13px; font-weight:600;
+  cursor:pointer; outline:none; appearance:none;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='7' viewBox='0 0 12 7'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%234a607c' stroke-width='1.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat:no-repeat; background-position:right 14px center;
+  margin-bottom:12px; transition:border-color .2s;
+}
+.proxy-select:focus { border-color:var(--cyan); }
+/* AUTO BUTTON */
+.btn-auto {
+  width:100%; padding:13px;
+  background:linear-gradient(135deg,rgba(0,212,255,.1),rgba(168,85,247,.1));
+  border:1px solid rgba(0,212,255,.22); border-radius:9px;
+  color:var(--cyan); font-family:var(--mono); font-size:11px; font-weight:700;
+  cursor:pointer; letter-spacing:.5px; margin-bottom:16px; transition:all .2s;
+  position:relative; overflow:hidden;
+}
+.btn-auto:hover { border-color:rgba(0,212,255,.45); background:linear-gradient(135deg,rgba(0,212,255,.16),rgba(168,85,247,.14)); }
+@keyframes scan { 0%{background-position:0% 50%}100%{background-position:100% 50%} }
+.btn-auto.scanning {
+  background:linear-gradient(90deg,rgba(0,212,255,.1),rgba(168,85,247,.22),rgba(0,212,255,.1));
+  background-size:200% 100%; animation:scan .9s linear infinite; pointer-events:none;
+}
+/* STATUS */
+.status-row { display:flex; align-items:center; justify-content:space-between; padding:10px 14px; background:var(--s2); border:1px solid var(--b1); border-radius:9px; margin-bottom:18px; }
+.status-left { display:flex; align-items:center; gap:9px; font-size:12px; font-weight:600; }
+.dot { width:9px; height:9px; border-radius:50%; background:var(--muted); transition:background .3s,box-shadow .3s; flex-shrink:0; }
+.dot.on  { background:var(--green); box-shadow:0 0 9px var(--green); }
+.dot.off { background:var(--red);   box-shadow:0 0 9px var(--red); }
+.st-on   { color:var(--green); }
+.st-off  { color:var(--red); }
+.st-wait { color:var(--muted); }
+.ping-badge { font-size:10px; color:var(--muted); background:var(--bg); border:1px solid var(--b1); border-radius:5px; padding:3px 9px; }
+/* COPY FIELDS */
+.fgroup { margin-bottom:13px; }
+.copy-row { display:flex; align-items:center; background:var(--s2); border:1px solid var(--b1); border-radius:9px; padding:11px 13px; cursor:pointer; transition:border-color .2s; gap:10px; }
+.copy-row:hover { border-color:var(--cyan); }
+.copy-row:active { border-color:rgba(0,212,255,.6); }
+.fval { flex:1; font-family:var(--mono); font-size:12.5px; color:var(--text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; user-select:none; }
+.btn-copy { background:rgba(0,212,255,.09); border:1px solid rgba(0,212,255,.2); color:var(--cyan); font-family:var(--mono); font-size:9px; font-weight:700; letter-spacing:1px; padding:5px 10px; border-radius:5px; cursor:pointer; flex-shrink:0; transition:all .15s; }
+.btn-copy:hover { background:rgba(0,212,255,.18); }
+/* CONNECT BUTTON */
+.btn-connect { display:block; width:100%; padding:15px; background:linear-gradient(135deg,#0099cc,#006fa3); color:#fff; font-family:var(--mono); font-size:13px; font-weight:700; text-decoration:none; border-radius:10px; text-align:center; margin:18px 0 6px; letter-spacing:.4px; transition:all .2s; border:none; cursor:pointer; box-shadow:0 4px 18px rgba(0,140,200,.3); }
+.btn-connect:hover { box-shadow:0 4px 28px rgba(0,140,200,.5); transform:translateY(-1px); }
+.app-notice { font-size:10px; color:var(--muted); text-align:center; margin-bottom:18px; letter-spacing:.2px; }
+.app-notice em { color:var(--cyan); font-style:normal; opacity:.85; }
+/* DIVIDER */
+.divider { height:1px; background:linear-gradient(90deg,transparent,var(--b2),transparent); margin:18px 0; }
+/* GUIDE BUTTONS */
+.guide-row { display:none; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:14px; }
+.btn-guide { padding:12px; border:none; border-radius:9px; font-family:var(--mono); font-size:11px; font-weight:700; cursor:pointer; transition:all .2s; letter-spacing:.2px; }
+.btn-guide.del { background:rgba(255,64,96,.1); border:1px solid rgba(255,64,96,.28); color:var(--red); }
+.btn-guide.del:hover { background:rgba(255,64,96,.18); }
+.btn-guide.add { background:rgba(0,229,160,.08); border:1px solid rgba(0,229,160,.22); color:var(--green); }
+.btn-guide.add:hover { background:rgba(0,229,160,.16); }
+/* GUIDE BOX */
+.guide-box { display:none; background:var(--s2); border:1px solid var(--b2); border-radius:12px; overflow:hidden; margin-bottom:12px; }
+.guide-header { padding:14px 18px; background:var(--s3); border-bottom:1px solid var(--b1); display:flex; align-items:center; gap:10px; }
+.guide-icon { font-size:18px; }
+.guide-title-text { font-family:var(--head); font-size:12px; font-weight:700; color:#fff; }
+.guide-content { padding:18px; }
+.guide-step { display:flex; gap:12px; margin-bottom:18px; }
+.guide-step:last-child { margin-bottom:0; }
+.step-num { width:24px; height:24px; border-radius:6px; background:linear-gradient(135deg,rgba(0,212,255,.15),rgba(168,85,247,.15)); border:1px solid rgba(0,212,255,.2); color:var(--cyan); font-size:10px; font-weight:700; display:flex; align-items:center; justify-content:center; flex-shrink:0; margin-top:1px; }
+.step-body { flex:1; }
+.step-text { font-size:12.5px; line-height:1.65; color:var(--text); }
+.step-text strong { color:var(--cyan); }
+.step-img { display:block; max-width:100%; border-radius:8px; border:1px solid var(--b1); background:var(--bg); margin-top:10px; }
+/* ADMIN PANEL */
+.admin-panel { display:none; background:var(--bg); border:1px dashed rgba(255,64,96,.3); border-radius:12px; padding:20px; margin-top:12px; }
+.admin-section { margin-bottom:22px; }
+.admin-section:last-child { margin-bottom:0; }
+.admin-section-title { font-family:var(--head); font-size:10px; font-weight:700; letter-spacing:1.5px; text-transform:uppercase; margin-bottom:14px; display:flex; align-items:center; gap:8px; }
+.admin-section-title::before { content:'▸'; }
+.admin-section-title.red { color:var(--red); }
+.admin-section-title.cyan { color:var(--cyan); }
+.admin-section-title.orange { color:var(--orange); }
+.adm-input { width:100%; padding:10px 12px; background:var(--s2); border:1px solid var(--b2); border-radius:7px; color:var(--text); font-family:var(--mono); font-size:12px; outline:none; margin-bottom:9px; transition:border-color .2s; }
+.adm-input:focus { border-color:var(--cyan); }
+.adm-textarea { width:100%; padding:10px 12px; background:var(--s2); border:1px solid var(--b2); border-radius:7px; color:var(--text); font-family:var(--mono); font-size:12px; outline:none; margin-bottom:0; transition:border-color .2s; resize:vertical; min-height:68px; line-height:1.55; }
+.adm-textarea:focus { border-color:var(--cyan); }
+/* GUIDE EDITOR */
+.guide-editor-steps { }
+.step-editor { background:var(--s3); border:1px solid var(--b1); border-radius:8px; padding:12px; margin-bottom:8px; }
+.step-editor-num { font-size:9px; letter-spacing:1.5px; color:var(--muted); text-transform:uppercase; margin-bottom:8px; }
+.step-img-row { display:flex; align-items:center; gap:10px; margin-top:8px; flex-wrap:wrap; }
+.file-lbl { display:inline-flex; align-items:center; gap:6px; padding:5px 11px; background:rgba(0,212,255,.07); border:1px solid rgba(0,212,255,.2); border-radius:5px; color:var(--cyan); font-size:10px; font-weight:700; cursor:pointer; transition:all .15s; letter-spacing:.5px; }
+.file-lbl:hover { background:rgba(0,212,255,.14); }
+.file-lbl input { display:none; }
+.preview-thumb { width:52px; height:36px; object-fit:cover; border-radius:4px; border:1px solid var(--b2); display:none; }
+.btn-adm { padding:12px; border:none; border-radius:7px; font-family:var(--mono); font-size:11px; font-weight:700; cursor:pointer; transition:all .2s; letter-spacing:.3px; width:100%; }
+.btn-adm.green  { background:rgba(0,229,160,.1);  border:1px solid rgba(0,229,160,.28); color:var(--green); }
+.btn-adm.green:hover { background:rgba(0,229,160,.18); }
+.btn-adm.cyan-b { background:rgba(0,212,255,.1);  border:1px solid rgba(0,212,255,.28); color:var(--cyan); }
+.btn-adm.cyan-b:hover { background:rgba(0,212,255,.18); }
+.btn-adm.orng   { background:rgba(249,115,22,.1); border:1px solid rgba(249,115,22,.28); color:var(--orange); }
+.btn-adm.orng:hover { background:rgba(249,115,22,.18); }
+.btn-adm.purp   { background:rgba(168,85,247,.1); border:1px solid rgba(168,85,247,.28); color:var(--purple); }
+.btn-adm.purp:hover { background:rgba(168,85,247,.18); }
+/* FOOTER */
+.footer { text-align:center; margin-top:4px; font-size:10px; color:var(--muted); letter-spacing:1.5px; cursor:pointer; transition:color .2s; user-select:none; padding:6px; }
+.footer:hover { color:var(--cyan); }
+/* TOAST */
+.toast { position:fixed; bottom:22px; left:50%; transform:translateX(-50%) translateY(80px); background:var(--green); color:#000; font-family:var(--mono); font-size:12px; font-weight:700; padding:10px 22px; border-radius:22px; opacity:0; transition:transform .3s,opacity .3s; pointer-events:none; z-index:9999; letter-spacing:.4px; white-space:nowrap; }
+.toast.show { transform:translateX(-50%) translateY(0); opacity:1; }
+.toast.err  { background:var(--red); color:#fff; }
+/* MODAL */
+.modal-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,.78); backdrop-filter:blur(5px); z-index:5000; justify-content:center; align-items:center; }
+.modal-box { background:var(--s1); border:1px solid var(--b2); border-radius:16px; padding:28px 24px; width:100%; max-width:330px; box-shadow:0 24px 70px rgba(0,0,0,.7); }
+.modal-title { font-family:var(--head); font-size:13px; font-weight:700; color:#fff; text-align:center; margin-bottom:6px; letter-spacing:-.3px; }
+.modal-sub { font-size:10px; color:var(--muted); text-align:center; margin-bottom:16px; letter-spacing:.3px; }
+.modal-btns { display:flex; gap:10px; margin-top:14px; }
+.btn-modal-cancel { flex:1; padding:11px; background:rgba(255,64,96,.08); border:1px solid rgba(255,64,96,.25); color:var(--red); font-family:var(--mono); font-size:11px; font-weight:700; border-radius:7px; cursor:pointer; }
+.btn-modal-ok { flex:1; padding:11px; background:rgba(0,229,160,.08); border:1px solid rgba(0,229,160,.25); color:var(--green); font-family:var(--mono); font-size:11px; font-weight:700; border-radius:7px; cursor:pointer; }
+</style>
 </head>
 <body>
 
-<div class="container">
-    <div class="header">
-        <div class="header-tag">// MTPROTO PROXY</div>
-        <h1>Конфигуратор <span>прокси</span></h1>
+<div class="wrap">
+
+  <div class="hdr">
+    <div class="hdr-eyebrow">// TELEGRAM MTPROTO</div>
+    <div class="hdr-title">Прокси <span>конфигуратор</span></div>
+    <div class="hdr-sub">Быстрое подключение к защищённым прокси-серверам</div>
+  </div>
+
+  <div class="card">
+    <div class="card-body">
+
+      <div class="notice warn">
+        <span class="notice-icon">⚠</span>
+        Статус прокси определяется приблизительно. Если прокси показан как активный, но не работает — попробуйте другой сервер.
+      </div>
+
+      <span class="lbl">Выберите прокси-сервер</span>
+      <select id="proxySelector" class="proxy-select" onchange="window.changeProxyData()"></select>
+
+      <button class="btn-auto" id="btnAuto" onclick="window.findBestProxy()">⚡ НАЙТИ ЛУЧШИЙ ПРОКСИ АВТОМАТИЧЕСКИ</button>
+
+      <div class="status-row">
+        <div class="status-left">
+          <div class="dot" id="statusDot"></div>
+          <span id="statusText" class="st-wait">Проверка...</span>
+        </div>
+        <span class="ping-badge" id="pingDisplay">ping: -- ms</span>
+      </div>
+
+      <div class="fgroup">
+        <span class="lbl">Сервер / Хост</span>
+        <div class="copy-row" onclick="window.copyField('host')">
+          <span id="hostValue" class="fval">—</span>
+          <button class="btn-copy">COPY</button>
+        </div>
+      </div>
+
+      <div class="fgroup">
+        <span class="lbl">Порт</span>
+        <div class="copy-row" onclick="window.copyField('port')">
+          <span id="portValue" class="fval">—</span>
+          <button class="btn-copy">COPY</button>
+        </div>
+      </div>
+
+      <div class="fgroup">
+        <span class="lbl">Секретный ключ</span>
+        <div class="copy-row" onclick="window.copyField('key')">
+          <span id="keyValue" class="fval">—</span>
+          <button class="btn-copy">COPY</button>
+        </div>
+      </div>
+
+      <a id="tgConnectBtn" href="#" class="btn-connect">⚡ ПОДКЛЮЧИТЬ В ОДИН КЛИК</a>
+      <div class="app-notice">⚠ Ссылка работает только в <em>установленном приложении Telegram</em></div>
+
+      <div class="divider"></div>
+
+      <div id="guideBtnsRow" class="guide-row">
+        <button class="btn-guide del" onclick="window.showGuide('delete')">🗑 Как удалить прокси?</button>
+        <button class="btn-guide add" onclick="window.showGuide('add')">➕ Как добавить прокси?</button>
+      </div>
+
+      <div id="guideDelete" class="guide-box">
+        <div class="guide-header">
+          <span class="guide-icon">🗑</span>
+          <span class="guide-title-text">Как удалить прокси</span>
+        </div>
+        <div class="guide-content" id="guideDeleteContent"></div>
+      </div>
+
+      <div id="guideAdd" class="guide-box">
+        <div class="guide-header">
+          <span class="guide-icon">➕</span>
+          <span class="guide-title-text">Как добавить прокси</span>
+        </div>
+        <div class="guide-content" id="guideAddContent"></div>
+      </div>
+
+      <!-- ADMIN PANEL -->
+      <div id="adminPanel" class="admin-panel">
+
+        <div class="admin-section">
+          <div class="admin-section-title red">Управление серверами</div>
+          <input type="text"   id="adminHost" class="adm-input" placeholder="Сервер (example.com)">
+          <input type="number" id="adminPort" class="adm-input" placeholder="Порт (443)">
+          <input type="text"   id="adminKey"  class="adm-input" placeholder="Ключ (ee... или dd...)">
+          <button class="btn-adm green" onclick="window.addProxyFromAdmin()">+ Добавить прокси</button>
+        </div>
+
+        <div class="admin-section">
+          <div class="admin-section-title cyan">Инструкция «Как удалить прокси»</div>
+          <div class="guide-editor-steps" id="delEditor"></div>
+          <button class="btn-adm purp" style="margin-top:8px;" onclick="window.addStep('delete')">+ Добавить шаг</button>
+          <button class="btn-adm cyan-b" style="margin-top:8px;" onclick="window.saveGuide('delete')">💾 Сохранить</button>
+        </div>
+
+        <div class="admin-section">
+          <div class="admin-section-title orange">Инструкция «Как добавить прокси»</div>
+          <div class="guide-editor-steps" id="addEditor"></div>
+          <button class="btn-adm purp" style="margin-top:8px;" onclick="window.addStep('add')">+ Добавить шаг</button>
+          <button class="btn-adm orng" style="margin-top:8px;" onclick="window.saveGuide('add')">💾 Сохранить</button>
+        </div>
+
+      </div>
+
     </div>
+  </div>
 
-    <div class="card">
-        <div class="card-inner">
-
-            <div class="warning">
-                Статус активности прокси не всегда точен — дополнительно проверяйте соединение вручную.
-            </div>
-
-            <div class="field-group">
-                <span class="field-label">Выберите прокси-сервер</span>
-                <select id="proxySelector" class="proxy-select" onchange="window.changeProxyData()">
-                    <option value="">Загрузка серверов...</option>
-                </select>
-            </div>
-
-            <button class="btn-auto" id="btnAuto" onclick="window.findBestProxy()">⚡ НАЙТИ ЛУЧШИЙ ПРОКСИ АВТОМАТИЧЕСКИ</button>
-
-            <div class="status-row">
-                <div class="status-dot-wrap">
-                    <div class="dot" id="statusDot"></div>
-                    <span id="statusText" class="status-checking-text">Проверка...</span>
-                </div>
-                <span class="ping-tag" id="pingDisplay">ping: -- ms</span>
-            </div>
-
-            <div class="field-group">
-                <span class="field-label">Хост / Сервер</span>
-                <div class="copy-row" onclick="window.copyField('host')">
-                    <span id="hostValue" class="field-val">—</span>
-                    <button class="btn-copy">COPY</button>
-                </div>
-            </div>
-
-            <div class="field-group">
-                <span class="field-label">Порт</span>
-                <div class="copy-row" onclick="window.copyField('port')">
-                    <span id="portValue" class="field-val">—</span>
-                    <button class="btn-copy">COPY</button>
-                </div>
-            </div>
-
-            <div class="field-group">
-                <span class="field-label">Секретный ключ</span>
-                <div class="copy-row" onclick="window.copyField('key')">
-                    <span id="keyValue" class="field-val">—</span>
-                    <button class="btn-copy">COPY</button>
-                </div>
-            </div>
-
-            <a id="tgConnectBtn" href="#" class="btn-connect">⚡ ПОДКЛЮЧИТЬ В ОДИН КЛИК</a>
-
-            <div class="divider"></div>
-
-            <!-- ADMIN-ONLY GUIDE BUTTONS -->
-            <div id="adminOnlyButtons" class="admin-guide-btns">
-                <button class="btn-guide btn-guide-del" onclick="window.showGuide('delete')">▶ Как удалить старый?</button>
-                <button class="btn-guide btn-guide-add" onclick="window.showGuide('add')">▶ Как добавить прокси?</button>
-            </div>
-
-            <!-- GUIDE: DELETE -->
-            <div id="guideDelete" class="guide-box">
-                <div class="guide-title">// Инструкция: Ошибка «Недоступен»</div>
-                <div class="step">1. Откройте <strong>Настройки</strong> в Telegram.</div>
-                <div class="step">2. Нажмите на значок <strong>щита</strong> или раздел «Приватность».</div>
-                <div class="step">3. Найдите старый прокси и нажмите <strong>Удалить</strong>.</div>
-                <img id="img_del_1" class="step-img" src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==" alt="Инструкция удаления">
-            </div>
-
-            <!-- GUIDE: ADD -->
-            <div id="guideAdd" class="guide-box">
-                <div class="guide-title">// Инструкция: Как добавить прокси</div>
-                <div class="step">1. Нажмите кнопку <strong>«Подключить в один клик»</strong> выше.</div>
-                <div class="step">2. Telegram откроется и предложит добавить прокси — подтвердите.</div>
-                <div class="step">3. Дождитесь статуса <strong>«Подключено»</strong>.</div>
-                <img id="img_add_1" class="step-img" src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==" alt="Инструкция добавления">
-            </div>
-
-            <!-- ADMIN PANEL -->
-            <div id="adminPanel" class="admin-panel">
-                <div class="admin-section-title red">▸ Управление серверами</div>
-                <input type="text" id="adminHost" class="admin-input" placeholder="Хост (example.com)">
-                <input type="number" id="adminPort" class="admin-input" placeholder="Порт (443)">
-                <input type="text" id="adminKey" class="admin-input" placeholder="Ключ (HEX или dd...)">
-                <button class="btn-admin-add" onclick="window.addProxyFromAdmin()">+ Добавить прокси в базу</button>
-
-                <div class="admin-section-title cyan">▸ Загрузка фото для инструкций</div>
-                <div class="file-upload-group">
-                    <span class="field-label">Фото для инструкции «Как удалить»</span>
-                    <input type="file" id="fileDeleteGuide" accept="image/*" onchange="window.uploadGuideImage('delete')">
-                </div>
-                <div class="file-upload-group">
-                    <span class="field-label">Фото для инструкции «Как добавить»</span>
-                    <input type="file" id="fileAddGuide" accept="image/*" onchange="window.uploadGuideImage('add')">
-                </div>
-            </div>
-
-        </div><!-- /card-inner -->
-    </div><!-- /card -->
-
-    <div class="footer" onclick="window.openLoginModal()">КОНФИГУРАТОР MTPROTO © 2026</div>
+  <div class="footer" onclick="window.openLoginModal()">КОНФИГУРАТОР MTPROTO © 2026</div>
 </div>
 
 <!-- AUTH MODAL -->
 <div id="loginModal" class="modal-overlay">
-    <div class="modal-box">
-        <div class="modal-title">// Вход в панель администратора</div>
-        <input type="text" id="loginUser" class="admin-input" placeholder="Логин" autocomplete="off">
-        <input type="password" id="loginPass" class="admin-input" placeholder="Пароль" autocomplete="off">
-        <div class="modal-btns">
-            <button class="btn-modal-cancel" onclick="window.closeLoginModal()">Отмена</button>
-            <button class="btn-modal-ok" onclick="window.submitLogin()">Войти</button>
-        </div>
+  <div class="modal-box">
+    <div class="modal-title">// Панель администратора</div>
+    <div class="modal-sub">ВВЕДИТЕ ДАННЫЕ ДЛЯ ВХОДА</div>
+    <input type="text"     id="loginUser" class="adm-input" placeholder="Логин" autocomplete="off">
+    <input type="password" id="loginPass" class="adm-input" placeholder="Пароль" autocomplete="off">
+    <div class="modal-btns">
+      <button class="btn-modal-cancel" onclick="window.closeLoginModal()">Отмена</button>
+      <button class="btn-modal-ok"     onclick="window.submitLogin()">Войти</button>
     </div>
+  </div>
 </div>
 
 <div id="toast" class="toast">Скопировано!</div>
 
 <script>
-    // ======================================================
-    //  НАСТРОЙКИ SUPABASE — замените на ваши данные
-    // ======================================================
-    const SUPABASE_URL = "https://YOUR_SUPABASE_PROJECT_ID.supabase.co";
-    const SUPABASE_KEY = "YOUR_SUPABASE_ANON_KEY";
+// ════════════════════════════════════════
+//  SUPABASE CONFIG
+// ════════════════════════════════════════
+const SUPABASE_URL = "https://YOUR_SUPABASE_PROJECT_ID.supabase.co";
+const SUPABASE_KEY = "YOUR_SUPABASE_ANON_KEY";
+const USE_SUPABASE = !SUPABASE_URL.includes("YOUR_SUPABASE_PROJECT_ID");
 
-    // ======================================================
-    //  СОСТОЯНИЕ
-    // ======================================================
-    let proxyList = [];
-    let isAdmin = false;
+// ════════════════════════════════════════
+//  ВСТРОЕННЫЕ ПРОКСИ
+// ════════════════════════════════════════
+const BUILTIN_PROXIES = [
+  { label: 'predator-artist.top : 853',     host: 'predator-artist.top',    port: '853', key: 'ee54ce330e4690cc297d2b031ff3f288b06d742e616b656e61692e636c69636b' },
+  { label: 'ak.yourline.online : 443',      host: 'ak.yourline.online',     port: '443', key: 'eed74b20f8b196edebcfdc6de8c8985d60616b2e796f75726c696e652e6f6e6c696e65' },
+  { label: 'hl.routefastnet.online : 443',  host: 'hl.routefastnet.online', port: '443', key: 'eea9a5f5674069d982088b5ad27dca4584686c2e726f757465666173746e65742e6f6e6c696e65' }
+];
 
-    // ======================================================
-    //  TOAST
-    // ======================================================
-    function showToast(text, isSuccess = true) {
-        const t = document.getElementById('toast');
-        t.textContent = text;
-        t.className = 'toast' + (isSuccess ? '' : ' error');
-        t.classList.add('show');
-        setTimeout(() => t.classList.remove('show'), 2500);
+// ════════════════════════════════════════
+//  ДЕФОЛТНЫЕ ИНСТРУКЦИИ
+// ════════════════════════════════════════
+const DEFAULT_GUIDES = {
+  delete: [
+    { text: 'Зайдите в Telegram и нажмите на значок <strong>щита</strong> в правом верхнем углу.', img: '' },
+    { text: 'Найдите тот прокси, <strong>который не работает</strong> — он помечен красным или статусом «Недоступен».', img: '' },
+    { text: 'Нажмите на <strong>три точки (⋮)</strong> рядом с прокси и выберите <strong>Удалить</strong>.', img: '' }
+  ],
+  add: [
+    { text: 'Нажмите на значок <strong>щита (🛡)</strong> — он находится в правом верхнем углу главного экрана Telegram.', img: '' },
+    { text: 'Далее нажмите кнопку <strong>«Добавить прокси»</strong>.', img: '' },
+    { text: 'Выберите прокси из списка выше и вставьте данные по названиям полей: Сервер, Порт, Ключ.', img: '' }
+  ]
+};
+
+// ════════════════════════════════════════
+//  СОСТОЯНИЕ
+// ════════════════════════════════════════
+let proxyList = [...BUILTIN_PROXIES];
+let isAdmin = false;
+let guides = {
+  delete: DEFAULT_GUIDES.delete.map(s => ({ ...s })),
+  add:    DEFAULT_GUIDES.add.map(s => ({ ...s }))
+};
+
+// ════════════════════════════════════════
+//  TOAST
+// ════════════════════════════════════════
+function showToast(text, ok = true) {
+  const t = document.getElementById('toast');
+  t.textContent = text;
+  t.className = 'toast' + (ok ? '' : ' err');
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2700);
+}
+
+// ════════════════════════════════════════
+//  АВТО-ИСПРАВЛЕНИЕ ТЕКСТА
+// ════════════════════════════════════════
+function autofix(text) {
+  const fixes = [
+    [/зайте/gi,              'зайдите'],
+    [/нажмете/gi,            'нажмёте'],
+    [/выбераете/gi,          'выбираете'],
+    [/вставлейте/gi,         'вставляйте'],
+    [/значек/gi,             'значок'],
+    [/прокси которые/gi,     'прокси, который'],
+    [/потом ищите/gi,        'затем найдите'],
+    [/ и все\b/gi,           ', и всё'],
+    [/ далее на /gi,         ', затем '],
+    [/ а нажмите/gi,         ', затем нажмите'],
+  ];
+  let r = text;
+  fixes.forEach(([f, t]) => { r = r.replace(f, t); });
+  r = r.replace(/,\s*,/g, ',').replace(/\s+,/g, ',');
+  return r;
+}
+
+// ════════════════════════════════════════
+//  РЕНДЕР ПУБЛИЧНЫХ ИНСТРУКЦИЙ
+// ════════════════════════════════════════
+function renderGuideView(type) {
+  const el = document.getElementById(type === 'delete' ? 'guideDeleteContent' : 'guideAddContent');
+  el.innerHTML = guides[type].map((step, i) => `
+    <div class="guide-step">
+      <div class="step-num">${i + 1}</div>
+      <div class="step-body">
+        <div class="step-text">${step.text}</div>
+        ${step.img ? `<img class="step-img" src="${step.img}" alt="шаг ${i+1}">` : ''}
+      </div>
+    </div>
+  `).join('');
+}
+
+// ════════════════════════════════════════
+//  РЕНДЕР РЕДАКТОРОВ ИНСТРУКЦИЙ
+// ════════════════════════════════════════
+function renderGuideEditor(type) {
+  const el = document.getElementById(type === 'delete' ? 'delEditor' : 'addEditor');
+  el.innerHTML = guides[type].map((step, i) => {
+    const rawText = step.text.replace(/<strong>/g, '*').replace(/<\/strong>/g, '*').replace(/<[^>]+>/g, '');
+    return `
+    <div class="step-editor">
+      <div class="step-editor-num">Шаг ${i + 1} <span style="color:var(--purple);font-size:9px;">— слова в *звёздочках* выделяются</span></div>
+      <textarea class="adm-textarea" id="stepTa_${type}_${i}" rows="3">${rawText}</textarea>
+      <div class="step-img-row">
+        <label class="file-lbl">
+          📷 Фото
+          <input type="file" accept="image/*" onchange="window.onStepImg('${type}', ${i}, this)">
+        </label>
+        <img id="thumb_${type}_${i}" class="preview-thumb" ${step.img ? `src="${step.img}" style="display:inline-block;"` : ''}>
+        ${step.img ? `<button onclick="window.clearStepImg('${type}',${i})" style="background:rgba(255,64,96,.1);border:1px solid rgba(255,64,96,.3);color:var(--red);font-size:10px;padding:4px 8px;border-radius:4px;cursor:pointer;font-family:var(--mono);">✕ Удалить фото</button>` : ''}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+window.onStepImg = function(type, idx, input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onloadend = () => {
+    guides[type][idx].img = reader.result;
+    const thumb = document.getElementById(`thumb_${type}_${idx}`);
+    if (thumb) { thumb.src = reader.result; thumb.style.display = 'inline-block'; }
+    showToast('Фото загружено ✓');
+  };
+  reader.readAsDataURL(file);
+};
+
+window.clearStepImg = function(type, idx) {
+  guides[type][idx].img = '';
+  renderGuideEditor(type);
+  renderGuideView(type);
+  showToast('Фото удалено');
+};
+
+window.addStep = function(type) {
+  guides[type].push({ text: 'Новый шаг — опишите действие.', img: '' });
+  renderGuideEditor(type);
+  renderGuideView(type);
+};
+
+window.saveGuide = function(type) {
+  guides[type].forEach((step, i) => {
+    const ta = document.getElementById(`stepTa_${type}_${i}`);
+    if (!ta) return;
+    let txt = autofix(ta.value.trim());
+    // *звёздочки* → <strong>
+    txt = txt.replace(/\*([^*]+)\*/g, '<strong>$1</strong>');
+    ta.value = txt.replace(/<strong>/g,'*').replace(/<\/strong>/g,'*').replace(/<[^>]+>/g,'');
+    step.text = txt;
+  });
+  renderGuideView(type);
+  showToast(`Инструкция «${type === 'delete' ? 'Удалить' : 'Добавить'}» сохранена ✓`);
+  if (USE_SUPABASE) saveGuidesToSupabase();
+};
+
+async function saveGuidesToSupabase() {
+  try {
+    for (const type of ['delete', 'add']) {
+      await fetch(`${SUPABASE_URL}/rest/v1/guides`, {
+        method: 'POST',
+        headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}`, 'Content-Type': 'application/json', 'Prefer': 'resolution=merge-duplicates' },
+        body: JSON.stringify({ type, steps_json: JSON.stringify(guides[type]) })
+      });
     }
+  } catch(e) { console.error('saveGuidesToSupabase', e); }
+}
 
-    // ======================================================
-    //  МОДАЛЬНОЕ ОКНО АВТОРИЗАЦИИ
-    // ======================================================
-    window.openLoginModal = function () {
-        if (isAdmin) {
-            window.toggleAdminPanel();
-        } else {
-            document.getElementById('loginUser').value = '';
-            document.getElementById('loginPass').value = '';
-            document.getElementById('loginModal').style.display = 'flex';
-            setTimeout(() => document.getElementById('loginUser').focus(), 100);
-        }
-    };
+// ════════════════════════════════════════
+//  АВТОРИЗАЦИЯ
+// ════════════════════════════════════════
+window.openLoginModal = function() {
+  if (isAdmin) { window.toggleAdminPanel(); return; }
+  document.getElementById('loginUser').value = '';
+  document.getElementById('loginPass').value = '';
+  document.getElementById('loginModal').style.display = 'flex';
+  setTimeout(() => document.getElementById('loginUser').focus(), 80);
+};
 
-    window.closeLoginModal = function () {
-        document.getElementById('loginModal').style.display = 'none';
-    };
+window.closeLoginModal = function() {
+  document.getElementById('loginModal').style.display = 'none';
+};
 
-    window.submitLogin = function () {
-        const user = document.getElementById('loginUser').value.trim();
-        const pass = document.getElementById('loginPass').value.trim();
+window.submitLogin = function() {
+  const u = document.getElementById('loginUser').value.trim();
+  const p = document.getElementById('loginPass').value.trim();
+  if (u === 'admin' && p === 'seal') {
+    isAdmin = true;
+    window.closeLoginModal();
+    showToast('Добро пожаловать, Админ ✓');
+    document.getElementById('guideBtnsRow').style.display = 'grid';
+    document.getElementById('adminPanel').style.display = 'block';
+    renderGuideEditor('delete');
+    renderGuideEditor('add');
+  } else {
+    showToast('Неверные данные', false);
+    document.getElementById('loginPass').value = '';
+  }
+};
 
-        if (user === 'admin' && pass === 'seal') {
-            isAdmin = true;
-            window.closeLoginModal();
-            showToast('Доступ разрешён ✓');
-            document.getElementById('adminOnlyButtons').style.display = 'grid';
-            // Открываем панель сразу при входе
-            const panel = document.getElementById('adminPanel');
-            panel.style.display = 'block';
-        } else {
-            showToast('Неверный логин или пароль', false);
-            document.getElementById('loginPass').value = '';
-        }
-    };
+document.getElementById('loginModal').addEventListener('click', function(e) {
+  if (e.target === this) window.closeLoginModal();
+});
 
-    // Enter в полях логина
-    document.addEventListener('DOMContentLoaded', () => {
-        document.getElementById('loginPass').addEventListener('keydown', e => {
-            if (e.key === 'Enter') window.submitLogin();
-        });
-        document.getElementById('loginUser').addEventListener('keydown', e => {
-            if (e.key === 'Enter') document.getElementById('loginPass').focus();
-        });
+window.toggleAdminPanel = function() {
+  if (!isAdmin) return;
+  const p = document.getElementById('adminPanel');
+  p.style.display = p.style.display === 'block' ? 'none' : 'block';
+};
+
+// ════════════════════════════════════════
+//  ЗАГРУЗКА ПРОКСИ
+// ════════════════════════════════════════
+async function loadProxies() {
+  let list = [...BUILTIN_PROXIES];
+  if (USE_SUPABASE) {
+    try {
+      const res = await fetch(`${SUPABASE_URL}/rest/v1/proxies?select=*`, {
+        headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` }
+      });
+      if (res.ok) {
+        const db = await res.json();
+        if (db.length) list = [...list, ...db.map(p => ({ ...p, label: `${p.host}:${p.port}` }))];
+      }
+    } catch(e) { console.error('loadProxies', e); }
+  }
+  proxyList = list;
+  const sel = document.getElementById('proxySelector');
+  sel.innerHTML = '';
+  proxyList.forEach((p, i) => {
+    const opt = document.createElement('option');
+    opt.value = i;
+    opt.textContent = p.label || `${p.host}:${p.port}`;
+    sel.appendChild(opt);
+  });
+  window.changeProxyData();
+}
+
+// ════════════════════════════════════════
+//  ЗАГРУЗКА ИНСТРУКЦИЙ ИЗ SUPABASE
+// ════════════════════════════════════════
+async function loadGuidesFromSupabase() {
+  if (!USE_SUPABASE) return;
+  try {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/guides?select=*`, {
+      headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` }
     });
-
-    // Закрытие модалки по клику на оверлей
-    document.getElementById('loginModal').addEventListener('click', function (e) {
-        if (e.target === this) window.closeLoginModal();
+    if (!res.ok) return;
+    const data = await res.json();
+    data.forEach(item => {
+      if ((item.type === 'delete' || item.type === 'add') && item.steps_json) {
+        try {
+          const parsed = JSON.parse(item.steps_json);
+          if (Array.isArray(parsed) && parsed.length) guides[item.type] = parsed;
+        } catch(e) {}
+      }
     });
+    renderGuideView('delete');
+    renderGuideView('add');
+  } catch(e) { console.error('loadGuidesFromSupabase', e); }
+}
 
-    window.toggleAdminPanel = function () {
-        if (!isAdmin) return;
-        const panel = document.getElementById('adminPanel');
-        panel.style.display = (panel.style.display === 'block') ? 'none' : 'block';
-    };
+// ════════════════════════════════════════
+//  СМЕНА ПРОКСИ
+// ════════════════════════════════════════
+window.changeProxyData = function() {
+  const idx = document.getElementById('proxySelector').value;
+  if (idx === '' || !proxyList[idx]) return;
+  const p = proxyList[idx];
+  document.getElementById('hostValue').textContent = p.host;
+  document.getElementById('portValue').textContent = p.port;
+  document.getElementById('keyValue').textContent  = p.key;
+  const link = `tg://proxy?server=${encodeURIComponent(p.host)}&port=${encodeURIComponent(p.port)}&secret=${encodeURIComponent(p.key)}`;
+  document.getElementById('tgConnectBtn').href = link;
+  window.checkPing(p.host, p.port);
+};
 
-    // ======================================================
-    //  ЗАГРУЗКА ПРОКСИ ИЗ SUPABASE
-    // ======================================================
-    async function loadProxies() {
-        const selector = document.getElementById('proxySelector');
-
-        if (SUPABASE_URL.includes('YOUR_SUPABASE_PROJECT_ID')) {
-            selector.innerHTML = '<option value="">Демо-режим (Supabase не настроен)</option>';
-            loadMockData();
-            return;
-        }
-
-        try {
-            const res = await fetch(`${SUPABASE_URL}/rest/v1/proxies?select=*`, {
-                headers: {
-                    'apikey': SUPABASE_KEY,
-                    'Authorization': `Bearer ${SUPABASE_KEY}`
-                }
-            });
-            if (!res.ok) throw new Error('Ошибка запроса');
-            proxyList = await res.json();
-
-            if (proxyList.length === 0) {
-                selector.innerHTML = '<option value="">Нет прокси в базе данных</option>';
-                return;
-            }
-
-            selector.innerHTML = '';
-            proxyList.forEach((proxy, idx) => {
-                const opt = document.createElement('option');
-                opt.value = idx;
-                opt.textContent = `${proxy.host}:${proxy.port}`;
-                selector.appendChild(opt);
-            });
-
-            window.changeProxyData();
-        } catch (e) {
-            console.error('loadProxies error:', e);
-            loadMockData();
-        }
+// ════════════════════════════════════════
+//  ПИНГ
+// ════════════════════════════════════════
+window.checkPing = async function(host, port) {
+  const dot  = document.getElementById('statusDot');
+  const text = document.getElementById('statusText');
+  const badge = document.getElementById('pingDisplay');
+  dot.className = 'dot'; text.className = 'st-wait'; text.textContent = 'Проверка...'; badge.textContent = 'ping: -- ms';
+  const ctrl = new AbortController();
+  const tid = setTimeout(() => ctrl.abort(), 2000);
+  const t0 = performance.now();
+  try {
+    await fetch(`https://${host}:${port}`, { mode: 'no-cors', signal: ctrl.signal });
+    clearTimeout(tid);
+    const ms = Math.round(performance.now() - t0);
+    dot.className = 'dot on'; text.className = 'st-on'; text.textContent = 'Активен'; badge.textContent = `ping: ${ms} ms`;
+  } catch(e) {
+    clearTimeout(tid);
+    if (e.name === 'AbortError') {
+      dot.className = 'dot off'; text.className = 'st-off'; text.textContent = 'Недоступен'; badge.textContent = 'ping: timeout';
+    } else {
+      const ms = Math.round(performance.now() - t0);
+      dot.className = 'dot on'; text.className = 'st-on'; text.textContent = 'Активен'; badge.textContent = `ping: ${ms} ms`;
     }
+  }
+};
 
-    // ======================================================
-    //  ЗАГРУЗКА КАРТИНОК ИНСТРУКЦИЙ ИЗ SUPABASE
-    // ======================================================
-    async function loadImagesFromSupabase() {
-        if (SUPABASE_URL.includes('YOUR_SUPABASE_PROJECT_ID')) return;
-        try {
-            const res = await fetch(`${SUPABASE_URL}/rest/v1/guides?select=*`, {
-                headers: {
-                    'apikey': SUPABASE_KEY,
-                    'Authorization': `Bearer ${SUPABASE_KEY}`
-                }
-            });
-            if (!res.ok) return;
-            const data = await res.json();
-            data.forEach(item => {
-                if (item.type === 'delete' && item.image_data) {
-                    document.getElementById('img_del_1').src = item.image_data;
-                }
-                if (item.type === 'add' && item.image_data) {
-                    document.getElementById('img_add_1').src = item.image_data;
-                }
-            });
-        } catch (e) {
-            console.error('loadImages error:', e);
-        }
+// ════════════════════════════════════════
+//  АВТО-ПОИСК
+// ════════════════════════════════════════
+window.findBestProxy = async function() {
+  if (!proxyList.length) { showToast('Список пуст', false); return; }
+  const btn = document.getElementById('btnAuto');
+  btn.textContent = '⏳ ПОИСК ЛУЧШЕГО СЕРВЕРА...'; btn.classList.add('scanning'); btn.disabled = true;
+  const results = await Promise.all(proxyList.map(async (p, idx) => {
+    const ctrl = new AbortController();
+    const tid = setTimeout(() => ctrl.abort(), 2000);
+    const t0 = performance.now();
+    try {
+      await fetch(`https://${p.host}:${p.port}`, { mode: 'no-cors', signal: ctrl.signal });
+      clearTimeout(tid);
+      return { idx, ping: Math.round(performance.now() - t0) };
+    } catch(e) {
+      clearTimeout(tid);
+      return { idx, ping: e.name === 'AbortError' ? Infinity : Math.round(performance.now() - t0) };
     }
+  }));
+  btn.textContent = '⚡ НАЙТИ ЛУЧШИЙ ПРОКСИ АВТОМАТИЧЕСКИ'; btn.classList.remove('scanning'); btn.disabled = false;
+  const best = results.reduce((a, b) => a.ping <= b.ping ? a : b);
+  if (best.ping < Infinity) {
+    document.getElementById('proxySelector').value = best.idx;
+    window.changeProxyData();
+    showToast(`Лучший: ${proxyList[best.idx].label || proxyList[best.idx].host} — ${best.ping} ms ✓`);
+  } else {
+    showToast('Все серверы недоступны', false);
+  }
+};
 
-    // ======================================================
-    //  ЗАГРУЗКА ФОТО (ADMIN)
-    // ======================================================
-    window.uploadGuideImage = function (type) {
-        const inputId = type === 'delete' ? 'fileDeleteGuide' : 'fileAddGuide';
-        const fileInput = document.getElementById(inputId);
-        const file = fileInput.files[0];
-        if (!file) return;
+// ════════════════════════════════════════
+//  КОПИРОВАНИЕ
+// ════════════════════════════════════════
+window.copyField = function(type) {
+  const val = document.getElementById(`${type}Value`).textContent;
+  if (!val || val === '—') return;
+  navigator.clipboard.writeText(val).then(() => showToast('Скопировано!')).catch(() => {
+    const ta = document.createElement('textarea');
+    ta.value = val; ta.style.cssText = 'position:fixed;opacity:0';
+    document.body.appendChild(ta); ta.focus(); ta.select(); document.execCommand('copy'); document.body.removeChild(ta);
+    showToast('Скопировано!');
+  });
+};
 
-        const reader = new FileReader();
-        reader.onloadend = async function () {
-            const base64Data = reader.result;
+// ════════════════════════════════════════
+//  ПОКАЗ ИНСТРУКЦИЙ
+// ════════════════════════════════════════
+window.showGuide = function(type) {
+  const del = document.getElementById('guideDelete');
+  const add = document.getElementById('guideAdd');
+  if (type === 'delete') {
+    del.style.display = del.style.display === 'block' ? 'none' : 'block';
+    add.style.display = 'none';
+  } else {
+    add.style.display = add.style.display === 'block' ? 'none' : 'block';
+    del.style.display = 'none';
+  }
+};
 
-            // Превью сразу
-            const imgId = type === 'delete' ? 'img_del_1' : 'img_add_1';
-            document.getElementById(imgId).src = base64Data;
+// ════════════════════════════════════════
+//  ДОБАВЛЕНИЕ ПРОКСИ
+// ════════════════════════════════════════
+window.addProxyFromAdmin = async function() {
+  const host = document.getElementById('adminHost').value.trim();
+  const port = document.getElementById('adminPort').value.trim();
+  const key  = document.getElementById('adminKey').value.trim();
+  if (!host || !port || !key) { showToast('Заполните все поля!', false); return; }
+  const newProxy = { host, port, key, label: `${host}:${port}` };
+  proxyList.push(newProxy);
+  const sel = document.getElementById('proxySelector');
+  const opt = document.createElement('option');
+  opt.value = proxyList.length - 1;
+  opt.textContent = newProxy.label;
+  sel.appendChild(opt);
+  sel.value = proxyList.length - 1;
+  window.changeProxyData();
+  if (USE_SUPABASE) {
+    try {
+      await fetch(`${SUPABASE_URL}/rest/v1/proxies`, {
+        method: 'POST',
+        headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ host, port, key })
+      });
+      showToast('Прокси добавлен в Supabase ✓');
+    } catch(e) { showToast('Добавлено локально (ошибка БД)', false); }
+  } else {
+    showToast('Прокси добавлен ✓');
+  }
+  document.getElementById('adminHost').value = '';
+  document.getElementById('adminPort').value = '';
+  document.getElementById('adminKey').value  = '';
+};
 
-            if (SUPABASE_URL.includes('YOUR_SUPABASE_PROJECT_ID')) {
-                showToast('Сохранено локально (Демо)');
-                return;
-            }
-
-            try {
-                const res = await fetch(`${SUPABASE_URL}/rest/v1/guides`, {
-                    method: 'POST',
-                    headers: {
-                        'apikey': SUPABASE_KEY,
-                        'Authorization': `Bearer ${SUPABASE_KEY}`,
-                        'Content-Type': 'application/json',
-                        'Prefer': 'resolution=merge-duplicates'
-                    },
-                    body: JSON.stringify({ type: type, image_data: base64Data })
-                });
-                if (res.ok) {
-                    showToast('Изображение сохранено в Supabase ✓');
-                } else {
-                    throw new Error('Статус: ' + res.status);
-                }
-            } catch (e) {
-                console.error('uploadGuideImage error:', e);
-                showToast('Ошибка сохранения в БД', false);
-            }
-        };
-        reader.readAsDataURL(file);
-    };
-
-    // ======================================================
-    //  ДЕМО-ДАННЫЕ
-    // ======================================================
-    function loadMockData() {
-        proxyList = [
-            { host: '149.154.167.50', port: '443', key: 'dd00000000000000000000000000000000' }
-        ];
-        const selector = document.getElementById('proxySelector');
-        selector.innerHTML = '<option value="0">149.154.167.50:443 (Демо)</option>';
-        window.changeProxyData();
-    }
-
-    // ======================================================
-    //  СМЕНА ПРОКСИ
-    // ======================================================
-    window.changeProxyData = function () {
-        const idx = document.getElementById('proxySelector').value;
-        if (idx === '' || !proxyList[idx]) return;
-        const proxy = proxyList[idx];
-
-        document.getElementById('hostValue').textContent = proxy.host;
-        document.getElementById('portValue').textContent = proxy.port;
-        document.getElementById('keyValue').textContent = proxy.key;
-
-        // Строгий формат ссылки
-        const link = `tg://proxy?server=${encodeURIComponent(proxy.host)}&port=${encodeURIComponent(proxy.port)}&secret=${encodeURIComponent(proxy.key)}`;
-        document.getElementById('tgConnectBtn').href = link;
-
-        window.checkCurrentProxyPing(proxy.host, proxy.port);
-    };
-
-    // ======================================================
-    //  ПИНГ (через fetch + AbortController, таймаут 2000ms)
-    // ======================================================
-    window.checkCurrentProxyPing = async function (host, port) {
-        const dot = document.getElementById('statusDot');
-        const text = document.getElementById('statusText');
-        const badge = document.getElementById('pingDisplay');
-
-        dot.className = 'dot';
-        text.className = 'status-checking-text';
-        text.textContent = 'Проверка...';
-        badge.textContent = 'ping: -- ms';
-
-        const controller = new AbortController();
-        const tid = setTimeout(() => controller.abort(), 2000);
-        const start = performance.now();
-
-        try {
-            await fetch(`https://${host}:${port}`, {
-                mode: 'no-cors',
-                signal: controller.signal
-            });
-            clearTimeout(tid);
-            const p = Math.round(performance.now() - start);
-            dot.className = 'dot active';
-            text.className = 'status-active-text';
-            text.textContent = 'Активен';
-            badge.textContent = `ping: ${p} ms`;
-        } catch (e) {
-            clearTimeout(tid);
-            if (e.name === 'AbortError') {
-                dot.className = 'dot inactive';
-                text.className = 'status-inactive-text';
-                text.textContent = 'Недоступен';
-                badge.textContent = 'ping: timeout';
-            } else {
-                // CORS/network error — сервер ответил, значит жив
-                const p = Math.round(performance.now() - start);
-                dot.className = 'dot active';
-                text.className = 'status-active-text';
-                text.textContent = 'Активен';
-                badge.textContent = `ping: ${p} ms`;
-            }
-        }
-    };
-
-    // ======================================================
-    //  АВТО-ПОИСК ЛУЧШЕГО ПРОКСИ
-    // ======================================================
-    window.findBestProxy = async function () {
-        if (proxyList.length === 0) {
-            showToast('Список прокси пуст', false);
-            return;
-        }
-
-        const btn = document.getElementById('btnAuto');
-        btn.textContent = '⏳ ПОИСК ЛУЧШЕГО ПРОКСИ...';
-        btn.classList.add('scanning');
-        btn.disabled = true;
-
-        let best = null;
-        let bestPing = Infinity;
-
-        const results = await Promise.all(
-            proxyList.map(async (proxy, idx) => {
-                const controller = new AbortController();
-                const tid = setTimeout(() => controller.abort(), 2000);
-                const start = performance.now();
-                try {
-                    await fetch(`https://${proxy.host}:${proxy.port}`, {
-                        mode: 'no-cors',
-                        signal: controller.signal
-                    });
-                    clearTimeout(tid);
-                    return { idx, ping: Math.round(performance.now() - start) };
-                } catch (e) {
-                    clearTimeout(tid);
-                    if (e.name !== 'AbortError') {
-                        return { idx, ping: Math.round(performance.now() - start) };
-                    }
-                    return { idx, ping: Infinity };
-                }
-            })
-        );
-
-        results.forEach(r => {
-            if (r.ping < bestPing) {
-                bestPing = r.ping;
-                best = r.idx;
-            }
-        });
-
-        btn.textContent = '⚡ НАЙТИ ЛУЧШИЙ ПРОКСИ АВТОМАТИЧЕСКИ';
-        btn.classList.remove('scanning');
-        btn.disabled = false;
-
-        if (best !== null && bestPing < Infinity) {
-            document.getElementById('proxySelector').value = best;
-            window.changeProxyData();
-            showToast(`Лучший прокси: ping ${bestPing} ms ✓`);
-        } else {
-            showToast('Все серверы недоступны', false);
-        }
-    };
-
-    // ======================================================
-    //  КОПИРОВАНИЕ ПОЛЯ
-    // ======================================================
-    window.copyField = function (type) {
-        const val = document.getElementById(`${type}Value`).textContent;
-        if (!val || val === '—') return;
-        navigator.clipboard.writeText(val).then(() => {
-            showToast('Скопировано!');
-        }).catch(() => {
-            // Фолбэк для старых браузеров
-            const ta = document.createElement('textarea');
-            ta.value = val;
-            ta.style.position = 'fixed';
-            ta.style.opacity = '0';
-            document.body.appendChild(ta);
-            ta.focus();
-            ta.select();
-            document.execCommand('copy');
-            document.body.removeChild(ta);
-            showToast('Скопировано!');
-        });
-    };
-
-    // ======================================================
-    //  ПОКАЗ/СКРЫТИЕ ИНСТРУКЦИЙ
-    // ======================================================
-    window.showGuide = function (type) {
-        const delBox = document.getElementById('guideDelete');
-        const addBox = document.getElementById('guideAdd');
-
-        if (type === 'delete') {
-            const isOpen = delBox.style.display === 'block';
-            delBox.style.display = isOpen ? 'none' : 'block';
-            addBox.style.display = 'none';
-        } else {
-            const isOpen = addBox.style.display === 'block';
-            addBox.style.display = isOpen ? 'none' : 'block';
-            delBox.style.display = 'none';
-        }
-    };
-
-    // ======================================================
-    //  ДОБАВЛЕНИЕ ПРОКСИ ЧЕРЕЗ АДМИНКУ
-    // ======================================================
-    window.addProxyFromAdmin = async function () {
-        const host = document.getElementById('adminHost').value.trim();
-        const port = document.getElementById('adminPort').value.trim();
-        const key  = document.getElementById('adminKey').value.trim();
-
-        if (!host || !port || !key) {
-            showToast('Заполните все поля!', false);
-            return;
-        }
-
-        if (SUPABASE_URL.includes('YOUR_SUPABASE_PROJECT_ID')) {
-            proxyList.push({ host, port, key });
-            const selector = document.getElementById('proxySelector');
-            const opt = document.createElement('option');
-            opt.value = proxyList.length - 1;
-            opt.textContent = `${host}:${port}`;
-            // Убрать "Демо" опцию если есть
-            if (selector.options[0] && selector.options[0].value === '') {
-                selector.remove(0);
-            }
-            selector.appendChild(opt);
-            selector.value = proxyList.length - 1;
-            window.changeProxyData();
-            showToast('Добавлено локально (Демо)');
-            return;
-        }
-
-        try {
-            const res = await fetch(`${SUPABASE_URL}/rest/v1/proxies`, {
-                method: 'POST',
-                headers: {
-                    'apikey': SUPABASE_KEY,
-                    'Authorization': `Bearer ${SUPABASE_KEY}`,
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ host, port, key })
-            });
-            if (res.ok) {
-                showToast('Прокси добавлен в Supabase ✓');
-                document.getElementById('adminHost').value = '';
-                document.getElementById('adminPort').value = '';
-                document.getElementById('adminKey').value = '';
-                loadProxies();
-            } else {
-                throw new Error('Статус: ' + res.status);
-            }
-        } catch (e) {
-            console.error('addProxyFromAdmin error:', e);
-            showToast('Ошибка записи в БД', false);
-        }
-    };
-
-    // ======================================================
-    //  ИНИЦИАЛИЗАЦИЯ
-    // ======================================================
-    document.addEventListener('DOMContentLoaded', () => {
-        loadProxies();
-        loadImagesFromSupabase();
-    });
+// ════════════════════════════════════════
+//  INIT
+// ════════════════════════════════════════
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('loginPass').addEventListener('keydown', e => { if (e.key === 'Enter') window.submitLogin(); });
+  document.getElementById('loginUser').addEventListener('keydown', e => { if (e.key === 'Enter') document.getElementById('loginPass').focus(); });
+  loadProxies();
+  loadGuidesFromSupabase();
+  renderGuideView('delete');
+  renderGuideView('add');
+});
 </script>
 </body>
 </html>
