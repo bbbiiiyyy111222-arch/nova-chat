@@ -679,7 +679,7 @@
 
 <!-- MAIN -->
 <main>
-  <p class="mystery-sub">Июнь 2025 · Загадка</p>
+  <p class="mystery-sub">Июнь 2026 · Загадка</p>
   <h1 class="mystery-title">Что за числа?<br>Зачем всё это?</h1>
 
   <!-- PHOTO REVEAL for Day 17 -->
@@ -875,15 +875,15 @@ function renderCalendar() {
   const grid = document.getElementById('calendar');
   grid.innerHTML = '';
 
-  // June 2025 starts on Sunday (0), so first weekday = 0
-  // Actually June 1 2025 is Sunday
-  const firstDay = new Date(2025, 5, 1).getDay(); // 0 = Sun
+  // June 2026 starts on Sunday (0), so first weekday = 0
+  // Actually June 1 2026 is Sunday
+  const firstDay = new Date(2026, 5, 1).getDay(); // 0 = Sun
   const crossed = getCrossed();
   
   const testDay = getTestMode();
   const ekb = getEKBTime();
   const todayDay = testDay > 0 ? testDay : ekb.getDate();
-  const isTodayJune = testDay > 0 || (ekb.getMonth() === 5 && ekb.getFullYear() === 2025);
+  const isTodayJune = testDay > 0 || (ekb.getMonth() === 5 && ekb.getFullYear() === 2026);
 
   // Empty cells before start
   for (let i = 0; i < firstDay; i++) {
