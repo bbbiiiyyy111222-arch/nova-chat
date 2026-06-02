@@ -549,14 +549,16 @@
     min-height: 18px;
   }
 
-  /* SECRET TRIGGER - invisible corner */
-  #secret-trigger {
-    position: fixed;
-    bottom: 0; right: 0;
-    width: 60px; height: 60px;
-    z-index: 9000;
-    cursor: default;
-  }
+ /* SECRET TRIGGER - invisible corner */
+#secret-trigger {
+  position: fixed;
+  bottom: 0;
+  left: 0;      /* было right: 0 */
+  width: 10px;  /* было 60px */
+  height: 100px; /* было 60px */
+  z-index: 9000;
+  cursor: default;
+}
 
   /* EKB CLOCK */
   .ekb-clock {
@@ -611,27 +613,35 @@
   </div>
 </header>
 
-<!-- SECRET TRIGGER (triple-click bottom right corner) -->
-<div id="secret-trigger" onclick="handleSecretClick()"></div>
+// ===================== SECRET LOGIN =====================
 
-<!-- SECRET LOGIN PANEL -->
-<div id="secret-panel">
-  <div class="login-box">
-    <button class="close-panel" onclick="closeLogin()">✕</button>
-    <h2>Вход</h2>
-    <p>Только для администратора</p>
-    <div class="login-field">
-      <label>Логин</label>
-      <input type="text" id="login-user" placeholder="••••••••" autocomplete="off">
-    </div>
-    <div class="login-field">
-      <label>Пароль</label>
-      <input type="password" id="login-pass" placeholder="••••••••">
-    </div>
-    <button class="login-btn" onclick="tryLogin()">ВОЙТИ</button>
-    <div class="login-error" id="login-error">Неверный логин или пароль</div>
-  </div>
-</div>
+function handleSecretClick() {
+    document.getElementById('secret-panel').classList.add('active');
+}
+
+function closeLogin() {
+    document.getElementById('secret-panel').classList.remove('active');
+    document.getElementById('login-error').style.display = 'none';
+}
+
+function tryLogin() {
+    const u = document.getElementById('login-user').value.trim();
+    const p = document.getElementById('login-pass').value;
+    const creds = getCredentials();
+
+    if (u === creds.user && p === creds.pass) {
+        closeLogin();
+        openAdmin();
+    } else {
+        document.getElementById('login-error').style.display = 'block';
+    }
+}
+
+document.getElementById('login-pass').addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+        tryLogin();
+    }
+});
 
 <!-- ADMIN PANEL -->
 <div id="admin-panel">
