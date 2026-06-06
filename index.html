@@ -1,13 +1,11 @@
-cat > /tmp/build.py << 'PYEOF'
-with open('/tmp/17th_b64.txt') as f:
-    b64_17 = f.read().strip()
+python3 << 'PYEOF'
 with open('/tmp/23th_b64.txt') as f:
-    b64_23 = f.read().strip()
+    B64_23 = f.read().strip()
 
 SUPABASE_URL = "https://duagaskjxaovuiowhkoa.supabase.co"
 SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR1YWdhc2tqeGFvdnVpb3doa29hIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA0NTU0MDksImV4cCI6MjA5NjAzMTQwOX0.mgibmlL7XNZEhSRZw1ySBu_qKvccyvEj3nt4QLeCTZI"
 
- '''<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
@@ -16,623 +14,299 @@ SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJ
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@300;400;700;900&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
-:root {
-  --bg: #080808;
-  --surface: #0f0f0f;
-  --card: #141414;
-  --card2: #1a1a1a;
-  --border: #242424;
-  --border2: #2e2e2e;
-  --text: #e8e8e8;
-  --muted: #666;
-  --muted2: #888;
-  --accent: #c8a96e;
-  --accent2: #e8c98e;
-  --red: #e05555;
-  --red2: #ff6b6b;
-  --green: #4ade80;
-  --green2: #22c55e;
-  --blue: #60a5fa;
-}
+:root{--bg:#080808;--surface:#0f0f0f;--card:#141414;--card2:#1a1a1a;--border:#242424;--border2:#2e2e2e;--text:#e8e8e8;--muted:#666;--muted2:#888;--accent:#c8a96e;--accent2:#e8c98e;--red:#e05555;--red2:#ff6b6b;--green:#4ade80;--blue:#60a5fa;}
+*{margin:0;padding:0;box-sizing:border-box;}html{scroll-behavior:smooth;}
+body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-height:100vh;overflow-x:hidden;-webkit-font-smoothing:antialiased;}
+body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.025'/%3E%3C/svg%3E");pointer-events:none;z-index:0;}
 
-*{margin:0;padding:0;box-sizing:border-box;}
-html{scroll-behavior:smooth;}
-
-body{
-  background:var(--bg);
-  color:var(--text);
-  font-family:'Inter',sans-serif;
-  min-height:100vh;
-  overflow-x:hidden;
-  -webkit-font-smoothing:antialiased;
-}
-
-/* Noise texture */
-body::before{
-  content:'';
-  position:fixed;inset:0;
-  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
-  pointer-events:none;z-index:0;opacity:1;
-}
+/* LOADING */
+#loading{position:fixed;inset:0;background:var(--bg);z-index:10000;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:16px;transition:opacity 0.4s;}
+.spinner{width:36px;height:36px;border:2px solid var(--border2);border-top-color:var(--accent);border-radius:50%;animation:spin 0.7s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading-txt{font-family:'Unbounded',sans-serif;font-size:10px;color:var(--muted);letter-spacing:3px;}
 
 /* HEADER */
-header{
-  position:fixed;top:0;left:0;right:0;z-index:200;
-  height:64px;
-  display:flex;align-items:center;justify-content:space-between;
-  padding:0 40px;
-  background:rgba(8,8,8,0.85);
-  backdrop-filter:blur(24px) saturate(180%);
-  border-bottom:1px solid var(--border);
-}
-
-.logo{
-  font-family:'Unbounded',sans-serif;
-  font-size:11px;font-weight:900;
-  letter-spacing:6px;color:var(--accent);
-  text-transform:uppercase;
-  display:flex;align-items:center;gap:10px;
-}
-.logo::before{
-  content:'';width:6px;height:6px;
-  background:var(--accent);border-radius:50%;
-  animation:blink 2s ease-in-out infinite;
-}
+header{position:fixed;top:0;left:0;right:0;z-index:200;height:64px;display:flex;align-items:center;justify-content:space-between;padding:0 40px;background:rgba(8,8,8,0.92);backdrop-filter:blur(24px) saturate(180%);border-bottom:1px solid var(--border);}
+.logo{font-family:'Unbounded',sans-serif;font-size:11px;font-weight:900;letter-spacing:6px;color:var(--accent);text-transform:uppercase;display:flex;align-items:center;gap:10px;}
+.logo-dot{width:6px;height:6px;background:var(--accent);border-radius:50%;animation:blink 2s ease-in-out infinite;flex-shrink:0;}
 @keyframes blink{0%,100%{opacity:1}50%{opacity:0.3}}
-
-.timer-area{
-  display:flex;flex-direction:column;align-items:flex-end;gap:2px;
-}
+.timer-area{display:flex;flex-direction:column;align-items:flex-end;gap:2px;}
 .timer-label{font-size:9px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;}
-.timer-value{
-  font-family:'Unbounded',sans-serif;font-size:13px;font-weight:700;
-  color:var(--accent);letter-spacing:2px;
-}
-.ekb-label{font-size:9px;color:var(--muted);letter-spacing:1px;}
-.ekb-val{color:var(--muted2);font-size:9px;}
+.timer-value{font-family:'Unbounded',sans-serif;font-size:13px;font-weight:700;color:var(--accent);letter-spacing:2px;}
+.ekb-small{font-size:9px;color:var(--muted);}
+.ekb-small span{color:var(--muted2);}
 
 /* STATUS BAR */
-#status-bar{
-  position:fixed;top:64px;left:0;right:0;z-index:190;
-  padding:8px 40px;
-  background:rgba(12,12,12,0.9);
-  backdrop-filter:blur(10px);
-  border-bottom:1px solid var(--border);
-  display:flex;align-items:center;justify-content:center;gap:8px;
-  font-size:11px;color:var(--muted);letter-spacing:1px;
-}
-#status-bar.hidden{display:none;}
-.status-dot{width:6px;height:6px;border-radius:50%;background:var(--green);animation:pulse-dot 2s ease-in-out infinite;}
-@keyframes pulse-dot{0%,100%{opacity:1;transform:scale(1)}50%{opacity:0.5;transform:scale(0.8)}}
+#status-bar{position:fixed;top:64px;left:0;right:0;z-index:190;padding:6px 40px;background:rgba(8,8,8,0.95);backdrop-filter:blur(10px);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:center;gap:8px;font-size:11px;color:var(--muted);letter-spacing:1px;transition:opacity 0.5s,transform 0.5s;}
+#status-bar.hidden{opacity:0;pointer-events:none;transform:translateY(-100%);}
+.sdot{width:6px;height:6px;border-radius:50%;background:var(--green);animation:pdot 2s ease-in-out infinite;flex-shrink:0;}
+.sdot.err{background:var(--red);}
+@keyframes pdot{0%,100%{opacity:1}50%{opacity:0.4}}
 
 /* MAIN */
-main{
-  padding-top:110px;
-  padding-bottom:100px;
-  max-width:960px;margin:0 auto;
-  padding-left:40px;padding-right:40px;
-  position:relative;z-index:1;
-}
+main{padding-top:100px;padding-bottom:100px;max-width:960px;margin:0 auto;padding-left:40px;padding-right:40px;position:relative;z-index:1;}
 
 /* HERO */
-.hero{margin-bottom:60px;padding-top:20px;}
-.hero-eyebrow{
-  font-size:11px;color:var(--muted);
-  letter-spacing:4px;text-transform:uppercase;
-  margin-bottom:20px;
-  display:flex;align-items:center;gap:12px;
-}
-.hero-eyebrow::before{content:'';flex:1;max-width:40px;height:1px;background:var(--border2);}
-.hero-title{
-  font-family:'Unbounded',sans-serif;
-  font-size:clamp(32px,6vw,64px);
-  font-weight:900;line-height:1.05;
-  color:#fff;margin-bottom:20px;
-  letter-spacing:-2px;
-}
-.hero-title span{color:var(--accent);}
-.hero-sub{font-size:15px;color:var(--muted2);line-height:1.7;max-width:480px;}
+.hero{margin-bottom:56px;padding-top:28px;}
+.hero-eyebrow{font-size:11px;color:var(--muted);letter-spacing:4px;text-transform:uppercase;margin-bottom:20px;display:flex;align-items:center;gap:12px;}
+.hero-eyebrow::before{content:'';flex:none;width:32px;height:1px;background:var(--border2);}
+.hero-title{font-family:'Unbounded',sans-serif;font-size:clamp(30px,6vw,60px);font-weight:900;line-height:1.05;color:#fff;margin-bottom:18px;letter-spacing:-2px;}
+.hero-title .hl{color:var(--accent);}
+.hero-sub{font-size:15px;color:var(--muted2);line-height:1.75;max-width:460px;}
 
 /* REVEALS */
-.reveal-wrapper{
-  border-radius:20px;overflow:hidden;
-  margin-bottom:48px;
-  border:1px solid var(--border);
-  animation:revealIn 0.8s cubic-bezier(0.16,1,0.3,1) both;
-}
-@keyframes revealIn{
-  from{opacity:0;transform:translateY(32px) scale(0.97)}
-  to{opacity:1;transform:translateY(0) scale(1)}
-}
-.reveal-wrapper.day17{border-color:rgba(200,169,110,0.3);}
-.reveal-wrapper.day23{border-color:rgba(74,222,128,0.3);}
+.rev-card{border-radius:20px;overflow:hidden;margin-bottom:44px;border:1px solid var(--border);animation:revIn 0.7s cubic-bezier(0.16,1,0.3,1) both;position:relative;}
+@keyframes revIn{from{opacity:0;transform:translateY(28px) scale(0.98)}to{opacity:1;transform:translateY(0) scale(1)}}
+.rev-card.gold{border-color:rgba(200,169,110,0.25);box-shadow:0 0 40px rgba(200,169,110,0.06);}
+.rev-card.green{border-color:rgba(74,222,128,0.2);box-shadow:0 0 40px rgba(74,222,128,0.05);}
+.rev-img{position:relative;overflow:hidden;background:var(--card2);}
+.rev-img img{width:100%;display:block;object-fit:cover;max-height:500px;}
+.rev-img-ph{height:200px;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:10px;}
+.rev-img-ph span:first-child{font-size:48px;opacity:0.35;}
+.rev-img-ph span:last-child{font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);opacity:0.6;}
+.rev-grad{position:absolute;bottom:0;left:0;right:0;height:50%;background:linear-gradient(transparent,rgba(8,8,8,0.85));pointer-events:none;}
+.rev-body{padding:28px 32px;background:var(--card);}
+.rev-badge{display:inline-flex;align-items:center;gap:6px;font-size:10px;letter-spacing:3px;text-transform:uppercase;font-weight:700;padding:5px 12px;border-radius:20px;margin-bottom:14px;}
+.badge-gold{background:rgba(200,169,110,0.12);color:var(--accent);border:1px solid rgba(200,169,110,0.2);}
+.badge-green{background:rgba(74,222,128,0.08);color:var(--green);border:1px solid rgba(74,222,128,0.15);}
+.rev-body h2{font-family:'Unbounded',sans-serif;font-size:clamp(18px,3vw,28px);font-weight:900;color:#fff;margin-bottom:8px;line-height:1.2;}
+.rev-body p{font-size:14px;color:var(--muted2);line-height:1.7;}
+.rev-close{position:absolute;top:14px;right:14px;width:36px;height:36px;border-radius:50%;background:rgba(0,0,0,0.65);border:1px solid rgba(255,255,255,0.12);color:#fff;cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;transition:all 0.2s;z-index:5;}
+.rev-close:hover{background:rgba(224,85,85,0.4);border-color:var(--red);}
 
-.reveal-img-wrap{position:relative;overflow:hidden;max-height:520px;}
-.reveal-img-wrap img{width:100%;display:block;object-fit:cover;}
-.reveal-overlay{
-  position:absolute;bottom:0;left:0;right:0;height:50%;
-  background:linear-gradient(transparent,rgba(0,0,0,0.8));
-}
+/* MSG CARD */
+.msg-card{background:linear-gradient(135deg,rgba(96,165,250,0.06),rgba(96,165,250,0.02));border:1px solid rgba(96,165,250,0.15);border-radius:16px;padding:24px 28px;margin-bottom:32px;display:none;}
+.msg-card.on{display:block;}
+.msg-label{font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--blue);margin-bottom:10px;font-weight:600;}
+.msg-text{font-size:15px;color:var(--text);line-height:1.75;}
 
-.reveal-body{padding:32px 36px;background:var(--card);}
-.reveal-badge{
-  display:inline-flex;align-items:center;gap:6px;
-  font-size:10px;letter-spacing:3px;text-transform:uppercase;font-weight:700;
-  padding:4px 12px;border-radius:20px;margin-bottom:16px;
-}
-.reveal-badge.gold{background:rgba(200,169,110,0.15);color:var(--accent);}
-.reveal-badge.green-b{background:rgba(74,222,128,0.1);color:var(--green);}
-.reveal-body h2{
-  font-family:'Unbounded',sans-serif;
-  font-size:clamp(20px,3vw,32px);font-weight:900;
-  color:#fff;margin-bottom:10px;line-height:1.2;
-}
-.reveal-body p{font-size:15px;color:var(--muted2);line-height:1.7;}
-.reveal-close{
-  position:absolute;top:16px;right:16px;
-  width:38px;height:38px;border-radius:50%;
-  background:rgba(0,0,0,0.7);
-  border:1px solid rgba(255,255,255,0.15);
-  color:#fff;cursor:pointer;font-size:16px;
-  display:flex;align-items:center;justify-content:center;
-  transition:all 0.2s;z-index:5;
-}
-.reveal-close:hover{background:rgba(224,85,85,0.3);border-color:var(--red);}
-
-/* MESSAGE CARD */
-.msg-card{
-  background:var(--card);
-  border:1px solid var(--border);
-  border-radius:16px;
-  padding:28px 32px;
-  margin-bottom:36px;
-  display:none;
-}
-.msg-card.visible{display:block;}
-.msg-card-label{font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--accent);margin-bottom:12px;font-weight:600;}
-.msg-card p{font-size:16px;color:var(--text);line-height:1.7;}
-
-/* CALENDAR SECTION */
-.cal-header{
-  display:flex;align-items:center;justify-content:space-between;
-  margin-bottom:20px;
-}
-.cal-title{font-family:'Unbounded',sans-serif;font-size:11px;letter-spacing:4px;text-transform:uppercase;color:var(--muted);}
-.cal-legend{display:flex;gap:16px;align-items:center;}
-.legend-item{display:flex;align-items:center;gap:6px;font-size:10px;color:var(--muted);}
-.legend-dot{width:8px;height:8px;border-radius:2px;}
-.legend-dot.crossed-dot{background:var(--red);}
-.legend-dot.today-dot{background:var(--accent);}
-
-/* Weekday headers */
-.cal-weekdays{
-  display:grid;grid-template-columns:repeat(7,1fr);gap:6px;
-  margin-bottom:6px;
-}
-.cal-weekday{
-  text-align:center;font-size:9px;letter-spacing:1px;
-  text-transform:uppercase;color:var(--muted);
-  padding:6px 0;font-weight:600;
-}
-
-.calendar-grid{
-  display:grid;grid-template-columns:repeat(7,1fr);gap:6px;
-  margin-bottom:60px;
-}
-
-.day-cell{
-  aspect-ratio:1;
-  display:flex;align-items:center;justify-content:center;
-  border:1px solid var(--border);border-radius:10px;
-  font-family:'Unbounded',sans-serif;font-size:12px;font-weight:700;
-  position:relative;overflow:hidden;
-  transition:all 0.25s cubic-bezier(0.16,1,0.3,1);
-  user-select:none;
-}
+/* CALENDAR */
+.cal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;}
+.cal-title-txt{font-family:'Unbounded',sans-serif;font-size:11px;letter-spacing:4px;text-transform:uppercase;color:var(--muted);}
+.cal-legend{display:flex;gap:14px;}
+.leg-item{display:flex;align-items:center;gap:5px;font-size:10px;color:var(--muted);}
+.leg-dot{width:8px;height:8px;border-radius:2px;}
+.leg-cross{background:var(--red);}
+.leg-today{background:var(--accent);}
+.cal-weekdays{display:grid;grid-template-columns:repeat(7,1fr);gap:5px;margin-bottom:5px;}
+.cal-wd{text-align:center;font-size:9px;letter-spacing:1px;text-transform:uppercase;color:var(--muted);padding:5px 0;font-weight:600;}
+.calendar-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:5px;margin-bottom:56px;}
+.day-cell{aspect-ratio:1;display:flex;align-items:center;justify-content:center;border:1px solid var(--border);border-radius:10px;font-family:'Unbounded',sans-serif;font-size:12px;font-weight:700;position:relative;overflow:hidden;transition:all 0.2s;user-select:none;}
 .day-cell.empty{border-color:transparent;background:transparent;}
 .day-cell.future{color:var(--muted);background:var(--surface);}
 .day-cell.future:hover{border-color:var(--border2);color:var(--muted2);}
-.day-cell.today{
-  background:rgba(200,169,110,0.08);
-  border-color:var(--accent);color:var(--accent);
-  box-shadow:0 0 20px rgba(200,169,110,0.12);
-  animation:todayPulse 2.5s ease-in-out infinite;
-}
-@keyframes todayPulse{
-  0%,100%{box-shadow:0 0 12px rgba(200,169,110,0.1)}
-  50%{box-shadow:0 0 28px rgba(200,169,110,0.25)}
-}
-.day-cell.crossed{
-  background:rgba(224,85,85,0.08);
-  border-color:rgba(224,85,85,0.4);color:var(--red);
-}
-.day-cell.crossed::after{
-  content:'';position:absolute;
-  top:50%;left:50%;
-  width:130%;height:1.5px;
-  background:linear-gradient(90deg,transparent,var(--red),transparent);
-  transform:translate(-50%,-50%) rotate(-35deg);
-  opacity:0.7;
-}
+.day-cell.today{background:rgba(200,169,110,0.07);border-color:var(--accent);color:var(--accent);animation:tpulse 2.5s ease-in-out infinite;}
+@keyframes tpulse{0%,100%{box-shadow:0 0 10px rgba(200,169,110,0.08)}50%{box-shadow:0 0 24px rgba(200,169,110,0.22)}}
+.day-cell.crossed{background:rgba(224,85,85,0.06);border-color:rgba(224,85,85,0.35);color:rgba(224,85,85,0.7);}
+.day-cell.crossed::after{content:'';position:absolute;top:50%;left:50%;width:130%;height:1.5px;background:linear-gradient(90deg,transparent,var(--red),transparent);transform:translate(-50%,-50%) rotate(-35deg);opacity:0.65;}
 
-/* EKB CLOCK */
-.ekb-footer{
-  text-align:center;margin-top:0;margin-bottom:20px;
-  display:flex;flex-direction:column;align-items:center;gap:6px;
-}
-.ekb-footer-label{font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--muted);}
-.ekb-footer-time{
-  font-family:'Unbounded',sans-serif;font-size:28px;font-weight:900;
-  color:var(--accent);letter-spacing:4px;
-}
+/* EKB FOOTER */
+.ekb-foot{text-align:center;margin-bottom:24px;display:flex;flex-direction:column;align-items:center;gap:5px;}
+.ekb-foot-lbl{font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--muted);}
+.ekb-foot-time{font-family:'Unbounded',sans-serif;font-size:32px;font-weight:900;color:var(--accent);letter-spacing:4px;}
 
 /* SECRET TRIGGER */
-#secret-trigger{
-  position:fixed;bottom:0;right:0;
-  width:60px;height:60px;z-index:9000;cursor:default;
-}
+#secret-trigger{position:fixed;bottom:0;right:0;width:60px;height:60px;z-index:9000;}
 
-/* LOGIN PANEL */
-#secret-panel{
-  position:fixed;inset:0;background:rgba(0,0,0,0.97);
-  z-index:9999;display:none;align-items:center;justify-content:center;
-  backdrop-filter:blur(30px);
-}
+/* LOGIN */
+#secret-panel{position:fixed;inset:0;background:rgba(0,0,0,0.97);z-index:9999;display:none;align-items:center;justify-content:center;backdrop-filter:blur(32px);}
 #secret-panel.active{display:flex;}
-
-.login-box{
-  width:380px;
-  background:var(--card);
-  border:1px solid var(--border2);
-  border-radius:24px;
-  padding:48px;
-  position:relative;
-}
-.login-box::before{
-  content:'';position:absolute;top:0;left:50%;transform:translateX(-50%);
-  width:60%;height:1px;
-  background:linear-gradient(90deg,transparent,var(--accent),transparent);
-}
-.login-icon{
-  width:52px;height:52px;border-radius:14px;
-  background:rgba(200,169,110,0.1);
-  border:1px solid rgba(200,169,110,0.2);
-  display:flex;align-items:center;justify-content:center;
-  font-size:22px;margin-bottom:24px;
-}
+.login-box{width:380px;background:var(--card);border:1px solid var(--border2);border-radius:24px;padding:48px;position:relative;}
+.login-box::before{content:'';position:absolute;top:0;left:50%;transform:translateX(-50%);width:55%;height:1px;background:linear-gradient(90deg,transparent,var(--accent),transparent);}
+.login-icon{width:52px;height:52px;border-radius:14px;background:rgba(200,169,110,0.1);border:1px solid rgba(200,169,110,0.2);display:flex;align-items:center;justify-content:center;font-size:22px;margin-bottom:22px;}
 .login-box h2{font-family:'Unbounded',sans-serif;font-size:18px;font-weight:900;color:#fff;margin-bottom:4px;}
-.login-box .login-sub{font-size:12px;color:var(--muted);margin-bottom:28px;}
-.login-field{margin-bottom:14px;}
-.login-field label{display:block;font-size:10px;letter-spacing:2px;color:var(--muted);text-transform:uppercase;margin-bottom:7px;font-weight:600;}
-.login-field input{
-  width:100%;padding:14px 16px;
-  background:rgba(255,255,255,0.04);
-  border:1px solid var(--border2);border-radius:10px;
-  color:#fff;font-family:'Inter',sans-serif;font-size:14px;
-  outline:none;transition:border-color 0.2s,background 0.2s;
-}
-.login-field input:focus{border-color:var(--accent);background:rgba(200,169,110,0.04);}
-.login-btn{
-  width:100%;padding:15px;
-  background:linear-gradient(135deg,var(--accent),var(--accent2));
-  border:none;border-radius:10px;color:#000;
-  font-family:'Unbounded',sans-serif;font-size:11px;font-weight:900;
-  letter-spacing:2px;cursor:pointer;margin-top:8px;
-  transition:opacity 0.2s,transform 0.1s;
-}
+.login-sub{font-size:12px;color:var(--muted);margin-bottom:26px;}
+.lf{margin-bottom:13px;}
+.lf label{display:block;font-size:10px;letter-spacing:2px;color:var(--muted);text-transform:uppercase;margin-bottom:7px;font-weight:600;}
+.lf input{width:100%;padding:13px 15px;background:rgba(255,255,255,0.04);border:1px solid var(--border2);border-radius:10px;color:#fff;font-family:'Inter',sans-serif;font-size:14px;outline:none;transition:border-color 0.2s,background 0.2s;}
+.lf input:focus{border-color:var(--accent);background:rgba(200,169,110,0.04);}
+.login-btn{width:100%;padding:14px;background:linear-gradient(135deg,var(--accent),var(--accent2));border:none;border-radius:10px;color:#000;font-family:'Unbounded',sans-serif;font-size:11px;font-weight:900;letter-spacing:2px;cursor:pointer;margin-top:8px;transition:opacity 0.2s,transform 0.1s;}
 .login-btn:hover{opacity:0.9;transform:translateY(-1px);}
 .login-btn:active{transform:translateY(0);}
-.login-error{color:var(--red2);font-size:12px;margin-top:10px;display:none;}
-.close-panel{
-  position:absolute;top:20px;right:20px;
-  background:none;border:1px solid var(--border);
-  color:var(--muted);width:32px;height:32px;
-  border-radius:50%;cursor:pointer;font-size:15px;
-  display:flex;align-items:center;justify-content:center;transition:all 0.2s;
-}
-.close-panel:hover{border-color:var(--text);color:var(--text);}
+.login-err{color:var(--red2);font-size:12px;margin-top:10px;display:none;}
+.cp{position:absolute;top:18px;right:18px;background:none;border:1px solid var(--border);color:var(--muted);width:32px;height:32px;border-radius:50%;cursor:pointer;font-size:15px;display:flex;align-items:center;justify-content:center;transition:all 0.2s;}
+.cp:hover{border-color:var(--text);color:var(--text);}
 
-/* ADMIN PANEL */
-#admin-panel{
-  position:fixed;inset:0;background:var(--bg);
-  z-index:9997;display:none;flex-direction:column;overflow-y:auto;
-}
+/* ADMIN */
+#admin-panel{position:fixed;inset:0;background:var(--bg);z-index:9997;display:none;flex-direction:column;overflow-y:auto;}
 #admin-panel.active{display:flex;}
+.adm-top{padding:0 40px;height:64px;display:flex;align-items:center;justify-content:space-between;background:var(--surface);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:10;flex-shrink:0;}
+.adm-brand{font-family:'Unbounded',sans-serif;font-size:11px;font-weight:900;color:var(--accent);letter-spacing:4px;text-transform:uppercase;display:flex;align-items:center;gap:8px;}
+.adm-right{display:flex;align-items:center;gap:12px;}
+.sync-badge{display:inline-flex;align-items:center;gap:5px;font-size:10px;color:var(--green);opacity:0;transition:opacity 0.3s;letter-spacing:1px;}
+.sync-badge.on{opacity:1;}
+.sync-d{width:5px;height:5px;border-radius:50%;background:var(--green);}
+.adm-close{background:none;border:1px solid var(--border);color:var(--muted);padding:8px 16px;border-radius:8px;cursor:pointer;font-size:12px;font-family:'Inter',sans-serif;transition:all 0.2s;}
+.adm-close:hover{border-color:var(--red);color:var(--red);}
+.adm-body{padding:32px 40px;max-width:840px;width:100%;margin:0 auto;display:flex;flex-direction:column;gap:20px;}
 
-.admin-topbar{
-  padding:0 40px;height:64px;
-  display:flex;align-items:center;justify-content:space-between;
-  background:var(--surface);
-  border-bottom:1px solid var(--border);
-  position:sticky;top:0;z-index:10;
-  flex-shrink:0;
-}
-.admin-brand{
-  font-family:'Unbounded',sans-serif;font-size:11px;font-weight:900;
-  color:var(--accent);letter-spacing:4px;text-transform:uppercase;
-  display:flex;align-items:center;gap:10px;
-}
-.admin-brand-icon{font-size:16px;}
-.admin-close-btn{
-  background:none;border:1px solid var(--border);color:var(--muted);
-  padding:8px 18px;border-radius:8px;cursor:pointer;
-  font-family:'Inter',sans-serif;font-size:12px;transition:all 0.2s;
-}
-.admin-close-btn:hover{border-color:var(--red);color:var(--red);}
+/* ADMIN CARDS */
+.ac{background:var(--card);border:1px solid var(--border);border-radius:16px;overflow:hidden;}
+.ac-head{padding:18px 24px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px;}
+.ac-icon{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;}
+.i-gold{background:rgba(200,169,110,0.12);}
+.i-blue{background:rgba(96,165,250,0.1);}
+.i-green{background:rgba(74,222,128,0.08);}
+.i-red{background:rgba(224,85,85,0.08);}
+.ac-label{font-family:'Unbounded',sans-serif;font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--text);}
+.ac-sub{font-size:11px;color:var(--muted);margin-top:2px;}
+.ac-body{padding:22px 24px;}
+.hint-box{font-size:12px;color:var(--muted);line-height:1.65;padding:11px 14px;background:rgba(255,255,255,0.025);border-radius:8px;border-left:2px solid var(--border2);margin-bottom:18px;}
 
-.admin-body{
-  padding:40px;max-width:840px;width:100%;margin:0 auto;
-  display:flex;flex-direction:column;gap:32px;
-}
+/* ADMIN DAYS GRID */
+.days-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(50px,1fr));gap:7px;}
+.day-btn{aspect-ratio:1;border:1px solid var(--border);border-radius:10px;display:flex;align-items:center;justify-content:center;font-family:'Unbounded',sans-serif;font-size:12px;font-weight:700;cursor:pointer;transition:all 0.18s;color:var(--muted);background:var(--surface);position:relative;overflow:hidden;user-select:none;}
+.day-btn:hover{border-color:var(--accent);color:var(--accent);background:rgba(200,169,110,0.06);}
+.day-btn.crossed{background:rgba(224,85,85,0.08);border-color:rgba(224,85,85,0.4);color:var(--red);}
+.day-btn.crossed::after{content:'';position:absolute;top:50%;left:50%;width:130%;height:1.5px;background:var(--red);transform:translate(-50%,-50%) rotate(-35deg);opacity:0.55;}
+.day-btn.is-auto{position:relative;}
+.day-btn.is-auto::before{content:'A';position:absolute;top:3px;right:4px;font-size:7px;opacity:0.4;font-family:'Inter',sans-serif;font-weight:600;}
 
-.admin-card{
-  background:var(--card);
-  border:1px solid var(--border);
-  border-radius:16px;overflow:hidden;
-}
-.admin-card-header{
-  padding:20px 24px;
-  border-bottom:1px solid var(--border);
-  display:flex;align-items:center;gap:10px;
-}
-.admin-card-icon{
-  width:36px;height:36px;border-radius:10px;
-  display:flex;align-items:center;justify-content:center;font-size:16px;
-}
-.icon-gold{background:rgba(200,169,110,0.15);}
-.icon-red{background:rgba(224,85,85,0.1);}
-.icon-green{background:rgba(74,222,128,0.1);}
-.icon-blue{background:rgba(96,165,250,0.1);}
-.admin-card-title{font-family:'Unbounded',sans-serif;font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--text);}
-.admin-card-body{padding:24px;}
+.act-row{display:flex;flex-wrap:wrap;gap:8px;margin-top:18px;align-items:center;}
+.adm-st{font-size:11px;min-height:16px;color:var(--green);transition:color 0.3s;}
 
-.admin-hint{font-size:12px;color:var(--muted);margin-bottom:20px;line-height:1.6;padding:12px 14px;background:rgba(255,255,255,0.03);border-radius:8px;border-left:2px solid var(--border2);}
+.btn{padding:10px 20px;border-radius:8px;cursor:pointer;font-family:'Unbounded',sans-serif;font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;transition:all 0.18s;border:1px solid transparent;}
+.btn-prim{background:var(--accent);color:#000;border-color:var(--accent);}
+.btn-prim:hover{background:var(--accent2);border-color:var(--accent2);}
+.btn-red{background:transparent;color:var(--red);border-color:rgba(224,85,85,0.3);}
+.btn-red:hover{background:rgba(224,85,85,0.1);border-color:var(--red);}
+.btn-warn{background:transparent;color:#e0a840;border-color:rgba(224,168,64,0.3);}
+.btn-warn:hover{background:rgba(224,168,64,0.1);border-color:#e0a840;}
 
-/* DAYS GRID IN ADMIN */
-.days-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(52px,1fr));gap:8px;}
-.day-btn{
-  aspect-ratio:1;border:1px solid var(--border);border-radius:10px;
-  display:flex;align-items:center;justify-content:center;
-  font-family:'Unbounded',sans-serif;font-size:12px;font-weight:700;
-  cursor:pointer;transition:all 0.2s;color:var(--muted);background:var(--surface);
-  position:relative;overflow:hidden;
-}
-.day-btn:hover{border-color:var(--accent);color:var(--accent);background:rgba(200,169,110,0.05);}
-.day-btn.is-crossed{
-  background:rgba(224,85,85,0.1);
-  border-color:rgba(224,85,85,0.5);color:var(--red);
-}
-.day-btn.is-crossed::after{
-  content:'';position:absolute;top:50%;left:50%;
-  width:130%;height:1.5px;
-  background:var(--red);
-  transform:translate(-50%,-50%) rotate(-35deg);opacity:0.6;
-}
-.day-btn.is-auto{opacity:0.7;}
-.day-btn.is-auto:hover{opacity:1;}
+.adm-textarea{width:100%;padding:13px 15px;min-height:90px;resize:vertical;background:rgba(255,255,255,0.03);border:1px solid var(--border2);border-radius:10px;color:var(--text);font-family:'Inter',sans-serif;font-size:14px;line-height:1.65;outline:none;transition:border-color 0.2s;}
+.adm-textarea:focus{border-color:var(--accent);}
+.adm-input{width:100%;padding:11px 14px;margin-bottom:10px;background:rgba(255,255,255,0.03);border:1px solid var(--border2);border-radius:9px;color:var(--text);font-family:'Inter',sans-serif;font-size:14px;outline:none;transition:border-color 0.2s;}
+.adm-input:focus{border-color:var(--accent);}
 
-.admin-actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:20px;}
-
-.btn{
-  padding:11px 22px;border-radius:9px;cursor:pointer;
-  font-family:'Unbounded',sans-serif;font-size:10px;font-weight:700;
-  letter-spacing:1.5px;text-transform:uppercase;transition:all 0.2s;
-  border:1px solid transparent;
-}
-.btn-primary{background:var(--accent);color:#000;border-color:var(--accent);}
-.btn-primary:hover{background:var(--accent2);border-color:var(--accent2);}
-.btn-outline{background:transparent;color:var(--accent);border-color:rgba(200,169,110,0.3);}
-.btn-outline:hover{background:rgba(200,169,110,0.1);border-color:var(--accent);}
-.btn-danger{background:transparent;color:var(--red);border-color:rgba(224,85,85,0.3);}
-.btn-danger:hover{background:rgba(224,85,85,0.1);border-color:var(--red);}
-.btn-ghost{background:rgba(255,255,255,0.04);color:var(--muted);border-color:var(--border);}
-.btn-ghost:hover{background:rgba(255,255,255,0.08);color:var(--text);}
-
-.admin-textarea{
-  width:100%;padding:14px 16px;min-height:100px;resize:vertical;
-  background:rgba(255,255,255,0.04);border:1px solid var(--border2);
-  border-radius:10px;color:var(--text);font-family:'Inter',sans-serif;
-  font-size:14px;line-height:1.6;outline:none;transition:border-color 0.2s;
-}
-.admin-textarea:focus{border-color:var(--accent);}
-.admin-input{
-  width:100%;padding:12px 14px;margin-bottom:10px;
-  background:rgba(255,255,255,0.04);border:1px solid var(--border2);
-  border-radius:9px;color:var(--text);font-family:'Inter',sans-serif;
-  font-size:14px;outline:none;transition:border-color 0.2s;
-}
-.admin-input:focus{border-color:var(--accent);}
-
-.admin-status{
-  font-size:12px;min-height:18px;margin-top:10px;
-  transition:color 0.3s;color:var(--green);
-}
-
-/* TEST MODE cards */
-.test-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
-.test-card{
-  padding:16px;border-radius:12px;border:1px solid var(--border);
-  background:var(--surface);cursor:pointer;transition:all 0.2s;
-  text-align:center;
-}
-.test-card:hover{border-color:var(--accent);background:rgba(200,169,110,0.05);}
-.test-card-num{font-family:'Unbounded',sans-serif;font-size:28px;font-weight:900;color:var(--accent);margin-bottom:4px;}
-.test-card-label{font-size:10px;color:var(--muted);letter-spacing:1px;}
+.test-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:4px;}
+.test-tile{padding:18px;border-radius:12px;border:1px solid var(--border);background:var(--surface);cursor:pointer;transition:all 0.2s;text-align:center;}
+.test-tile:hover{border-color:var(--accent);background:rgba(200,169,110,0.05);}
+.test-num{font-family:'Unbounded',sans-serif;font-size:30px;font-weight:900;color:var(--accent);margin-bottom:4px;}
+.test-lbl{font-size:10px;color:var(--muted);letter-spacing:1px;}
 
 /* TEST BANNER */
-#test-banner{
-  display:none;position:fixed;bottom:24px;left:50%;transform:translateX(-50%);
-  background:rgba(200,169,110,0.15);
-  border:1px solid rgba(200,169,110,0.4);
-  backdrop-filter:blur(10px);
-  border-radius:50px;padding:10px 24px;
-  font-family:'Unbounded',sans-serif;font-size:10px;
-  color:var(--accent);letter-spacing:2px;z-index:500;cursor:pointer;
-  white-space:nowrap;
-  animation:floatUp 0.5s cubic-bezier(0.16,1,0.3,1);
-}
-@keyframes floatUp{from{opacity:0;transform:translateX(-50%) translateY(20px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
-#test-banner.show{display:block;}
+#test-banner{display:none;position:fixed;bottom:22px;left:50%;transform:translateX(-50%);background:rgba(200,169,110,0.14);border:1px solid rgba(200,169,110,0.35);backdrop-filter:blur(12px);border-radius:50px;padding:9px 22px;font-family:'Unbounded',sans-serif;font-size:10px;color:var(--accent);letter-spacing:2px;z-index:500;cursor:pointer;white-space:nowrap;}
+#test-banner.on{display:block;animation:fup 0.4s cubic-bezier(0.16,1,0.3,1);}
+@keyframes fup{from{opacity:0;transform:translateX(-50%) translateY(16px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
 
-/* LOADING STATE */
-#loading{
-  position:fixed;inset:0;background:var(--bg);z-index:10000;
-  display:flex;align-items:center;justify-content:center;flex-direction:column;gap:16px;
-}
-.loading-spinner{
-  width:40px;height:40px;border:2px solid var(--border);
-  border-top-color:var(--accent);border-radius:50%;
-  animation:spin 0.8s linear infinite;
-}
-@keyframes spin{to{transform:rotate(360deg)}}
-.loading-text{font-family:'Unbounded',sans-serif;font-size:10px;color:var(--muted);letter-spacing:3px;}
-
-/* SYNC INDICATOR */
-.sync-badge{
-  display:inline-flex;align-items:center;gap:4px;
-  font-size:10px;color:var(--green);opacity:0;
-  transition:opacity 0.3s;
-}
-.sync-badge.show{opacity:1;}
-.sync-dot{width:5px;height:5px;border-radius:50%;background:var(--green);}
-
-::-webkit-scrollbar{width:5px;}
-::-webkit-scrollbar-track{background:var(--bg);}
-::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px;}
-::-webkit-scrollbar-thumb:hover{background:var(--border2);}
-
-@media(max-width:600px){
-  header{padding:0 20px;}
-  main{padding-left:20px;padding-right:20px;}
-  .admin-body{padding:20px;}
-  .test-grid{grid-template-columns:1fr;}
-  .hero-title{font-size:clamp(26px,8vw,40px);}
-}
+::-webkit-scrollbar{width:5px;}::-webkit-scrollbar-track{background:var(--bg);}::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px;}
+@media(max-width:600px){header{padding:0 18px;}main{padding-left:18px;padding-right:18px;}.adm-body{padding:18px;}.adm-top{padding:0 18px;}.hero-title{font-size:clamp(26px,8vw,38px);}.test-grid{grid-template-columns:1fr;}.days-grid{grid-template-columns:repeat(auto-fill,minmax(42px,1fr));}}
 </style>
 </head>
 <body>
 
-<div id="loading">
-  <div class="loading-spinner"></div>
-  <div class="loading-text">ЗАГРУЗКА...</div>
-</div>
+<div id="loading"><div class="spinner"></div><div class="loading-txt">ЗАГРУЗКА</div></div>
 
 <header>
-  <div class="logo">???</div>
+  <div class="logo"><div class="logo-dot"></div>???</div>
   <div class="timer-area">
     <div class="timer-label">Следующее зачёркивание в 12:00 ЕКБ</div>
     <div class="timer-value" id="countdown">--:--:--</div>
-    <div class="ekb-label">Время ЕКБ: <span class="ekb-val" id="ekb-time-header">--:--</span></div>
+    <div class="ekb-small">ЕКБ: <span id="ekb-hdr">--:--</span></div>
   </div>
 </header>
 
 <div id="status-bar">
-  <div class="status-dot"></div>
-  <span id="status-text">Загрузка данных...</span>
+  <div class="sdot" id="sdot"></div>
+  <span id="stxt">Загрузка...</span>
 </div>
 
-<div id="secret-trigger" onclick="handleSecretClick()"></div>
+<div id="secret-trigger" onclick="secClick()"></div>
 
-<!-- LOGIN -->
 <div id="secret-panel">
   <div class="login-box">
-    <button class="close-panel" onclick="closeLogin()">&#10005;</button>
+    <button class="cp" onclick="closeLogin()">&#10005;</button>
     <div class="login-icon">&#128274;</div>
     <h2>Вход</h2>
     <p class="login-sub">Панель администратора</p>
-    <div class="login-field"><label>Логин</label><input type="text" id="login-user" autocomplete="off" placeholder="••••••••"></div>
-    <div class="login-field"><label>Пароль</label><input type="password" id="login-pass" placeholder="••••••••"></div>
+    <div class="lf"><label>Логин</label><input type="text" id="lu" autocomplete="off" placeholder="admin"></div>
+    <div class="lf"><label>Пароль</label><input type="password" id="lp" placeholder="&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;"></div>
     <button class="login-btn" onclick="tryLogin()">ВОЙТИ</button>
-    <div class="login-error" id="login-error">Неверный логин или пароль</div>
+    <div class="login-err" id="lerr">&#10005; Неверный логин или пароль</div>
   </div>
 </div>
 
-<!-- ADMIN PANEL -->
 <div id="admin-panel">
-  <div class="admin-topbar">
-    <div class="admin-brand"><span class="admin-brand-icon">&#9881;</span>Панель Управления</div>
-    <div style="display:flex;align-items:center;gap:12px;">
-      <span class="sync-badge" id="sync-badge"><span class="sync-dot"></span> Синхронизировано</span>
-      <button class="admin-close-btn" onclick="closeAdmin()">&#10005; Закрыть</button>
+  <div class="adm-top">
+    <div class="adm-brand">&#9881; Управление</div>
+    <div class="adm-right">
+      <span class="sync-badge" id="sync-badge"><span class="sync-d"></span>Сохранено в Supabase</span>
+      <button class="adm-close" onclick="closeAdmin()">&#10005; Закрыть</button>
     </div>
   </div>
-  <div class="admin-body">
+  <div class="adm-body">
 
-    <!-- CALENDAR CONTROL -->
-    <div class="admin-card">
-      <div class="admin-card-header">
-        <div class="admin-card-icon icon-gold">&#128197;</div>
+    <div class="ac">
+      <div class="ac-head">
+        <div class="ac-icon i-gold">&#128197;</div>
         <div>
-          <div class="admin-card-title">Управление числами — Июнь 2026</div>
+          <div class="ac-label">Числа — Июнь 2026</div>
+          <div class="ac-sub">Нажимай на число чтобы зачеркнуть или убрать</div>
         </div>
       </div>
-      <div class="admin-card-body">
-        <div class="admin-hint">
-          &#9432; Числа до сегодня зачёркиваются <strong>автоматически</strong> в 12:00 ЕКБ для всех.
-          Нажми на число чтобы добавить или убрать зачёркивание вручную. Сохраняется в Supabase — видят все!
-        </div>
-        <div class="days-grid" id="admin-days-grid"></div>
-        <div class="admin-actions">
-          <button class="btn btn-primary" onclick="saveDaysToSupabase()">&#10003; Сохранить в базу</button>
-          <button class="btn btn-danger" onclick="clearManualDays()">&#8635; Сбросить ручные</button>
-          <span class="admin-status" id="days-status"></span>
-        </div>
-      </div>
-    </div>
-
-    <!-- MESSAGE -->
-    <div class="admin-card">
-      <div class="admin-card-header">
-        <div class="admin-card-icon icon-blue">&#128172;</div>
-        <div><div class="admin-card-title">Сообщение для друзей</div></div>
-      </div>
-      <div class="admin-card-body">
-        <textarea class="admin-textarea" id="admin-msg" placeholder="Напиши что-то для друзей..."></textarea>
-        <div class="admin-actions">
-          <button class="btn btn-primary" onclick="saveMessage()">&#10003; Сохранить</button>
-          <button class="btn btn-danger" onclick="clearMessage()">&#128465; Удалить сообщение</button>
-          <span class="admin-status" id="msg-status"></span>
+      <div class="ac-body">
+        <div class="hint-box">&#9432; <strong>A</strong> = авто (зачёркнуто по времени ЕКБ для всех). Остальные — ручные. Нажми любое число для переключения. Не забудь нажать <strong>Сохранить</strong>!</div>
+        <div class="days-grid" id="adm-days"></div>
+        <div class="act-row">
+          <button class="btn btn-prim" onclick="saveDays()">&#10003; Сохранить в Supabase</button>
+          <button class="btn btn-red" onclick="clearManual()">&#8635; Сбросить ручные</button>
+          <span class="adm-st" id="dstat"></span>
         </div>
       </div>
     </div>
 
-    <!-- TEST MODE -->
-    <div class="admin-card">
-      <div class="admin-card-header">
-        <div class="admin-card-icon icon-green">&#129514;</div>
-        <div><div class="admin-card-title">Тест-режим</div></div>
+    <div class="ac">
+      <div class="ac-head">
+        <div class="ac-icon i-blue">&#128172;</div>
+        <div>
+          <div class="ac-label">Сообщение для друзей</div>
+          <div class="ac-sub">Виден всем посетителям сайта</div>
+        </div>
       </div>
-      <div class="admin-card-body">
-        <div class="admin-hint">Симуляция определённой даты — видит только ты (хранится в браузере)</div>
+      <div class="ac-body">
+        <textarea class="adm-textarea" id="adm-msg" placeholder="Напиши что-нибудь для друзей..."></textarea>
+        <div class="act-row">
+          <button class="btn btn-prim" onclick="saveMsg()">&#10003; Сохранить</button>
+          <button class="btn btn-warn" onclick="clearMsg()">&#128465; Удалить</button>
+          <span class="adm-st" id="mstat"></span>
+        </div>
+      </div>
+    </div>
+
+    <div class="ac">
+      <div class="ac-head">
+        <div class="ac-icon i-green">&#129514;</div>
+        <div>
+          <div class="ac-label">Тест-режим</div>
+          <div class="ac-sub">Только твой браузер — друзья видят реальную дату</div>
+        </div>
+      </div>
+      <div class="ac-body">
         <div class="test-grid">
-          <div class="test-card" onclick="testDay(17)">
-            <div class="test-card-num">17</div>
-            <div class="test-card-label">Египет 🌴</div>
-          </div>
-          <div class="test-card" onclick="testDay(23)">
-            <div class="test-card-num">23</div>
-            <div class="test-card-label">Возвращение 🎉</div>
-          </div>
+          <div class="test-tile" onclick="setTest(17)"><div class="test-num">17</div><div class="test-lbl">&#127796; Египет</div></div>
+          <div class="test-tile" onclick="setTest(23)"><div class="test-num">23</div><div class="test-lbl">&#127881; Возвращение</div></div>
         </div>
-        <div class="admin-actions" style="margin-top:12px;">
-          <button class="btn btn-danger" onclick="resetTest()">&#10005; Сбросить тест</button>
-          <span class="admin-status" id="test-status"></span>
+        <div class="act-row" style="margin-top:12px;">
+          <button class="btn btn-red" onclick="resetTest()">&#10005; Сбросить тест</button>
+          <span class="adm-st" id="tstat"></span>
         </div>
       </div>
     </div>
 
-    <!-- CREDENTIALS -->
-    <div class="admin-card">
-      <div class="admin-card-header">
-        <div class="admin-card-icon icon-red">&#128274;</div>
-        <div><div class="admin-card-title">Логин и пароль</div></div>
+    <div class="ac">
+      <div class="ac-head">
+        <div class="ac-icon i-red">&#128274;</div>
+        <div>
+          <div class="ac-label">Логин и пароль</div>
+          <div class="ac-sub">Хранятся только в твоём браузере</div>
+        </div>
       </div>
-      <div class="admin-card-body">
-        <input class="admin-input" id="new-user" placeholder="Новый логин">
-        <input class="admin-input" id="new-pass" type="password" placeholder="Новый пароль">
-        <div class="admin-actions">
-          <button class="btn btn-primary" onclick="changeCredentials()">Сохранить</button>
-          <span class="admin-status" id="cred-status"></span>
+      <div class="ac-body">
+        <input class="adm-input" id="nu" placeholder="Новый логин">
+        <input class="adm-input" id="np" type="password" placeholder="Новый пароль">
+        <div class="act-row">
+          <button class="btn btn-prim" onclick="saveCreds()">Сохранить</button>
+          <span class="adm-st" id="cstat"></span>
         </div>
       </div>
     </div>
@@ -640,481 +314,460 @@ main{
   </div>
 </div>
 
-<!-- MAIN CONTENT -->
 <main>
   <div class="hero">
     <div class="hero-eyebrow">Июнь 2026 · Загадка</div>
-    <h1 class="hero-title">Что за <span>числа?</span><br>Зачем всё это?</h1>
-    <p class="hero-sub">Числа зачёркиваются каждый день в 12:00 по Екатеринбургу. Следи за сайтом...</p>
+    <h1 class="hero-title">Что за <span class="hl">числа?</span><br>Зачем всё это?</h1>
+    <p class="hero-sub">Каждый день в 12:00 по Екатеринбургу одно число зачёркивается. Следи за сайтом...</p>
   </div>
 
-  <!-- REVEAL 17 -->
-  <div id="photo-reveal" class="reveal-wrapper day17" style="display:none;position:relative;">
-    <div class="reveal-img-wrap">
-      <img id="reveal-img-17" src="" alt="17">
-      <div class="reveal-overlay"></div>
+  <div id="rev17" class="rev-card gold" style="display:none;">
+    <button class="rev-close" onclick="hideRev(17)">&#10005;</button>
+    <div class="rev-img" id="rev17-img-wrap">
+      <div class="rev-img-ph" id="rev17-ph"><span>&#127958;</span><span>Фото скоро появится</span></div>
+      <img id="img17" src="" alt="" style="display:none;" onload="this.style.display='block';document.getElementById('rev17-ph').style.display='none';">
+      <div class="rev-grad"></div>
     </div>
-    <button class="reveal-close" onclick="closeReveal17()">&#10005;</button>
-    <div class="reveal-body">
-      <div class="reveal-badge gold">&#9992; Это я!</div>
+    <div class="rev-body">
+      <div class="rev-badge badge-gold">&#9992; 17 Июня</div>
       <h2>Я в Египте &#127796;</h2>
       <p>Когда вернусь — вам покажет этот сайт. Следи за числами!</p>
     </div>
   </div>
 
-  <!-- REVEAL 23 -->
-  <div id="return-reveal" class="reveal-wrapper day23" style="display:none;position:relative;">
-    <div class="reveal-img-wrap">
-      <img id="reveal-img-23" src="" alt="23">
-      <div class="reveal-overlay"></div>
+  <div id="rev23" class="rev-card green" style="display:none;">
+    <button class="rev-close" onclick="hideRev(23)">&#10005;</button>
+    <div class="rev-img">
+      <img id="img23" src="" alt="">
+      <div class="rev-grad"></div>
     </div>
-    <button class="reveal-close" onclick="closeReveal23()">&#10005;</button>
-    <div class="reveal-body">
-      <div class="reveal-badge green-b">&#127881; Вернулся!</div>
+    <div class="rev-body">
+      <div class="rev-badge badge-green">&#127881; 23 Июня</div>
       <h2>Ребята, я скоро вернусь! &#127881;</h2>
-      <p id="return-text">Спасибо за ожидание!</p>
+      <p id="ret-txt">Спасибо за ожидание!</p>
     </div>
   </div>
 
-  <!-- MESSAGE FROM ADMIN -->
   <div id="msg-card" class="msg-card">
-    <div class="msg-card-label">&#128172; Сообщение</div>
-    <p id="msg-card-text"></p>
+    <div class="msg-label">&#128172; Сообщение</div>
+    <p id="msg-txt" class="msg-text"></p>
   </div>
 
-  <!-- CALENDAR -->
   <div class="cal-header">
-    <div class="cal-title">Июнь 2026</div>
+    <div class="cal-title-txt">Июнь 2026</div>
     <div class="cal-legend">
-      <div class="legend-item"><div class="legend-dot crossed-dot"></div>Прошедшие</div>
-      <div class="legend-item"><div class="legend-dot today-dot"></div>Сегодня</div>
+      <div class="leg-item"><div class="leg-dot leg-cross"></div>Прошли</div>
+      <div class="leg-item"><div class="leg-dot leg-today"></div>Сегодня</div>
     </div>
   </div>
-
   <div class="cal-weekdays">
-    <div class="cal-weekday">Пн</div>
-    <div class="cal-weekday">Вт</div>
-    <div class="cal-weekday">Ср</div>
-    <div class="cal-weekday">Чт</div>
-    <div class="cal-weekday">Пт</div>
-    <div class="cal-weekday">Сб</div>
-    <div class="cal-weekday">Вс</div>
+    <div class="cal-wd">Пн</div><div class="cal-wd">Вт</div><div class="cal-wd">Ср</div>
+    <div class="cal-wd">Чт</div><div class="cal-wd">Пт</div><div class="cal-wd">Сб</div><div class="cal-wd">Вс</div>
   </div>
+  <div class="calendar-grid" id="cal"></div>
 
-  <div class="calendar-grid" id="calendar"></div>
-
-  <div class="ekb-footer">
-    <div class="ekb-footer-label">Время в Екатеринбурге</div>
-    <div class="ekb-footer-time" id="ekb-big">--:--:--</div>
+  <div class="ekb-foot">
+    <div class="ekb-foot-lbl">Время в Екатеринбурге</div>
+    <div class="ekb-foot-time" id="ekb-big">--:--:--</div>
   </div>
 </main>
 
-<div id="test-banner" onclick="resetTest()">&#129514; ТЕСТ-РЕЖИМ · нажми чтобы сбросить</div>
+<div id="test-banner" onclick="resetTest()">&#129514; ТЕСТ-РЕЖИМ &middot; нажми чтобы сбросить</div>
 
 <script>
-// ============================================================
-// CONFIG
-// ============================================================
-const SUPABASE_URL = 'SUPA_URL';
-const SUPABASE_KEY = 'SUPA_KEY';
+// ══════════════════════════════════════════════════════
+// КОНФИГ — реальные значения вшиты при сборке
+// ══════════════════════════════════════════════════════
+const SB_URL  = '__SB_URL__';
+const SB_KEY  = '__SB_KEY__';
+const IMG17   = '__IMG17__';   // base64 или 'none'
+const IMG23   = '__IMG23__';   // base64
 
-const IMG_17 = 'IMG17HERE';
-const IMG_23 = 'IMG23HERE';
-
-// ============================================================
-// SUPABASE HELPERS
-// ============================================================
-async function supaFetch(path, method='GET', body=null) {
-  const opts = {
-    method,
-    headers: {
-      'apikey': SUPABASE_KEY,
-      'Authorization': 'Bearer ' + SUPABASE_KEY,
-      'Content-Type': 'application/json',
-      'Prefer': method==='POST' ? 'resolution=merge-duplicates,return=representation' : 'return=representation'
-    }
-  };
-  if (body) opts.body = JSON.stringify(body);
+// ══════════════════════════════════════════════════════
+// SUPABASE REST
+// ══════════════════════════════════════════════════════
+async function sbGet(table) {
   try {
-    const r = await fetch(SUPABASE_URL + '/rest/v1/' + path, opts);
-    if (!r.ok) { const t = await r.text(); console.error('Supabase error:', t); return null; }
-    const text = await r.text();
-    return text ? JSON.parse(text) : null;
-  } catch(e) { console.error('Fetch error:', e); return null; }
+    const r = await fetch(SB_URL+'/rest/v1/'+table+'?select=key,value', {
+      headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY}
+    });
+    if (!r.ok) return null;
+    return await r.json();
+  } catch(e) { return null; }
 }
 
-async function getSettings() {
-  const data = await supaFetch('site_settings?select=*');
-  if (!data) return {};
+async function sbUpsert(key, value) {
+  try {
+    const r = await fetch(SB_URL+'/rest/v1/site_settings', {
+      method:'POST',
+      headers:{
+        'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,
+        'Content-Type':'application/json',
+        'Prefer':'resolution=merge-duplicates,return=minimal'
+      },
+      body: JSON.stringify({key, value})
+    });
+    return r.ok;
+  } catch(e) { return false; }
+}
+
+async function loadSettings() {
+  const rows = await sbGet('site_settings');
+  if (!rows || !Array.isArray(rows)) return null;
   const obj = {};
-  data.forEach(row => { obj[row.key] = row.value; });
+  rows.forEach(r => { obj[r.key] = r.value; });
   return obj;
 }
 
-async function setSetting(key, value) {
-  return supaFetch('site_settings', 'POST', { key, value });
+// ══════════════════════════════════════════════════════
+// СОСТОЯНИЕ
+// ══════════════════════════════════════════════════════
+let S = {};          // данные из Supabase
+let mAdded = [];     // ручные добавленные (в админке)
+let mRemoved = [];   // ручные убранные (в админке)
+
+// ══════════════════════════════════════════════════════
+// ВРЕМЯ ЕКБ (UTC+5)
+// ══════════════════════════════════════════════════════
+function ekb() {
+  const n = new Date();
+  return new Date(n.getTime() + n.getTimezoneOffset()*60000 + 18000000);
+}
+const p2 = n => String(n).padStart(2,'0');
+
+function tick() {
+  const e = ekb();
+  document.getElementById('ekb-big').textContent = p2(e.getHours())+':'+p2(e.getMinutes())+':'+p2(e.getSeconds());
+  document.getElementById('ekb-hdr').textContent = p2(e.getHours())+':'+p2(e.getMinutes());
+  const nx = new Date(e);
+  if (e.getHours()>=12) nx.setDate(nx.getDate()+1);
+  nx.setHours(12,0,0,0);
+  const d=nx-e;
+  document.getElementById('countdown').textContent = p2(Math.floor(d/3600000))+':'+p2(Math.floor((d%3600000)/60000))+':'+p2(Math.floor((d%60000)/1000));
 }
 
-// ============================================================
-// CREDENTIALS (local only for security)
-// ============================================================
-function getCreds() {
-  return { user: localStorage.getItem('adm_u')||'admin', pass: localStorage.getItem('adm_p')||'egypt2026' };
+// ══════════════════════════════════════════════════════
+// ТЕСТ-РЕЖИМ И КОНТЕКСТ ДАТЫ
+// ══════════════════════════════════════════════════════
+function getTest() { return parseInt(localStorage.getItem('tday')||'0'); }
+
+function ctx() {
+  const td = getTest();
+  if (td > 0) return {day:td, hour:12, isJune:true};
+  const e = ekb();
+  return {day:e.getDate(), hour:e.getHours(), isJune:(e.getMonth()===5 && e.getFullYear()===2026)};
 }
 
-// ============================================================
-// EKB TIME
-// ============================================================
-function getEKB() {
-  const now = new Date();
-  return new Date(now.getTime() + now.getTimezoneOffset()*60000 + 5*3600000);
-}
-function pad(n){ return String(n).padStart(2,'0'); }
-
-function updateClocks() {
-  const ekb = getEKB();
-  const h=ekb.getHours(),m=ekb.getMinutes(),s=ekb.getSeconds();
-  document.getElementById('ekb-big').textContent = pad(h)+':'+pad(m)+':'+pad(s);
-  document.getElementById('ekb-time-header').textContent = pad(h)+':'+pad(m);
-  // countdown to next noon
-  const next = new Date(ekb);
-  if (h >= 12) next.setDate(next.getDate()+1);
-  next.setHours(12,0,0,0);
-  const diff = next - ekb;
-  const ch=Math.floor(diff/3600000), cm=Math.floor((diff%3600000)/60000), cs=Math.floor((diff%60000)/1000);
-  document.getElementById('countdown').textContent = pad(ch)+':'+pad(cm)+':'+pad(cs);
-}
-
-// ============================================================
-// WHICH DAYS ARE AUTO-CROSSED (same for ALL visitors)
-// ============================================================
-function getTestMode() { return parseInt(localStorage.getItem('test_day')||'0'); }
-
-function getEKBContext() {
-  const td = getTestMode();
-  if (td > 0) return { day:td, hour:12, month:5, year:2026, isJune:true };
-  const ekb = getEKB();
-  return { day:ekb.getDate(), hour:ekb.getHours(), month:ekb.getMonth(), year:ekb.getFullYear(), isJune:(ekb.getMonth()===5 && ekb.getFullYear()===2026) };
-}
-
-function getAutoCrossed() {
-  const {day, hour, month, year, isJune} = getEKBContext();
+// ══════════════════════════════════════════════════════
+// ЛОГИКА ЗАЧЁРКИВАНИЯ
+// ══════════════════════════════════════════════════════
+function autoCrossed() {
+  const {day, hour, isJune} = ctx();
   if (!isJune) return [];
-  const last = (hour >= 12) ? day : day-1;
-  const arr = [];
-  for (let d=1; d<=Math.min(last,30); d++) arr.push(d);
-  return arr;
+  const last = hour>=12 ? day : day-1;
+  return Array.from({length:Math.max(0,Math.min(last,30))}, (_,i) => i+1);
 }
 
-// ============================================================
-// STATE from Supabase
-// ============================================================
-let dbSettings = {}; // loaded from supabase
-
-function getManualAdded() {
-  try { return JSON.parse(dbSettings.manual_added||'[]'); } catch { return []; }
-}
-function getManualRemoved() {
-  try { return JSON.parse(dbSettings.manual_removed||'[]'); } catch { return []; }
+function allCrossed() {
+  const auto = new Set(autoCrossed());
+  try { JSON.parse(S.manual_added||'[]').forEach(d=>auto.add(d)); } catch{}
+  try { JSON.parse(S.manual_removed||'[]').forEach(d=>auto.delete(d)); } catch{}
+  return auto;
 }
 
-function getCrossed() {
-  const auto = new Set(getAutoCrossed());
-  getManualAdded().forEach(d => auto.add(d));
-  getManualRemoved().forEach(d => auto.delete(d));
-  return Array.from(auto);
-}
-
-// ============================================================
-// REVEAL LOGIC (for ALL visitors based on real date)
-// ============================================================
-function checkReveals() {
-  const {day, hour, isJune} = getEKBContext();
-  if (!isJune) return;
-  if (day > 17 || (day===17 && hour>=12)) showReveal17();
-  if (day > 23 || (day===23 && hour>=12)) showReveal23();
-}
-
-let reveal17shown = false, reveal23shown = false;
-
-function showReveal17() {
-  if (reveal17shown) return;
-  reveal17shown = true;
-  const el = document.getElementById('photo-reveal');
-  const img = document.getElementById('reveal-img-17');
-  if (!img.src || img.src==='about:blank' || img.src.length < 100) {
-    img.src = 'data:image/jpeg;base64,' + IMG_17;
-  }
-  el.style.display='block';
-}
-
-function showReveal23() {
-  if (reveal23shown) return;
-  reveal23shown = true;
-  const el = document.getElementById('return-reveal');
-  const img = document.getElementById('reveal-img-23');
-  if (!img.src || img.src==='about:blank' || img.src.length < 100) {
-    img.src = 'data:image/jpeg;base64,' + IMG_23;
-  }
-  const txt = dbSettings.return_text || 'Спасибо за ожидание! Я дома!';
-  document.getElementById('return-text').textContent = txt;
-  el.style.display='block';
-}
-
-function closeReveal17() { document.getElementById('photo-reveal').style.display='none'; }
-function closeReveal23() { document.getElementById('return-reveal').style.display='none'; }
-
-// ============================================================
-// CALENDAR RENDER
-// ============================================================
-function renderCalendar() {
-  const grid = document.getElementById('calendar');
-  grid.innerHTML = '';
-  const crossed = new Set(getCrossed());
-  const {day: todayDay, isJune} = getEKBContext();
-
-  // June 1 2026 = Monday (getDay()=1), so 1 empty cell before
-  const emptyCell = document.createElement('div');
-  emptyCell.className='day-cell empty';
-  grid.appendChild(emptyCell);
-
+// ══════════════════════════════════════════════════════
+// КАЛЕНДАРЬ
+// ══════════════════════════════════════════════════════
+function renderCal() {
+  const g = document.getElementById('cal');
+  g.innerHTML = '';
+  const cx = allCrossed();
+  const {day:td, isJune} = ctx();
+  // Июнь 2026 — 1-е понедельник → 1 пустая ячейка
+  const empty = document.createElement('div');
+  empty.className = 'day-cell empty';
+  g.appendChild(empty);
   for (let d=1; d<=30; d++) {
     const c = document.createElement('div');
     c.textContent = d;
-    if (crossed.has(d)) c.className='day-cell crossed';
-    else if (isJune && d===todayDay) c.className='day-cell today';
-    else c.className='day-cell future';
-    grid.appendChild(c);
+    c.className = cx.has(d) ? 'day-cell crossed' : (isJune && d===td ? 'day-cell today' : 'day-cell future');
+    g.appendChild(c);
   }
 }
 
-// ============================================================
-// ADMIN DAYS GRID
-// ============================================================
-let adminManualAdded = [], adminManualRemoved = [];
+// ══════════════════════════════════════════════════════
+// РАСКРЫТИЕ ФОТО
+// ══════════════════════════════════════════════════════
+let sh17=false, sh23=false;
 
-function renderAdminDays() {
-  adminManualAdded = [...getManualAdded()];
-  adminManualRemoved = [...getManualRemoved()];
-  const auto = new Set(getAutoCrossed());
-  const grid = document.getElementById('admin-days-grid');
-  grid.innerHTML = '';
+function checkReveals() {
+  const {day, hour, isJune} = ctx();
+  if (!isJune) return;
+  if (!sh17 && (day>17||(day===17&&hour>=12))) showRev(17);
+  if (!sh23 && (day>23||(day===23&&hour>=12))) showRev(23);
+}
+
+function showRev(n) {
+  const el = document.getElementById('rev'+n);
+  el.style.display = 'block';
+  if (n===17) {
+    sh17 = true;
+    if (IMG17 && IMG17!=='none') {
+      const img = document.getElementById('img17');
+      img.src = 'data:image/jpeg;base64,'+IMG17;
+    }
+  }
+  if (n===23) {
+    sh23 = true;
+    const img = document.getElementById('img23');
+    img.src = 'data:image/jpeg;base64,'+IMG23;
+    document.getElementById('ret-txt').textContent = S.return_text || 'Ребята, я вернулся! Спасибо за ожидание!';
+  }
+}
+
+function hideRev(n) {
+  document.getElementById('rev'+n).style.display='none';
+  if(n===17) sh17=false;
+  if(n===23) sh23=false;
+}
+
+// ══════════════════════════════════════════════════════
+// СООБЩЕНИЕ
+// ══════════════════════════════════════════════════════
+function applyMsg() {
+  const m = S.site_message||'';
+  document.getElementById('msg-txt').textContent = m;
+  document.getElementById('msg-card').className = 'msg-card'+(m?' on':'');
+}
+
+// ══════════════════════════════════════════════════════
+// СЕТКА ДНЕЙ В АДМИНКЕ
+// ══════════════════════════════════════════════════════
+function renderAdmDays() {
+  try { mAdded = JSON.parse(S.manual_added||'[]'); } catch { mAdded=[]; }
+  try { mRemoved = JSON.parse(S.manual_removed||'[]'); } catch { mRemoved=[]; }
+  _drawAdmGrid();
+}
+
+function _drawAdmGrid() {
+  const g = document.getElementById('adm-days');
+  g.innerHTML = '';
+  const auto = new Set(autoCrossed());
 
   for (let d=1; d<=30; d++) {
     const isAuto = auto.has(d);
-    const isAdded = adminManualAdded.includes(d);
-    const isRem = adminManualRemoved.includes(d);
-    const isCrossed = isAuto ? !isRem : isAdded;
+    const isAdd  = mAdded.includes(d);
+    const isRem  = mRemoved.includes(d);
+    const isCross = isAuto ? !isRem : isAdd;
 
     const btn = document.createElement('div');
-    btn.className = 'day-btn' + (isCrossed?' is-crossed':'') + (isAuto?' is-auto':'');
+    btn.className = 'day-btn' + (isCross?' crossed':'') + (isAuto?' is-auto':'');
     btn.textContent = d;
-    btn.title = isAuto ? (isCrossed?'Авто (нажми чтобы убрать)':'Авто убрано (нажми чтобы вернуть)') : (isCrossed?'Вручную (нажми чтобы убрать)':'Нажми чтобы зачеркнуть');
+    btn.title = isAuto
+      ? (isCross ? 'Авто — нажми чтобы убрать' : 'Авто убрано — нажми чтобы вернуть')
+      : (isCross ? 'Вручную — нажми чтобы убрать' : 'Нажми чтобы зачеркнуть');
 
-    btn.onclick = () => {
-      if (isCrossed) {
-        if (isAuto) {
-          if (!adminManualRemoved.includes(d)) adminManualRemoved.push(d);
-        } else {
-          adminManualAdded = adminManualAdded.filter(x=>x!==d);
-        }
+    btn.onclick = function() {
+      if (isCross) {
+        if (isAuto) { if (!mRemoved.includes(d)) mRemoved.push(d); }
+        else         { mAdded = mAdded.filter(x=>x!==d); }
       } else {
-        if (isAuto && isRem) {
-          adminManualRemoved = adminManualRemoved.filter(x=>x!==d);
-        } else {
-          if (!adminManualAdded.includes(d)) adminManualAdded.push(d);
-        }
+        if (isAuto && isRem) { mRemoved = mRemoved.filter(x=>x!==d); }
+        else                  { if (!mAdded.includes(d)) mAdded.push(d); }
       }
-      // Update dbSettings locally and re-render
-      dbSettings.manual_added = JSON.stringify(adminManualAdded);
-      dbSettings.manual_removed = JSON.stringify(adminManualRemoved);
-      renderCalendar();
-      renderAdminDays();
+      S.manual_added   = JSON.stringify(mAdded);
+      S.manual_removed = JSON.stringify(mRemoved);
+      renderCal();
+      _drawAdmGrid();
     };
-    grid.appendChild(btn);
+    g.appendChild(btn);
   }
 }
 
-async function saveDaysToSupabase() {
-  const s = document.getElementById('days-status');
-  s.textContent = '⏳ Сохраняю...'; s.style.color='var(--muted)';
-  await setSetting('manual_added', JSON.stringify(adminManualAdded));
-  await setSetting('manual_removed', JSON.stringify(adminManualRemoved));
-  s.textContent = '✓ Сохранено в базу!'; s.style.color='var(--green)';
-  showSyncBadge();
-  setTimeout(()=>s.textContent='',3000);
+async function saveDays() {
+  const st = document.getElementById('dstat');
+  st.textContent='⏳ Сохраняю...'; st.style.color='var(--muted2)';
+  const ok1 = await sbUpsert('manual_added',   JSON.stringify(mAdded));
+  const ok2 = await sbUpsert('manual_removed', JSON.stringify(mRemoved));
+  st.textContent = (ok1&&ok2) ? '✓ Сохранено!' : '⚠ Ошибка сохранения';
+  st.style.color = (ok1&&ok2) ? 'var(--green)' : 'var(--red)';
+  if (ok1&&ok2) syncBadge();
+  setTimeout(()=>st.textContent='', 3000);
 }
 
-function clearManualDays() {
+function clearManual() {
   if (!confirm('Сбросить все ручные изменения?')) return;
-  adminManualAdded = []; adminManualRemoved = [];
-  dbSettings.manual_added = '[]'; dbSettings.manual_removed = '[]';
-  renderCalendar(); renderAdminDays();
+  mAdded=[]; mRemoved=[];
+  S.manual_added='[]'; S.manual_removed='[]';
+  renderCal(); _drawAdmGrid();
 }
 
-// ============================================================
-// MESSAGE
-// ============================================================
-async function saveMessage() {
-  const msg = document.getElementById('admin-msg').value.trim();
-  const s = document.getElementById('msg-status');
-  s.textContent='⏳ Сохраняю...'; s.style.color='var(--muted)';
-  await setSetting('site_message', msg);
-  dbSettings.site_message = msg;
-  applyMessage();
-  s.textContent='✓ Сохранено!'; s.style.color='var(--green)';
-  showSyncBadge();
-  setTimeout(()=>s.textContent='',3000);
+// ══════════════════════════════════════════════════════
+// СООБЩЕНИЕ — АДМИН
+// ══════════════════════════════════════════════════════
+async function saveMsg() {
+  const msg = document.getElementById('adm-msg').value.trim();
+  const st  = document.getElementById('mstat');
+  st.textContent='⏳...'; st.style.color='var(--muted2)';
+  const ok = await sbUpsert('site_message', msg);
+  S.site_message = msg; applyMsg();
+  st.textContent = ok ? '✓ Сохранено!' : '⚠ Ошибка';
+  st.style.color = ok ? 'var(--green)' : 'var(--red)';
+  if (ok) syncBadge();
+  setTimeout(()=>st.textContent='', 3000);
 }
 
-async function clearMessage() {
-  const s = document.getElementById('msg-status');
-  s.textContent='⏳...'; s.style.color='var(--muted)';
-  await setSetting('site_message', '');
-  dbSettings.site_message = '';
-  document.getElementById('admin-msg').value='';
-  applyMessage();
-  s.textContent='✓ Убрано!'; s.style.color='var(--green)';
-  showSyncBadge();
-  setTimeout(()=>s.textContent='',3000);
+async function clearMsg() {
+  await sbUpsert('site_message','');
+  S.site_message=''; applyMsg();
+  document.getElementById('adm-msg').value='';
+  document.getElementById('mstat').textContent='✓ Удалено!';
+  document.getElementById('mstat').style.color='var(--green)';
+  syncBadge();
+  setTimeout(()=>document.getElementById('mstat').textContent='', 2000);
 }
 
-function applyMessage() {
-  const msg = dbSettings.site_message || '';
-  const card = document.getElementById('msg-card');
-  if (msg) {
-    document.getElementById('msg-card-text').textContent = msg;
-    card.classList.add('visible');
-  } else {
-    card.classList.remove('visible');
-  }
-}
-
-// ============================================================
-// TEST MODE
-// ============================================================
-function testDay(d) {
-  localStorage.setItem('test_day', d);
-  document.getElementById('test-banner').classList.add('show');
-  document.getElementById('test-status').textContent='✓ Тест: '+d+'-е число 12:00';
-  reveal17shown=false; reveal23shown=false;
-  document.getElementById('photo-reveal').style.display='none';
-  document.getElementById('return-reveal').style.display='none';
-  renderCalendar(); renderAdminDays(); checkReveals();
-  setTimeout(()=>document.getElementById('test-status').textContent='',3000);
+// ══════════════════════════════════════════════════════
+// ТЕСТ-РЕЖИМ
+// ══════════════════════════════════════════════════════
+function setTest(d) {
+  localStorage.setItem('tday', d);
+  document.getElementById('test-banner').classList.add('on');
+  sh17=false; sh23=false;
+  document.getElementById('rev17').style.display='none';
+  document.getElementById('rev23').style.display='none';
+  renderCal(); _drawAdmGrid(); checkReveals();
+  document.getElementById('tstat').textContent='✓ Тест: '+d+'-е';
+  document.getElementById('tstat').style.color='var(--green)';
+  setTimeout(()=>document.getElementById('tstat').textContent='', 2500);
 }
 
 function resetTest() {
-  localStorage.removeItem('test_day');
-  document.getElementById('test-banner').classList.remove('show');
-  reveal17shown=false; reveal23shown=false;
-  document.getElementById('photo-reveal').style.display='none';
-  document.getElementById('return-reveal').style.display='none';
-  renderCalendar(); renderAdminDays(); checkReveals();
+  localStorage.removeItem('tday');
+  document.getElementById('test-banner').classList.remove('on');
+  sh17=false; sh23=false;
+  document.getElementById('rev17').style.display='none';
+  document.getElementById('rev23').style.display='none';
+  renderCal(); _drawAdmGrid(); checkReveals();
 }
 
-// ============================================================
-// SYNC BADGE
-// ============================================================
-function showSyncBadge() {
-  const b = document.getElementById('sync-badge');
-  b.classList.add('show');
-  setTimeout(()=>b.classList.remove('show'), 3000);
+// ══════════════════════════════════════════════════════
+// ЛОГИН И ПАРОЛЬ
+// ══════════════════════════════════════════════════════
+function getCreds() { return {u:localStorage.getItem('_au')||'admin', p:localStorage.getItem('_ap')||'egypt2026'}; }
+function saveCreds() {
+  const u=document.getElementById('nu').value.trim(), p=document.getElementById('np').value;
+  const st=document.getElementById('cstat');
+  if (!u||!p) { st.textContent='⚠ Заполни оба поля'; st.style.color='var(--red)'; return; }
+  localStorage.setItem('_au',u); localStorage.setItem('_ap',p);
+  st.textContent='✓ Обновлено!'; st.style.color='var(--green)';
+  document.getElementById('nu').value=''; document.getElementById('np').value='';
+  setTimeout(()=>st.textContent='', 2500);
 }
 
-// ============================================================
-// LOGIN
-// ============================================================
+// ══════════════════════════════════════════════════════
+// СЕКРЕТНЫЙ ВХОД (3 клика по углу)
+// ══════════════════════════════════════════════════════
 let _sc=0, _st=null;
-function handleSecretClick(){
-  _sc++;clearTimeout(_st);
-  _st=setTimeout(()=>_sc=0,1500);
-  if(_sc>=3){_sc=0;document.getElementById('secret-panel').classList.add('active');}
+function secClick() {
+  _sc++; clearTimeout(_st); _st=setTimeout(()=>_sc=0, 1500);
+  if (_sc>=3) { _sc=0; document.getElementById('secret-panel').classList.add('active'); }
 }
-function closeLogin(){
+function closeLogin() {
   document.getElementById('secret-panel').classList.remove('active');
-  document.getElementById('login-error').style.display='none';
+  document.getElementById('lerr').style.display='none';
 }
-function tryLogin(){
-  const u=document.getElementById('login-user').value.trim();
-  const p=document.getElementById('login-pass').value;
+function tryLogin() {
+  const u=document.getElementById('lu').value.trim(), p=document.getElementById('lp').value;
   const c=getCreds();
-  if(u===c.user && p===c.pass){closeLogin();openAdmin();}
-  else{document.getElementById('login-error').style.display='block';}
+  if (u===c.u && p===c.p) { closeLogin(); openAdmin(); }
+  else { document.getElementById('lerr').style.display='block'; }
 }
-document.getElementById('login-pass').addEventListener('keydown',e=>{if(e.key==='Enter')tryLogin();});
+document.getElementById('lp').addEventListener('keydown', e=>{ if(e.key==='Enter') tryLogin(); });
 
-// ============================================================
-// ADMIN
-// ============================================================
-function openAdmin(){
+// ══════════════════════════════════════════════════════
+// АДМИН-ПАНЕЛЬ
+// ══════════════════════════════════════════════════════
+function openAdmin() {
   document.getElementById('admin-panel').classList.add('active');
-  document.getElementById('admin-msg').value = dbSettings.site_message||'';
-  renderAdminDays();
+  document.getElementById('adm-msg').value = S.site_message||'';
+  renderAdmDays();
 }
-function closeAdmin(){document.getElementById('admin-panel').classList.remove('active');}
-
-function changeCredentials(){
-  const u=document.getElementById('new-user').value.trim();
-  const p=document.getElementById('new-pass').value;
-  const s=document.getElementById('cred-status');
-  if(!u||!p){s.textContent='⚠ Заполни оба поля';s.style.color='var(--red)';return;}
-  localStorage.setItem('adm_u',u);localStorage.setItem('adm_p',p);
-  s.textContent='✓ Обновлено!';s.style.color='var(--green)';
-  document.getElementById('new-user').value='';document.getElementById('new-pass').value='';
-  setTimeout(()=>s.textContent='',2500);
+function closeAdmin() { document.getElementById('admin-panel').classList.remove('active'); }
+function syncBadge() {
+  const b=document.getElementById('sync-badge');
+  b.classList.add('on');
+  setTimeout(()=>b.classList.remove('on'), 3000);
 }
 
-// ============================================================
-// INIT
-// ============================================================
+// ══════════════════════════════════════════════════════
+// STATUS BAR
+// ══════════════════════════════════════════════════════
+function setStatus(ok, txt) {
+  const dot=document.getElementById('sdot');
+  dot.className='sdot'+(ok?'':' err');
+  document.getElementById('stxt').textContent=txt;
+}
+function hideStatus() { setTimeout(()=>document.getElementById('status-bar').classList.add('hidden'), 2500); }
+
+// ══════════════════════════════════════════════════════
+// ИНИЦИАЛИЗАЦИЯ
+// ══════════════════════════════════════════════════════
 async function init() {
-  // Load from supabase
-  const statusEl = document.getElementById('status-text');
-  statusEl.textContent = 'Синхронизация с базой данных...';
-  
-  try {
-    dbSettings = await getSettings();
-    if (!dbSettings) dbSettings = {};
-    statusEl.textContent = 'Подключено к базе данных';
-    setTimeout(()=>document.getElementById('status-bar').classList.add('hidden'), 2000);
-  } catch(e) {
-    statusEl.textContent = 'Работа без базы данных';
-    dbSettings = {};
-    setTimeout(()=>document.getElementById('status-bar').classList.add('hidden'), 3000);
+  setStatus(true, 'Подключение к Supabase...');
+
+  const data = await loadSettings();
+  if (data) {
+    S = data;
+    setStatus(true, '&#10003; Подключено к Supabase');
+  } else {
+    S = {};
+    document.getElementById('sdot').className='sdot err';
+    setStatus(false, '&#9888; Работа без базы данных');
   }
+  hideStatus();
 
-  applyMessage();
-  renderCalendar();
+  applyMsg();
+  renderCal();
   checkReveals();
-  updateClocks();
+  tick();
 
-  // Hide loading
+  // Скрыть loader
   setTimeout(()=>{
-    document.getElementById('loading').style.opacity='0';
-    document.getElementById('loading').style.transition='opacity 0.4s';
-    setTimeout(()=>document.getElementById('loading').style.display='none',400);
+    const l=document.getElementById('loading');
+    l.style.opacity='0';
+    setTimeout(()=>l.style.display='none', 400);
   }, 600);
 
-  // Clocks
-  setInterval(updateClocks, 1000);
+  setInterval(tick, 1000);
+  setInterval(()=>{ renderCal(); checkReveals(); }, 60000);
 
-  // Auto-refresh from Supabase every 30 seconds
-  setInterval(async ()=>{
-    const fresh = await getSettings();
-    if (fresh) {
-      dbSettings = fresh;
-      applyMessage();
-      renderCalendar();
-      checkReveals();
-    }
+  // Авто-обновление из Supabase каждые 30 сек
+  setInterval(async()=>{
+    const fresh = await loadSettings();
+    if (fresh) { S=fresh; applyMsg(); renderCal(); checkReveals(); }
   }, 30000);
 
-  if (getTestMode()>0) document.getElementById('test-banner').classList.add('show');
+  if (getTest()>0) document.getElementById('test-banner').classList.add('on');
 }
 
 init();
 </script>
 </body>
-</html>
+</html>"""
 
+# Вшиваем реальные значения
+HTML = HTML.replace('__SB_URL__', SUPABASE_URL)
+HTML = HTML.replace('__SB_KEY__', SUPABASE_KEY)
+HTML = HTML.replace('__IMG23__', B64_23)
+HTML = HTML.replace('__IMG17__', 'none')  # 17th.png не загружено — заглушка
+
+with open('/mnt/user-data/outputs/june2026_v3.html', 'w') as f:
+    f.write(HTML)
+
+print(f"Готово! Размер: {len(HTML):,} символов")
+print(f"SB_URL вшит: {'__SB_URL__' not in HTML}")
+print(f"SB_KEY вшит: {'__SB_KEY__' not in HTML}")
+print(f"IMG23 вшит: {'__IMG23__' not in HTML and 'data:image/jpeg' in HTML}")
+print(f"Плейсхолдеров НЕТ: {all(x not in HTML for x in ['SUPA_URL','SUPA_KEY','IMG17HERE','IMG23HERE','__SB_URL__','__SB_KEY__','__IMG17__','__IMG23__'])}")
+PYEOF
