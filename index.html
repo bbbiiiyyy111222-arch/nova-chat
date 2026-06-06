@@ -756,18 +756,4 @@ init();
 </body>
 </html>"""
 
-# Вшиваем реальные значения
-HTML = HTML.replace('__SB_URL__', SUPABASE_URL)
-HTML = HTML.replace('__SB_KEY__', SUPABASE_KEY)
-HTML = HTML.replace('__IMG23__', B64_23)
-HTML = HTML.replace('__IMG17__', 'none')  # 17th.png не загружено — заглушка
 
-with open('/mnt/user-data/outputs/june2026_v3.html', 'w') as f:
-    f.write(HTML)
-
-print(f"Готово! Размер: {len(HTML):,} символов")
-print(f"SB_URL вшит: {'__SB_URL__' not in HTML}")
-print(f"SB_KEY вшит: {'__SB_KEY__' not in HTML}")
-print(f"IMG23 вшит: {'__IMG23__' not in HTML and 'data:image/jpeg' in HTML}")
-print(f"Плейсхолдеров НЕТ: {all(x not in HTML for x in ['SUPA_URL','SUPA_KEY','IMG17HERE','IMG23HERE','__SB_URL__','__SB_KEY__','__IMG17__','__IMG23__'])}")
-PYEOF
