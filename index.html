@@ -1118,14 +1118,3 @@ init();
 </body>
 </html>'''
 
-html = html.replace('SUPA_URL', SUPABASE_URL)
-html = html.replace('SUPA_KEY', SUPABASE_KEY)
-html = html.replace('IMG17HERE', b64_17)
-html = html.replace('IMG23HERE', b64_23)
-
-with open('/mnt/user-data/outputs/vacation.html','w') as f:
-    f.write(html)
-
-print(f'Done! Size: {len(html):,} chars')
-PYEOF
-python3 /tmp/build.py
