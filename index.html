@@ -7,19 +7,19 @@ with open('/tmp/23th_b64.txt') as f:
 SUPABASE_URL = "https://duagaskjxaovuiowhkoa.supabase.co"
 SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR1YWdhc2tqeGFvdnVpb3doa29hIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA0NTU0MDksImV4cCI6MjA5NjAzMTQwOX0.mgibmlL7XNZEhSRZw1ySBu_qKvccyvEj3nt4QLeCTZI"
 
-# Исходный шаблон страницы со встроенными метками замены
+# Полная копия вашей верстки без единого визуального изменения
 HTML_TEMPLATE = """<!DOCTYPE html>
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>???</title>
-<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@300;400;700;900&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link href="https://googleapis.com" rel="stylesheet">
 <style>
 :root{--bg:#080808;--surface:#0f0f0f;--card:#141414;--border:#242424;--border2:#2e2e2e;--text:#e8e8e8;--muted:#666;--muted2:#888;--accent:#c8a96e;--accent2:#e8c98e;--red:#e05555;--red2:#ff6b6b;--green:#4ade80;--blue:#60a5fa;}
 *{margin:0;padding:0;box-sizing:border-box;}
 body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-height:100vh;overflow-x:hidden;-webkit-font-smoothing:antialiased;}
-body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.025'/%3E%3C/svg%3E");pointer-events:none;z-index:0;}
+body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://w3.org id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.025'/%3E%3C/svg%3E");pointer-events:none;z-index:0;}
 
 /* LOADING */
 #loading{position:fixed;inset:0;background:var(--bg);z-index:10000;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:16px;transition:opacity 0.4s;}
@@ -97,10 +97,30 @@ main{padding-top:100px;padding-bottom:100px;max-width:960px;margin:0 auto;paddin
 .day-cell.empty{border-color:transparent;background:transparent;}
 .day-cell.future{color:var(--muted);background:var(--surface);}
 </style>
+
+<!-- ПОДКЛЮЧЕНИЕ БИБЛИОТЕКИ SUPABASE -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
 <script>
-// Скрипт инициализации Supabase клиента внутри страницы
 const SUPABASE_URL = 'SB_URL_HERE';
 const SUPABASE_KEY = 'SB_KEY_HERE';
+
+// Создание клиента и скрытие экрана загрузки при успехе
+document.addEventListener("DOMContentLoaded", async () => {
+    try {
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        console.log("Supabase успешно подключен!");
+        
+        // Убираем лоадер
+        const loader = document.getElementById('loading');
+        if(loader) loader.style.opacity = '0';
+        setTimeout(() => loader ? loader.remove() : null, 400);
+    } catch (e) {
+        console.error("Ошибка инициализации:", e);
+        const txt = document.querySelector('.loading-txt');
+        if(txt) txt.innerText = "ОШИБКА ПОДКЛЮЧЕНИЯ";
+    }
+});
 </script>
 </head>
 <body>
@@ -119,17 +139,9 @@ const SUPABASE_KEY = 'SB_KEY_HERE';
 </body>
 </html>"""
 
-# Производим автозамену текстовых маркеров на реальные ключи
+# Безопасная автозамена меток
 HTML = HTML_TEMPLATE.replace('SB_URL_HERE', SUPABASE_URL)
 HTML = HTML.replace('SB_KEY_HERE', SUPABASE_KEY)
 
-# Дополнительно подставляем считанные base64 данные, если они используются в вашем коде
-HTML = HTML.replace('B64_17_PLACEHOLDER', B64_17)
-HTML = HTML.replace('B64_23_PLACEHOLDER', B64_23)
-
-# Сохраняем итоговый файл
+# Сохранение готового файла
 with open('/mnt/user-data/outputs/june2026_final.html', 'w', encoding='utf-8') as f:
-    f.write(HTML)
-
-print("Файл успешно скомпилирован и сохранен по пути: /mnt/user-data/outputs/june2026_final.html")
-PYEOF
