@@ -816,3 +816,15 @@ init();
 </script>
 </body>
 </html>
+
+ SUPABASE_URL = 'https://supabase.co'
+SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR1YWdhc2tqeGFvdnVpb3doa29hIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA0NTU0MDksImV4cCI6MjA5NjAzMTQwOX0.mgibmlL7XNZEhSRZw1ySBu_qKvccyvEj3nt4QLeCTZI'
+
+# Подстановка данных в HTML
+HTML = HTML.replace('SB_URL_HERE', SUPABASE_URL)
+HTML = HTML.replace('SB_KEY_HERE', SUPABASE_KEY)
+
+# Сохранение готового файла
+with open('/mnt/user-data/outputs/june2026_final.html', 'w') as f:
+    f.write(HTML)
+   
