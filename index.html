@@ -623,25 +623,4 @@ init();
 </body>
 </html>"""
 
-HTML = HTML.replace('__IMG17__', B64_17)
-HTML = HTML.replace('__IMG23__', B64_23)
-HTML = HTML.replace('__SB__', SB)
-HTML = HTML.replace('__KEY__', KEY)
 
-with open('/mnt/user-data/outputs/june2026_final.html', 'w') as f:
-    f.write(HTML)
-
-checks = {
-    'IMG17 вшит': B64_17[:20] in HTML,
-    'IMG23 вшит': B64_23[:20] in HTML,
-    'SB вшит': SB in HTML,
-    'KEY вшит': KEY[:20] in HTML,
-    'Нет плейсхолдеров': all(x not in HTML for x in ['__IMG17__','__IMG23__','__SB__','__KEY__']),
-    'checkReveals по crossed': 'cx.has(17)' in HTML,
-    'checkReveals вызывается при клике': 'checkReveals()' in HTML,
-}
-print(f"Размер: {len(HTML):,} символов")
-for k,v in checks.items():
-    print(f"  {'✓' if v else '✗'} {k}")
-PYEOF
-Output
