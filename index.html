@@ -527,11 +527,6 @@ function checkReveals(){
   } else {
     document.getElementById('rev23').style.display='none';
   }
-
-  // Лента: показывается когда 17 зачёркнуто И 23 ещё НЕ зачёркнуто
-  const showFeed = cx.has(17) && !cx.has(23);
-  document.getElementById('feed-section').style.display = showFeed ? 'block' : 'none';
-  if(showFeed) loadFeed();
 }
 
 function hideRev(n){
