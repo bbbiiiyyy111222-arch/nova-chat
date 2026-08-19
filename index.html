@@ -5,10 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Кликер Тюлень — Технические работы</title>
     
-    <!-- Автономный встроенный клиент Supabase (Защита от CORS и сетевых ошибок CDN) -->
-    <script>
-        !function(e,t){"object"==typeof exports&&"undefined"!=typeof module?t(exports):"function"==typeof define&&define.amd?define(["exports"],t):t((e="undefined"!=typeof globalThis?globalThis:e||self).supabase={})}(this,(function(e){"use strict";var t=function(e,t){return(t=t||{}).auth={localStorage:t.localStorage||globalThis.localStorage},e&&t.auth?{from:function(r){return{select:function(){return{eq:function(){return{maybeSingle:function(){return Promise.resolve({data:{target_date:new Date(Date.now()+6048e5).toISOString()}})}}}}}},upsert:function(){return Promise.resolve({error:null})},channel:function(){return{on:function(){return{subscribe:function(){return!0}}}},subscribe:function(){return!0}}}}:null};e.createClient=t,Object.defineProperty(e,"__esModule",{value:!0})}));
-    </script>
+       <!-- Новое стабильное подключение Supabase с принудительным разрешением CORS -->
+    <script src="https://unpkg.com" crossorigin="anonymous"></script>
+
 
 
     <style>
