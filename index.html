@@ -4,12 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Кликер Тюлень — Технические работы</title>
-    <!-- Надежное подключение базы данных Supabase -->
+       <!-- НАДЁЖНОЕ ПОДКЛЮЧЕНИЕ БАЗЫ ДАННЫХ SUPABASE (ОБНОВЛЕНО) -->
     <script type="module">
-        import { createClient } from 'https://jsdelivr.net'
+        import { createClient } from 'https://unpkg.com'
         window.supabaseCreateClient = createClient;
     </script>
-    <style>
         body { background: #0f172a; color: #f8fafc; font-family: sans-serif; text-align: center; padding: 40px 20px; user-select: none; }
         .container { background: #1e293b; padding: 30px; border-radius: 20px; max-width: 450px; margin: 0 auto; box-shadow: 0 10px 25px rgba(0,0,0,0.3); }
         h1 { color: #38bdf8; margin-bottom: 20px; }
