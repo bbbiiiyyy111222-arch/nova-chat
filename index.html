@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Кликер Тюлень</title>
+    <title>Кликер Тюлень — Технические работы</title>
     <!-- Подключаем официальный клиент Supabase -->
     <script src="https://jsdelivr.net"></script>
     <style>
@@ -11,12 +11,13 @@
         body {
             background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #311042 100%);
             color: #f8fafc;
-            font-family: 'Segoe UI', Roboto, sans-serif;
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
             min-height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
             padding: 20px;
+            overflow-x: hidden;
         }
         .container {
             background: rgba(30, 41, 59, 0.4);
@@ -25,7 +26,7 @@
             border: 1px solid rgba(255, 255, 255, 0.1);
             padding: 40px 30px;
             border-radius: 24px;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255,255,255,0.1);
             text-align: center;
             max-width: 500px;
             width: 100%;
@@ -38,33 +39,36 @@
             -webkit-text-fill-color: transparent;
             margin-bottom: 12px;
         }
-        p { color: #cbd5e1; font-size: 1.1rem; margin-bottom: 30px; }
+        p { color: #cbd5e1; font-size: 1.1rem; line-height: 1.5; margin-bottom: 30px; }
+        
+        /* Зона кликера */
         .seal-stage { margin-bottom: 35px; }
         .seal-btn {
             background: none; border: none; font-size: 5rem; cursor: pointer;
-            transition: transform 0.1s ease; user-select: none;
+            transition: transform 0.1s ease, filter 0.3s ease; user-select: none;
             filter: drop-shadow(0 0 15px rgba(56, 189, 248, 0.4));
         }
         .seal-btn:hover { transform: scale(1.08) rotate(5deg); }
         .seal-btn:active { transform: scale(0.92); }
         .counter-view { font-size: 0.9rem; color: #94a3b8; margin-top: 8px; font-weight: 600; }
-        
-        /* Таймер */
+
+        /* Красивый Таймер */
         .timer { display: flex; justify-content: space-between; gap: 12px; }
         .box {
             background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(255, 255, 255, 0.05);
             padding: 16px 10px; border-radius: 16px; flex: 1;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.15);
         }
-        .number { font-size: 1.8rem; font-weight: 700; color: #38bdf8; font-variant-numeric: tabular-nums; }
-        .label { font-size: 0.75rem; color: #64748b; text-transform: uppercase; margin-top: 4px; }
+        .number {
+            font-size: 1.8rem; font-weight: 700; color: #38bdf8;
+            font-variant-numeric: tabular-nums; text-shadow: 0 0 10px rgba(56, 189, 248, 0.3);
+        }
+        .label { font-size: 0.75rem; color: #64748b; text-transform: uppercase; letter-spacing: 1px; margin-top: 4px; }
 
-        /* Админ-панель (скрыта по умолчанию) */
+        /* Скрытая Админка */
         #admin-panel {
-            display: none;
-            margin-top: 30px;
-            padding-top: 30px;
-            border-top: 1px dashed rgba(255,255,255,0.2);
-            text-align: left;
+            display: none; margin-top: 30px; padding-top: 30px;
+            border-top: 1px dashed rgba(255,255,255,0.2); text-align: left;
         }
         #admin-panel h2 { font-size: 1.3rem; margin-bottom: 15px; color: #f472b6; }
         .form-group { margin-bottom: 15px; }
@@ -84,10 +88,9 @@
 <body>
 
     <div class="container">
-        <!-- Основной контент сайта -->
         <div id="main-content">
             <h1>Кликер Тюлень</h1>
-            <p>Идут технические работы. Скоро запуск!</p>
+            <p>Идут технические работы по созданию игры. Разминайте пальцы — скоро запуск!</p>
 
             <div class="seal-stage">
                 <button class="seal-btn" id="seal" onclick="clickSeal()">🦭</button>
@@ -102,34 +105,35 @@
             </div>
         </div>
 
-        <!-- Панель Администратора -->
+        <!-- Панель управления -->
         <div id="admin-panel">
             <h2>⚙️ Панель управления временем</h2>
             <div class="form-group">
-                <label for="datetime">Выберите новую дату и время завершения:</label>
+                <label for="datetime">Выберите дату завершения работ:</label>
                 <input type="datetime-local" id="datetime">
             </div>
             <button class="btn-save" onclick="saveNewDate()">Обновить время для всех</button>
-            <div class="status" id="status-msg">Сохранено успешно!</div>
+            <div class="status" id="status-msg">Сохранено успешно! Время обновлено.</div>
         </div>
     </div>
 
     <script>
-        // Инициализация Supabase. Замените на ваши ключи!
-        const SUPABASE_URL = "ВАШ_SUPABASE_URL";
-        const SUPABASE_ANON_KEY = "ВАШ_SUPABASE_ANON_KEY";
-        const supabase = @supabase/supabase-js.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        // Интеграция с вашей базой данных Supabase
+        const SUPABASE_URL = "https://supabase.co";
+        const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV5dG15b3JycG5hcXpxdHdzZm5jIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcxNTM5MDgsImV4cCI6MjEwMjcyOTkwOH0.nWolRM9vTEA5PRVKJ1VKJIyTyMPXvEWKqGEDgaG2GIw";
+        
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
         let targetDate = null;
         let timerInterval = null;
 
-        // 1. Проверяем, открыта ли админка (например: ://site.com)
+        // Вход в админку через секретный параметр URL (?admin=true)
         const urlParams = new URLSearchParams(window.location.search);
         if (urlParams.get('admin') === 'true') {
             document.getElementById('admin-panel').style.display = 'block';
         }
 
-        // 2. Получаем текущую дату из Supabase при загрузке страницы
+        // Получение даты из Supabase
         async function loadTargetDate() {
             const { data, error } = await supabase
                 .from('settings')
@@ -140,7 +144,7 @@
             if (data && data.target_date) {
                 targetDate = new Date(data.target_date).getTime();
                 
-                // Заполняем инпут в админке текущим значением
+                // Автозаполнение инпута в админке
                 const localDate = new Date(data.target_date);
                 localDate.setMinutes(localDate.getMinutes() - localDate.getTimezoneOffset());
                 document.getElementById('datetime').value = localDate.toISOString().slice(0, 16);
@@ -149,10 +153,10 @@
             }
         }
 
-        // 3. Сохранение новой даты из админ-панели в БД
+        // Запись новой даты в Supabase
         async function saveNewDate() {
             const inputVal = document.getElementById('datetime').value;
-            if (!inputVal) return alert('Выберите дату!');
+            if (!inputVal) return alert('Пожалуйста, выберите дату!');
 
             const isoDate = new Date(inputVal).toISOString();
 
@@ -162,7 +166,7 @@
                 .eq('id', 'main_timer');
 
             if (error) {
-                alert('Ошибка сохранения: ' + error.message);
+                alert('Ошибка базы данных: ' + error.message);
             } else {
                 const msg = document.getElementById('status-msg');
                 msg.style.display = 'block';
@@ -170,8 +174,7 @@
             }
         }
 
-        // 4. Подписка на изменения в реальном времени (Realtime)
-        // Чтобы изменения у админа мгновенно отображались у всех пользователей без перезагрузки
+        // Realtime: автоматическое обновление на лету у всех игроков
         supabase
             .channel('public:settings')
             .on('postgres_changes', { event: 'UPDATE', filter: 'id=eq.main_timer', table: 'settings', schema: 'public' }, payload => {
@@ -179,7 +182,7 @@
             })
             .subscribe();
 
-        // 5. Логика работы самого таймера
+        // Работа обратного отсчета
         function startTimer() {
             if (timerInterval) clearInterval(timerInterval);
             
@@ -189,7 +192,7 @@
                 const distance = targetDate - now;
 
                 if (distance < 0) {
-                    document.getElementById("main-content").innerHTML = "<h1>🦭 Игра Запущена!</h1><p>Обновите страницу или перейдите в игру.</p>";
+                    document.getElementById("main-content").innerHTML = "<h1>🦭 Игра Запущена!</h1><p>Обновите страницу, чтобы начать кликать полноценно!</p>";
                     clearInterval(timerInterval);
                     return;
                 }
@@ -209,7 +212,7 @@
             update();
         }
 
-        // Кликер заглушка
+        // Интерактив-заглушка
         let count = 0;
         function clickSeal() {
             count++;
