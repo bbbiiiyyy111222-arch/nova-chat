@@ -5,11 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Кликер Тюлень — Технические работы</title>
     
-    <!-- Подключение базы данных через зеркало unpkg -->
-    <script type="module">
-        import { createClient } from 'https://unpkg.com'
-        window.supabaseCreateClient = createClient;
-    </script>
+    <!-- Официальное подключение Supabase с защитой от CORS-ошибок -->
+    <script src="https://cloudflare.com" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 
     <style>
         body { 
@@ -155,9 +152,8 @@
             <button class="action-btn" onclick="saveNewDate()">Сохранить время</button>
         </div>
     </div>
-
     <script>
-        // --- КЛИКЕР И АНТИЧИТ ---
+        // --- НАЧАЛО ЧАСТИ 2 (КЛИКЕР И АНТИЧИТ) ---
         let count = 0;
         let lastClickTime = 0;
         let clickIntervals = [];
@@ -167,17 +163,23 @@
 
         function registerClick(e) {
             if (isBlocked) return;
+
+            // Блокировка эмуляции кликов через консоль или скрипты
             if (e && !e.isTrusted) {
                 triggerAntiCheat();
                 return;
             }
 
             const now = performance.now();
+            
             if (lastClickTime > 0) {
                 const interval = now - lastClickTime;
                 clickIntervals.push(interval);
+                
+                // Рассматриваем только окно из 10 последних кликов
                 if (clickIntervals.length > 10) clickIntervals.shift();
 
+                // Если интервалы между кликами слишком стабильно малы
                 if (clickIntervals.length >= 5) {
                     const averageInterval = clickIntervals.reduce((a, b) => a + b, 0) / clickIntervals.length;
                     if (averageInterval < 90) {
@@ -196,6 +198,7 @@
             isBlocked = true;
             document.getElementById("warning-text").style.visibility = "visible";
             clickIntervals = [];
+            
             setTimeout(() => {
                 isBlocked = false;
                 document.getElementById("warning-text").style.visibility = "hidden";
@@ -203,9 +206,10 @@
             }, 3000);
         }
 
+        // Назначаем прослушивание кликов на кнопку
         sealTrigger.addEventListener("click", registerClick);
-
-        // --- БАЗА ДАННЫХ SUPABASE И АДМИНКА ---
+        // --- КОНЕЦ ЧАСТИ 2 ---
+        // --- НАЧАЛО ЧАСТИ 3 (ПАРОЛЬ И ИНИЦИАЛИЗАЦИЯ SUPABASE) ---
         const SUPABASE_URL = "https://supabase.co";
         const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV5dG15b3JycG5hcXpxdHdzZm5jIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcxNTM5MDgsImV4cCI6MjEwMjcyOTkwOH0.nWolRM9vTEA5PRVKJ1VKJIyTyMPXvEWKqGEDgaG2GIw";
         
@@ -213,11 +217,13 @@
         let targetDate = null;
         let timerInterval = null;
 
+        // Открываем форму авторизации, если в адресной строке есть ?admin=true
         const urlParams = new URLSearchParams(window.location.search);
         if (urlParams.get('admin') === 'true') {
             document.getElementById('auth-form').style.display = 'block';
         }
 
+        // Функция проверки пароля
         window.checkPassword = function() {
             const pass = document.getElementById('pass-input').value;
             if (pass === 'seal') {
@@ -228,15 +234,17 @@
             }
         }
 
+        // Функция безопасного старта Supabase
         function initSupabase() {
-            if (!window.supabaseCreateClient) {
-                setTimeout(initSupabase, 300);
+            if (!window.supabase || !window.supabase.createClient) {
+                setTimeout(initSupabase, 300); // Если сеть лагает, мягко пробуем снова через 300мс
                 return;
             }
             
-            supabase = window.supabaseCreateClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-            loadTargetDate();
+            supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+            loadTargetDate(); // Эту функцию мы добавим в Части 4
 
+            // Подписка на Realtime изменения таблицы settings для всех игроков на лету
             supabase
                 .channel('public:settings')
                 .on('postgres_changes', { event: '*', filter: 'id=eq.main_timer', table: 'settings', schema: 'public' }, payload => {
@@ -248,7 +256,8 @@
         }
 
         setTimeout(initSupabase, 100);
-
+        // --- КОНЕЦ ЧАСТИ 3 ---
+        // --- НАЧАЛО ЧАСТИ 4 (ДАННЫЕ И ТАЙМЕР) ---
         async function loadTargetDate() {
             let { data } = await supabase
                 .from('settings')
@@ -264,6 +273,7 @@
             } else {
                 targetDate = new Date(data.target_date).getTime();
             }
+
             const localDate = new Date(targetDate);
             localDate.setMinutes(localDate.getMinutes() - localDate.getTimezoneOffset());
             document.getElementById('datetime').value = localDate.toISOString().slice(0, 16);
@@ -276,7 +286,7 @@
             
             const inputVal = document.getElementById('datetime').value;
             if (!inputVal) return alert('Выберите дату!');
-
+            
             const isoDate = new Date(inputVal).toISOString();
             targetDate = new Date(inputVal).getTime();
             
@@ -295,15 +305,14 @@
 
         function startTimer() {
             if (timerInterval) clearInterval(timerInterval);
-
+            
             function update() {
                 if (!targetDate) return;
-                
                 const now = new Date().getTime();
                 const distance = targetDate - now;
 
                 if (distance < 0) {
-                    document.querySelector(".timer").innerHTML = "<b style='color:#34d399'>ИГРА ЗАПУЩЕНА!</b>";
+                    document.querySelector(".timer").innerHTML = "<b style='color:#34d399; font-size: 1.2rem;'>ИГРА ЗАПУЩЕНА!</b>";
                     clearInterval(timerInterval);
                     return;
                 }
@@ -318,7 +327,11 @@
                 document.getElementById("mins").innerText = String(mins).padStart(2, '0');
                 document.getElementById("secs").innerText = String(secs).padStart(2, '0');
             }
-
+            
             timerInterval = setInterval(update, 1000);
             update();
         }
+        // --- КОНЕЦ ЧАСТИ 4 ---
+    </script>
+</body>
+</html>
