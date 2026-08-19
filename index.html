@@ -4,62 +4,26 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Кликер Тюлень — Технические работы</title>
-    <!-- Подключаем официальный скрипт Supabase -->
-    <script src="https://jsdelivr.net"></script>
+    <!-- Надежное подключение базы данных Supabase -->
+    <script type="module">
+        import { createClient } from 'https://jsdelivr.net'
+        window.supabaseCreateClient = createClient;
+    </script>
     <style>
-        body {
-            background: #0f172a;
-            color: #f8fafc;
-            font-family: sans-serif;
-            text-align: center;
-            padding: 40px 20px;
-        }
-        .container {
-            background: #1e293b;
-            padding: 30px;
-            border-radius: 20px;
-            max-width: 450px;
-            margin: 0 auto;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
-        }
+        body { background: #0f172a; color: #f8fafc; font-family: sans-serif; text-align: center; padding: 40px 20px; user-select: none; }
+        .container { background: #1e293b; padding: 30px; border-radius: 20px; max-width: 450px; margin: 0 auto; box-shadow: 0 10px 25px rgba(0,0,0,0.3); }
         h1 { color: #38bdf8; margin-bottom: 20px; }
-        
-        /* Кнопка-Тюлень в виде качественной векторной картинки */
-        .seal-btn {
-            background: none; 
-            border: none; 
-            cursor: pointer;
-            transition: transform 0.1s; 
-            user-select: none;
-            width: 150px;
-            height: 150px;
-            margin: 0 auto;
-            display: block;
-        }
+        .seal-btn { background: none; border: none; cursor: pointer; transition: transform 0.1s; width: 150px; height: 150px; margin: 0 auto; display: block; -webkit-tap-highlight-color: transparent; }
         .seal-btn:active { transform: scale(0.9); }
-        .counter { color: #94a3b8; margin: 15px 0 30px; font-weight: bold; }
-
-        /* Таймер */
+        .counter { color: #94a3b8; margin: 15px 0 5px; font-weight: bold; }
+        .cheat-warning { color: #ef4444; font-size: 0.9rem; font-weight: bold; height: 20px; margin-bottom: 15px; visibility: hidden; }
         .timer { display: flex; justify-content: center; gap: 15px; margin-bottom: 30px; }
         .box { background: #0f172a; padding: 15px; border-radius: 10px; min-width: 70px; }
         .num { font-size: 1.8rem; font-weight: bold; color: #38bdf8; }
         .text { font-size: 0.8rem; color: #64748b; margin-top: 5px; }
-
-        /* Элементы Админки */
-        #auth-form {
-            display: none; background: #0f172a; padding: 20px; border-radius: 12px; margin-top: 20px;
-        }
-        #admin-panel {
-            display: none; background: #0f172a; padding: 20px; border-radius: 12px; margin-top: 20px; text-align: left;
-        }
-        input {
-            width: 100%; padding: 10px; margin: 10px 0; border-radius: 6px;
-            border: 1px solid #334155; background: #1e293b; color: #fff; box-sizing: border-box;
-        }
-        button.action-btn {
-            width: 100%; padding: 10px; background: #38bdf8; color: #0f172a;
-            border: none; border-radius: 6px; font-weight: bold; cursor: pointer;
-        }
+        #auth-form, #admin-panel { display: none; background: #0f172a; padding: 20px; border-radius: 12px; margin-top: 20px; text-align: left; }
+        input { width: 100%; padding: 10px; margin: 10px 0; border-radius: 6px; border: 1px solid #334155; background: #1e293b; color: #fff; box-sizing: border-box; }
+        button.action-btn { width: 100%; padding: 10px; background: #38bdf8; color: #0f172a; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; }
     </style>
 </head>
 <body>
@@ -68,10 +32,9 @@
         <h1>🦭 Кликер Тюлень</h1>
         <p>Идут технические работы. Скоро запуск!</p>
 
-        <!-- Кликер с векторным тюленем вместо эмодзи -->
+        <!-- Блок кликера -->
         <div>
-            <button class="seal-btn" onclick="clickSeal()">
-                <!-- Встроенная SVG графика милого тюленя -->
+            <button class="seal-btn" id="seal-trigger">
                 <svg viewBox="0 0 100 100" width="100%" height="100%">
                     <circle cx="50" cy="55" r="35" fill="#94a3b8"/>
                     <ellipse cx="35" cy="45" r="5" rx="4" ry="6" fill="#0f172a"/>
@@ -89,9 +52,10 @@
                 </svg>
             </button>
             <div class="counter">Кликов: <span id="clicks">0</span></div>
+            <div class="cheat-warning" id="warning-text">Обнаружен автокликер! Блокировка 3 сек.</div>
         </div>
 
-        <!-- Простой Таймер -->
+        <!-- Блок таймера -->
         <div class="timer">
             <div class="box"><div class="num" id="days">00</div><div class="text">Дни</div></div>
             <div class="box"><div class="num" id="hours">00</div><div class="text">Часы</div></div>
@@ -99,48 +63,130 @@
             <div class="box"><div class="num" id="secs">00</div><div class="text">Сек</div></div>
         </div>
 
-        <!-- Форма ввода пароля -->
+        <!-- Форма авторизации -->
         <div id="auth-form">
-            <p style="margin-bottom: 10px;">Введите пароль администратора:</p>
+            <p style="margin-bottom: 10px; font-weight: bold;">🔑 Введите пароль администратора:</p>
             <input type="password" id="pass-input" placeholder="Пароль...">
-            <button class="action-btn" onclick="checkPassword()">Войти</button>
+            <button class="action-btn" onclick="checkPassword()">Войти в админку</button>
         </div>
 
         <!-- Панель управления -->
         <div id="admin-panel">
-            <h3 style="color: #f472b6; margin-bottom: 10px;">⚙️ Управление временем</h3>
+            <h3 style="color: #f472b6; margin-bottom: 10px;">⚙️ Управление временем для всех</h3>
             <input type="datetime-local" id="datetime">
-            <button class="action-btn" onclick="saveNewDate()">Сохранить время для всех</button>
+            <button class="action-btn" onclick="saveNewDate()">Сохранить время</button>
         </div>
     </div>
-
     <script>
-        // Данные вашей базы Supabase
+        // --- НАЧАЛО ЧАСТИ 2 (КЛИКЕР И АНТИЧИТ) ---
+        let count = 0;
+        let lastClickTime = 0;
+        let clickIntervals = [];
+        let isBlocked = false;
+
+        const sealTrigger = document.getElementById("seal-trigger");
+
+        function registerClick(e) {
+            if (isBlocked) return;
+
+            // Блокировка ненастоящих (программных) кликов от скриптов
+            if (e && !e.isTrusted) {
+                triggerAntiCheat();
+                return;
+            }
+
+            const now = performance.now();
+            
+            if (lastClickTime > 0) {
+                const interval = now - lastClickTime;
+                clickIntervals.push(interval);
+                
+                // Запоминаем только 10 последних интервалов для проверки средней скорости
+                if (clickIntervals.length > 10) clickIntervals.shift();
+
+                // Если сделано больше 5 кликов и средняя скорость быстрее 90мс (~11 кликов/сек)
+                if (clickIntervals.length >= 5) {
+                    const averageInterval = clickIntervals.reduce((a, b) => a + b, 0) / clickIntervals.length;
+                    if (averageInterval < 90) {
+                        triggerAntiCheat();
+                        return;
+                    }
+                }
+            }
+
+            lastClickTime = now;
+            count++;
+            document.getElementById("clicks").innerText = count;
+        }
+
+        function triggerAntiCheat() {
+            isBlocked = true;
+            document.getElementById("warning-text").style.visibility = "visible";
+            clickIntervals = [];
+            
+            // Включаем блокировку ровно на 3 секунды
+            setTimeout(() => {
+                isBlocked = false;
+                document.getElementById("warning-text").style.visibility = "hidden";
+                lastClickTime = performance.now();
+            }, 3000);
+        }
+
+        // Подключаем отслеживание кликов к кнопке тюленя
+        sealTrigger.addEventListener("click", registerClick);
+        // --- КОНЕЦ ЧАСТИ 2 ---
+        // --- НАЧАЛО ЧАСТИ 3 (ПАРОЛЬ И ИНИЦИАЛИЗАЦИЯ SUPABASE) ---
         const SUPABASE_URL = "https://supabase.co";
         const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV5dG15b3JycG5hcXpxdHdzZm5jIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcxNTM5MDgsImV4cCI6MjEwMjcyOTkwOH0.nWolRM9vTEA5PRVKJ1VKJIyTyMPXvEWKqGEDgaG2GIw";
         
-        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
+        let supabase;
         let targetDate = null;
         let timerInterval = null;
 
+        // Открываем форму ввода пароля, если в ссылке есть ?admin=true
         const urlParams = new URLSearchParams(window.location.search);
         if (urlParams.get('admin') === 'true') {
             document.getElementById('auth-form').style.display = 'block';
         }
 
-        function checkPassword() {
+        // Проверяем пароль "seal"
+        window.checkPassword = function() {
             const pass = document.getElementById('pass-input').value;
             if (pass === 'seal') {
-                document.getElementById('auth-form').style.display = 'none';
-                document.getElementById('admin-panel').style.display = 'block';
+                document.getElementById('auth-form').style.display = 'none'; // Прячем ввод пароля
+                document.getElementById('admin-panel').style.display = 'block'; // Показываем настройки времени
             } else {
                 alert('Неверный пароль!');
             }
         }
 
+        // Запуск базы данных через 1 секунду после загрузки модулей
+        setTimeout(async () => {
+            if (!window.supabaseCreateClient) {
+                console.error("Ошибка: модуль базы данных не успел загрузиться.");
+                return;
+            }
+            
+            // Создаем подключение к вашей базе данных
+            supabase = window.supabaseCreateClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+            
+            // Загружаем сохраненную дату (эту функцию мы добавим в Части 4)
+            await loadTargetDate();
+
+            // Включаем Realtime-синхронизацию изменений со всеми игроками
+            supabase
+                .channel('public:settings')
+                .on('postgres_changes', { event: '*', filter: 'id=eq.main_timer', table: 'settings', schema: 'public' }, payload => {
+                    if (payload.new && payload.new.target_date) {
+                        targetDate = new Date(payload.new.target_date).getTime();
+                    }
+                })
+                .subscribe();
+        }, 1000);
+        // --- КОНЕЦ ЧАСТИ 3 ---
+        // --- НАЧАЛО ЧАСТИ 4 (РАБОТА С ДАТОЙ И ТАЙМЕР) ---
         async function loadTargetDate() {
-            let { data, error } = await supabase
+            let { data } = await supabase
                 .from('settings')
                 .select('target_date')
                 .eq('id', 'main_timer')
@@ -162,7 +208,7 @@
             startTimer();
         }
 
-        async function saveNewDate() {
+        window.saveNewDate = async function() {
             const inputVal = document.getElementById('datetime').value;
             if (!inputVal) return alert('Выберите дату!');
             
@@ -178,15 +224,6 @@
                 alert('Успешно сохранено в базу! Время изменилось для всех.');
             }
         }
-
-        supabase
-            .channel('public:settings')
-            .on('postgres_changes', { event: '*', filter: 'id=eq.main_timer', table: 'settings', schema: 'public' }, payload => {
-                if (payload.new && payload.new.target_date) {
-                    targetDate = new Date(payload.new.target_date).getTime();
-                }
-            })
-            .subscribe();
 
         function startTimer() {
             if (timerInterval) clearInterval(timerInterval);
@@ -216,14 +253,7 @@
             timerInterval = setInterval(update, 1000);
             update();
         }
-
-        let count = 0;
-        function clickSeal() {
-            count++;
-            document.getElementById("clicks").innerText = count;
-        }
-
-        loadTargetDate();
+        // --- КОНЕЦ ЧАСТИ 4 ---
     </script>
 </body>
 </html>
