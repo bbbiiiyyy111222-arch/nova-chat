@@ -73,7 +73,7 @@
         #admin-panel h2 { font-size: 1.3rem; margin-bottom: 15px; color: #f472b6; }
         .form-group { margin-bottom: 15px; }
         label { display: block; font-size: 0.85rem; color: #94a3b8; margin-bottom: 5px; }
-        input[type="datetime-local"] {
+        input[type="datetime-local"], input[type="password"] {
             width: 100%; padding: 12px; border-radius: 10px; background: #0f172a;
             border: 1px solid #334155; color: #fff; font-size: 1rem;
         }
@@ -83,6 +83,12 @@
         }
         .btn-save:hover { background: #0ea5e9; }
         .status { font-size: 0.85rem; color: #34d399; margin-top: 8px; display: none; }
+        
+        /* Окно авторизации */
+        #auth-gate {
+            display: none; margin-top: 20px; padding: 20px; 
+            background: rgba(15, 23, 42, 0.6); border-radius: 16px; text-align: left;
+        }
     </style>
 </head>
 <body>
@@ -105,6 +111,13 @@
             </div>
         </div>
 
+        <!-- Форма ввода пароля -->
+        <div id="auth-gate">
+            <label for="pass-input">Введите пароль администратора:</label>
+            <input type="password" id="pass-input" placeholder="Пароль...">
+            <button class="btn-save" style="margin-top: 10px;" onclick="checkPassword()">Войти в панель</button>
+        </div>
+
         <!-- Панель управления -->
         <div id="admin-panel">
             <h2>⚙️ Панель управления временем</h2>
@@ -118,7 +131,6 @@
     </div>
 
     <script>
-        // Интеграция с вашей базой данных Supabase
         const SUPABASE_URL = "https://supabase.co";
         const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV5dG15b3JycG5hcXpxdHdzZm5jIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcxNTM5MDgsImV4cCI6MjEwMjcyOTkwOH0.nWolRM9vTEA5PRVKJ1VKJIyTyMPXvEWKqGEDgaG2GIw";
         
@@ -127,30 +139,48 @@
         let targetDate = null;
         let timerInterval = null;
 
-        // Вход в админку через секретный параметр URL (?admin=true)
+        // Обработка секретного входа ?admin=true
         const urlParams = new URLSearchParams(window.location.search);
         if (urlParams.get('admin') === 'true') {
-            document.getElementById('admin-panel').style.display = 'block';
+            document.getElementById('auth-gate').style.display = 'block';
         }
 
-        // Получение даты из Supabase
+        // Проверка секретного пароля "seal"
+        function checkPassword() {
+            const enteredPassword = document.getElementById('pass-input').value;
+            if (enteredPassword === 'seal') {
+                document.getElementById('auth-gate').style.display = 'none';
+                document.getElementById('admin-panel').style.display = 'block';
+            } else {
+                alert('Неверный пароль!');
+            }
+        }
+
+        // Получение даты из базы Supabase (с защитой от отсутствия строки)
         async function loadTargetDate() {
-            const { data, error } = await supabase
+            let { data, error } = await supabase
                 .from('settings')
                 .select('target_date')
                 .eq('id', 'main_timer')
-                .single();
+                .maybeSingle(); // Предотвращает падение, если строка еще не создана
 
-            if (data && data.target_date) {
+            // Если строки с id 'main_timer' нет, создаем дефолтную запись прямо отсюда
+            if (!data) {
+                const defaultDate = new Date();
+                defaultDate.setDate(defaultDate.getDate() + 7);
+                
+                await supabase.from('settings').upsert({ id: 'main_timer', target_date: defaultDate.toISOString() });
+                targetDate = defaultDate.getTime();
+            } else {
                 targetDate = new Date(data.target_date).getTime();
-                
-                // Автозаполнение инпута в админке
-                const localDate = new Date(data.target_date);
-                localDate.setMinutes(localDate.getMinutes() - localDate.getTimezoneOffset());
-                document.getElementById('datetime').value = localDate.toISOString().slice(0, 16);
-                
-                startTimer();
             }
+
+            // Настройка инпута в админке
+            const localDate = new Date(targetDate);
+            localDate.setMinutes(localDate.getMinutes() - localDate.getTimezoneOffset());
+            document.getElementById('datetime').value = localDate.toISOString().slice(0, 16);
+            
+            startTimer();
         }
 
         // Запись новой даты в Supabase
@@ -162,8 +192,7 @@
 
             const { error } = await supabase
                 .from('settings')
-                .update({ target_date: isoDate })
-                .eq('id', 'main_timer');
+                .upsert({ id: 'main_timer', target_date: isoDate }); // upsert создаст или обновит запись
 
             if (error) {
                 alert('Ошибка базы данных: ' + error.message);
@@ -174,15 +203,17 @@
             }
         }
 
-        // Realtime: автоматическое обновление на лету у всех игроков
+        // Realtime автоматическое обновление таймера на экранах всех пользователей
         supabase
             .channel('public:settings')
-            .on('postgres_changes', { event: 'UPDATE', filter: 'id=eq.main_timer', table: 'settings', schema: 'public' }, payload => {
-                targetDate = new Date(payload.new.target_date).getTime();
+            .on('postgres_changes', { event: '*', filter: 'id=eq.main_timer', table: 'settings', schema: 'public' }, payload => {
+                if(payload.new && payload.new.target_date) {
+                    targetDate = new Date(payload.new.target_date).getTime();
+                }
             })
             .subscribe();
 
-        // Работа обратного отсчета
+        // Функция обратного отсчета
         function startTimer() {
             if (timerInterval) clearInterval(timerInterval);
             
@@ -192,34 +223,3 @@
                 const distance = targetDate - now;
 
                 if (distance < 0) {
-                    document.getElementById("main-content").innerHTML = "<h1>🦭 Игра Запущена!</h1><p>Обновите страницу, чтобы начать кликать полноценно!</p>";
-                    clearInterval(timerInterval);
-                    return;
-                }
-
-                const days = Math.floor(distance / (1000 * 60 * 60 * 24));
-                const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-                const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
-                const seconds = Math.floor((distance % (1000 * 60)) / 1000);
-
-                document.getElementById("days").innerText = String(days).padStart(2, '0');
-                document.getElementById("hours").innerText = String(hours).padStart(2, '0');
-                document.getElementById("minutes").innerText = String(minutes).padStart(2, '0');
-                document.getElementById("seconds").innerText = String(seconds).padStart(2, '0');
-            }
-            
-            timerInterval = setInterval(update, 1000);
-            update();
-        }
-
-        // Интерактив-заглушка
-        let count = 0;
-        function clickSeal() {
-            count++;
-            document.getElementById("clicks").innerText = count;
-        }
-
-        loadTargetDate();
-    </script>
-</body>
-</html>
