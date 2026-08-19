@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Кликер Тюлень — Технические работы</title>
+    <!-- Подключаем официальный скрипт Supabase -->
+    <script src="https://jsdelivr.net"></script>
     <style>
         body {
             background: #0f172a;
@@ -22,10 +24,17 @@
         }
         h1 { color: #38bdf8; margin-bottom: 20px; }
         
-        /* Кнопка-Тюлень */
+        /* Кнопка-Тюлень в виде качественной векторной картинки */
         .seal-btn {
-            background: none; border: none; font-size: 5rem; cursor: pointer;
-            transition: transform 0.1s; user-select: none;
+            background: none; 
+            border: none; 
+            cursor: pointer;
+            transition: transform 0.1s; 
+            user-select: none;
+            width: 150px;
+            height: 150px;
+            margin: 0 auto;
+            display: block;
         }
         .seal-btn:active { transform: scale(0.9); }
         .counter { color: #94a3b8; margin: 15px 0 30px; font-weight: bold; }
@@ -59,9 +68,26 @@
         <h1>🦭 Кликер Тюлень</h1>
         <p>Идут технические работы. Скоро запуск!</p>
 
-        <!-- Кликер -->
+        <!-- Кликер с векторным тюленем вместо эмодзи -->
         <div>
-            <button class="seal-btn" onclick="clickSeal()">🦭</button>
+            <button class="seal-btn" onclick="clickSeal()">
+                <!-- Встроенная SVG графика милого тюленя -->
+                <svg viewBox="0 0 100 100" width="100%" height="100%">
+                    <circle cx="50" cy="55" r="35" fill="#94a3b8"/>
+                    <ellipse cx="35" cy="45" r="5" rx="4" ry="6" fill="#0f172a"/>
+                    <ellipse cx="65" cy="45" r="5" rx="4" ry="6" fill="#0f172a"/>
+                    <circle cx="33" cy="43" r="1.5" fill="#ffffff"/>
+                    <circle cx="63" cy="43" r="1.5" fill="#ffffff"/>
+                    <ellipse cx="50" cy="54" r="8" rx="7" ry="5" fill="#475569"/>
+                    <polygon points="46,54 54,54 50,59" fill="#0f172a"/>
+                    <path d="M 44,62 Q 50,66 50,60 Q 50,66 56,62" stroke="#0f172a" stroke-width="2" fill="none"/>
+                    <ellipse cx="50" cy="59" r="4" rx="5" ry="3" fill="#f472b6" opacity="0.5"/>
+                    <path d="M 12,65 Q 5,60 8,72 Q 15,75 20,68" fill="#64748b"/>
+                    <path d="M 88,65 Q 95,60 92,72 Q 85,75 80,68" fill="#64748b"/>
+                    <path d="M 30,56 L 15,54 M 30,59 L 12,59 M 30,62 L 16,65" stroke="#0f172a" stroke-width="1.5"/>
+                    <path d="M 70,56 L 85,54 M 70,59 L 88,59 M 70,62 L 84,65" stroke="#0f172a" stroke-width="1.5"/>
+                </svg>
+            </button>
             <div class="counter">Кликов: <span id="clicks">0</span></div>
         </div>
 
@@ -84,72 +110,120 @@
         <div id="admin-panel">
             <h3 style="color: #f472b6; margin-bottom: 10px;">⚙️ Управление временем</h3>
             <input type="datetime-local" id="datetime">
-            <button class="action-btn" onclick="saveNewDate()">Сохранить время</button>
+            <button class="action-btn" onclick="saveNewDate()">Сохранить время для всех</button>
         </div>
     </div>
 
     <script>
-        // Дата по умолчанию (на 7 дней вперед)
-        let targetDate = new Date();
-        targetDate.setDate(targetDate.getDate() + 7);
-        targetDate = targetDate.getTime();
+        // Данные вашей базы Supabase
+        const SUPABASE_URL = "https://supabase.co";
+        const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV5dG15b3JycG5hcXpxdHdzZm5jIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcxNTM5MDgsImV4cCI6MjEwMjcyOTkwOH0.nWolRM9vTEA5PRVKJ1VKJIyTyMPXvEWKqGEDgaG2GIw";
+        
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-        // 1. Проверяем, есть ли в ссылке ?admin=true. Если есть — показываем ввод пароля
+        let targetDate = null;
+        let timerInterval = null;
+
         const urlParams = new URLSearchParams(window.location.search);
         if (urlParams.get('admin') === 'true') {
             document.getElementById('auth-form').style.display = 'block';
         }
 
-        // 2. Функция проверки пароля
         function checkPassword() {
             const pass = document.getElementById('pass-input').value;
             if (pass === 'seal') {
-                document.getElementById('auth-form').style.display = 'none'; // Скрываем ввод пароля
-                document.getElementById('admin-panel').style.display = 'block'; // Показываем админку
+                document.getElementById('auth-form').style.display = 'none';
+                document.getElementById('admin-panel').style.display = 'block';
             } else {
                 alert('Неверный пароль!');
             }
         }
 
-        // 3. Локальное сохранение даты (пока без базы данных)
-        function saveNewDate() {
+        async function loadTargetDate() {
+            let { data, error } = await supabase
+                .from('settings')
+                .select('target_date')
+                .eq('id', 'main_timer')
+                .maybeSingle();
+
+            if (!data) {
+                const defaultDate = new Date();
+                defaultDate.setDate(defaultDate.getDate() + 7);
+                await supabase.from('settings').upsert({ id: 'main_timer', target_date: defaultDate.toISOString() });
+                targetDate = defaultDate.getTime();
+            } else {
+                targetDate = new Date(data.target_date).getTime();
+            }
+
+            const localDate = new Date(targetDate);
+            localDate.setMinutes(localDate.getMinutes() - localDate.getTimezoneOffset());
+            document.getElementById('datetime').value = localDate.toISOString().slice(0, 16);
+            
+            startTimer();
+        }
+
+        async function saveNewDate() {
             const inputVal = document.getElementById('datetime').value;
             if (!inputVal) return alert('Выберите дату!');
             
-            targetDate = new Date(inputVal).getTime();
-            alert('Время обновлено на этой странице!');
-        }
+            const isoDate = new Date(inputVal).toISOString();
 
-        // 4. Логика работы таймера
-        function updateTimer() {
-            const now = new Date().getTime();
-            const distance = targetDate - now;
+            const { error } = await supabase
+                .from('settings')
+                .upsert({ id: 'main_timer', target_date: isoDate });
 
-            if (distance < 0) {
-                document.querySelector(".timer").innerHTML = "<b style='color:#34d399'>ИГРА ЗАПУЩЕНА!</b>";
-                return;
+            if (error) {
+                alert('Ошибка сохранения: ' + error.message);
+            } else {
+                alert('Успешно сохранено в базу! Время изменилось для всех.');
             }
-
-            const days = Math.floor(distance / (1000 * 60 * 60 * 24));
-            const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-            const mins = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
-            const secs = Math.floor((distance % (1000 * 60)) / 1000);
-
-            document.getElementById("days").innerText = String(days).padStart(2, '0');
-            document.getElementById("hours").innerText = String(hours).padStart(2, '0');
-            document.getElementById("mins").innerText = String(mins).padStart(2, '0');
-            document.getElementById("secs").innerText = String(secs).padStart(2, '0');
         }
 
-        setInterval(updateTimer, 1000);
-        updateTimer();
+        supabase
+            .channel('public:settings')
+            .on('postgres_changes', { event: '*', filter: 'id=eq.main_timer', table: 'settings', schema: 'public' }, payload => {
+                if (payload.new && payload.new.target_date) {
+                    targetDate = new Date(payload.new.target_date).getTime();
+                }
+            })
+            .subscribe();
 
-        // Простой кликер
+        function startTimer() {
+            if (timerInterval) clearInterval(timerInterval);
+            
+            function update() {
+                if (!targetDate) return;
+                const now = new Date().getTime();
+                const distance = targetDate - now;
+
+                if (distance < 0) {
+                    document.querySelector(".timer").innerHTML = "<b style='color:#34d399'>ИГРА ЗАПУЩЕНА!</b>";
+                    clearInterval(timerInterval);
+                    return;
+                }
+
+                const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+                const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                const mins = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+                const secs = Math.floor((distance % (1000 * 60)) / 1000);
+
+                document.getElementById("days").innerText = String(days).padStart(2, '0');
+                document.getElementById("hours").innerText = String(hours).padStart(2, '0');
+                document.getElementById("mins").innerText = String(mins).padStart(2, '0');
+                document.getElementById("secs").innerText = String(secs).padStart(2, '0');
+            }
+            
+            timerInterval = setInterval(update, 1000);
+            update();
+        }
+
         let count = 0;
         function clickSeal() {
             count++;
             document.getElementById("clicks").innerText = count;
         }
+
+        loadTargetDate();
     </script>
 </body>
 </html>
