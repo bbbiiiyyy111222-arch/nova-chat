@@ -4,25 +4,104 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Кликер Тюлень — Технические работы</title>
-       <!-- НАДЁЖНОЕ ПОДКЛЮЧЕНИЕ БАЗЫ ДАННЫХ SUPABASE (ОБНОВЛЕНО) -->
+    
+    <!-- Подключение базы данных через зеркало unpkg -->
     <script type="module">
         import { createClient } from 'https://unpkg.com'
         window.supabaseCreateClient = createClient;
     </script>
-        body { background: #0f172a; color: #f8fafc; font-family: sans-serif; text-align: center; padding: 40px 20px; user-select: none; }
-        .container { background: #1e293b; padding: 30px; border-radius: 20px; max-width: 450px; margin: 0 auto; box-shadow: 0 10px 25px rgba(0,0,0,0.3); }
+
+    <style>
+        body { 
+            background: #0f172a; 
+            color: #f8fafc; 
+            font-family: sans-serif; 
+            text-align: center; 
+            padding: 40px 20px; 
+            user-select: none; 
+        }
+        .container { 
+            background: #1e293b; 
+            padding: 30px; 
+            border-radius: 20px; 
+            max-width: 450px; 
+            margin: 0 auto; 
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3); 
+        }
         h1 { color: #38bdf8; margin-bottom: 20px; }
-        .seal-btn { background: none; border: none; cursor: pointer; transition: transform 0.1s; width: 150px; height: 150px; margin: 0 auto; display: block; -webkit-tap-highlight-color: transparent; }
+        
+        .seal-btn { 
+            background: none; 
+            border: none; 
+            cursor: pointer; 
+            transition: transform 0.1s; 
+            width: 150px; 
+            height: 150px; 
+            margin: 0 auto; 
+            display: block; 
+            -webkit-tap-highlight-color: transparent; 
+        }
         .seal-btn:active { transform: scale(0.9); }
         .counter { color: #94a3b8; margin: 15px 0 5px; font-weight: bold; }
-        .cheat-warning { color: #ef4444; font-size: 0.9rem; font-weight: bold; height: 20px; margin-bottom: 15px; visibility: hidden; }
-        .timer { display: flex; justify-content: center; gap: 15px; margin-bottom: 30px; }
-        .box { background: #0f172a; padding: 15px; border-radius: 10px; min-width: 70px; }
-        .num { font-size: 1.8rem; font-weight: bold; color: #38bdf8; }
-        .text { font-size: 0.8rem; color: #64748b; margin-top: 5px; }
-        #auth-form, #admin-panel { display: none; background: #0f172a; padding: 20px; border-radius: 12px; margin-top: 20px; text-align: left; }
-        input { width: 100%; padding: 10px; margin: 10px 0; border-radius: 6px; border: 1px solid #334155; background: #1e293b; color: #fff; box-sizing: border-box; }
-        button.action-btn { width: 100%; padding: 10px; background: #38bdf8; color: #0f172a; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; }
+        
+        .cheat-warning { 
+            color: #ef4444; 
+            font-size: 0.9rem; 
+            font-weight: bold; 
+            height: 20px; 
+            margin-bottom: 15px; 
+            visibility: hidden; 
+        }
+        .timer { 
+            display: flex; 
+            justify-content: center; 
+            gap: 15px; 
+            margin-bottom: 30px; 
+        }
+        .box { 
+            background: #0f172a; 
+            padding: 15px; 
+            border-radius: 10px; 
+            min-width: 70px; 
+        }
+        .num { 
+            font-size: 1.8rem; 
+            font-weight: bold; 
+            color: #38bdf8; 
+        }
+        .text { 
+            font-size: 0.8rem; 
+            color: #64748b; 
+            margin-top: 5px; 
+        }
+        #auth-form, #admin-panel { 
+            display: none; 
+            background: #0f172a; 
+            padding: 20px; 
+            border-radius: 12px; 
+            margin-top: 20px; 
+            text-align: left; 
+        }
+        input { 
+            width: 100%; 
+            padding: 10px; 
+            margin: 10px 0; 
+            border-radius: 6px; 
+            border: 1px solid #334155; 
+            background: #1e293b; 
+            color: #fff; 
+            box-sizing: border-box; 
+        }
+        button.action-btn { 
+            width: 100%; 
+            padding: 10px; 
+            background: #38bdf8; 
+            color: #0f172a; 
+            border: none; 
+            border-radius: 6px; 
+            font-weight: bold; 
+            cursor: pointer; 
+        }
     </style>
 </head>
 <body>
@@ -76,8 +155,9 @@
             <button class="action-btn" onclick="saveNewDate()">Сохранить время</button>
         </div>
     </div>
+
     <script>
-        // --- НАЧАЛО ЧАСТИ 2 (КЛИКЕР И АНТИЧИТ) ---
+        // --- КЛИКЕР И АНТИЧИТ ---
         let count = 0;
         let lastClickTime = 0;
         let clickIntervals = [];
@@ -87,23 +167,17 @@
 
         function registerClick(e) {
             if (isBlocked) return;
-
-            // Блокировка ненастоящих (программных) кликов от скриптов
             if (e && !e.isTrusted) {
                 triggerAntiCheat();
                 return;
             }
 
             const now = performance.now();
-            
             if (lastClickTime > 0) {
                 const interval = now - lastClickTime;
                 clickIntervals.push(interval);
-                
-                // Запоминаем только 10 последних интервалов для проверки средней скорости
                 if (clickIntervals.length > 10) clickIntervals.shift();
 
-                // Если сделано больше 5 кликов и средняя скорость быстрее 90мс (~11 кликов/сек)
                 if (clickIntervals.length >= 5) {
                     const averageInterval = clickIntervals.reduce((a, b) => a + b, 0) / clickIntervals.length;
                     if (averageInterval < 90) {
@@ -122,8 +196,6 @@
             isBlocked = true;
             document.getElementById("warning-text").style.visibility = "visible";
             clickIntervals = [];
-            
-            // Включаем блокировку ровно на 3 секунды
             setTimeout(() => {
                 isBlocked = false;
                 document.getElementById("warning-text").style.visibility = "hidden";
@@ -131,10 +203,9 @@
             }, 3000);
         }
 
-        // Подключаем отслеживание кликов к кнопке тюленя
         sealTrigger.addEventListener("click", registerClick);
-        // --- КОНЕЦ ЧАСТИ 2 ---
-        // --- НАЧАЛО ЧАСТИ 3 (ПАРОЛЬ И ИНИЦИАЛИЗАЦИЯ SUPABASE) ---
+
+        // --- БАЗА ДАННЫХ SUPABASE И АДМИНКА ---
         const SUPABASE_URL = "https://supabase.co";
         const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV5dG15b3JycG5hcXpxdHdzZm5jIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcxNTM5MDgsImV4cCI6MjEwMjcyOTkwOH0.nWolRM9vTEA5PRVKJ1VKJIyTyMPXvEWKqGEDgaG2GIw";
         
@@ -142,37 +213,30 @@
         let targetDate = null;
         let timerInterval = null;
 
-        // Открываем форму ввода пароля, если в ссылке есть ?admin=true
         const urlParams = new URLSearchParams(window.location.search);
         if (urlParams.get('admin') === 'true') {
             document.getElementById('auth-form').style.display = 'block';
         }
 
-        // Проверяем пароль "seal"
         window.checkPassword = function() {
             const pass = document.getElementById('pass-input').value;
             if (pass === 'seal') {
-                document.getElementById('auth-form').style.display = 'none'; // Прячем ввод пароля
-                document.getElementById('admin-panel').style.display = 'block'; // Показываем настройки времени
+                document.getElementById('auth-form').style.display = 'none';
+                document.getElementById('admin-panel').style.display = 'block';
             } else {
                 alert('Неверный пароль!');
             }
         }
 
-        // Запуск базы данных через 1 секунду после загрузки модулей
-        setTimeout(async () => {
+        function initSupabase() {
             if (!window.supabaseCreateClient) {
-                console.error("Ошибка: модуль базы данных не успел загрузиться.");
+                setTimeout(initSupabase, 300);
                 return;
             }
             
-            // Создаем подключение к вашей базе данных
             supabase = window.supabaseCreateClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-            
-            // Загружаем сохраненную дату (эту функцию мы добавим в Части 4)
-            await loadTargetDate();
+            loadTargetDate();
 
-            // Включаем Realtime-синхронизацию изменений со всеми игроками
             supabase
                 .channel('public:settings')
                 .on('postgres_changes', { event: '*', filter: 'id=eq.main_timer', table: 'settings', schema: 'public' }, payload => {
@@ -181,9 +245,10 @@
                     }
                 })
                 .subscribe();
-        }, 1000);
-        // --- КОНЕЦ ЧАСТИ 3 ---
-        // --- НАЧАЛО ЧАСТИ 4 (РАБОТА С ДАТОЙ И ТАЙМЕР) ---
+        }
+
+        setTimeout(initSupabase, 100);
+
         async function loadTargetDate() {
             let { data } = await supabase
                 .from('settings')
@@ -199,7 +264,6 @@
             } else {
                 targetDate = new Date(data.target_date).getTime();
             }
-
             const localDate = new Date(targetDate);
             localDate.setMinutes(localDate.getMinutes() - localDate.getTimezoneOffset());
             document.getElementById('datetime').value = localDate.toISOString().slice(0, 16);
@@ -208,27 +272,33 @@
         }
 
         window.saveNewDate = async function() {
+            if (!supabase) return alert('База данных ещё не подключилась. Подождите 2 секунды.');
+            
             const inputVal = document.getElementById('datetime').value;
             if (!inputVal) return alert('Выберите дату!');
-            
+
             const isoDate = new Date(inputVal).toISOString();
+            targetDate = new Date(inputVal).getTime();
+            
+            startTimer();
 
             const { error } = await supabase
                 .from('settings')
                 .upsert({ id: 'main_timer', target_date: isoDate });
 
             if (error) {
-                alert('Ошибка сохранения: ' + error.message);
+                alert('Ошибка: ' + error.message + '\n\nПодсказка: Отключите RLS для таблицы settings в панели Supabase!');
             } else {
-                alert('Успешно сохранено в базу! Время изменилось для всех.');
+                alert('Время успешно обновлено для всех игроков!');
             }
         }
 
         function startTimer() {
             if (timerInterval) clearInterval(timerInterval);
-            
+
             function update() {
                 if (!targetDate) return;
+                
                 const now = new Date().getTime();
                 const distance = targetDate - now;
 
@@ -248,11 +318,7 @@
                 document.getElementById("mins").innerText = String(mins).padStart(2, '0');
                 document.getElementById("secs").innerText = String(secs).padStart(2, '0');
             }
-            
+
             timerInterval = setInterval(update, 1000);
             update();
         }
-        // --- КОНЕЦ ЧАСТИ 4 ---
-    </script>
-</body>
-</html>
