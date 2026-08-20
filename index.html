@@ -3,9 +3,11 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="theme-color" content="#0f172a">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cellipse cx='12' cy='13' rx='9' ry='8' fill='%23f472b6'/%3E%3Ccircle cx='9' cy='11.5' r='1.1' fill='%230f172a'/%3E%3Ccircle cx='15' cy='11.5' r='1.1' fill='%230f172a'/%3E%3C/svg%3E">
 <title>Тюлень Кликер: Эволюция</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <style>
@@ -13,26 +15,33 @@
     --bg:#0f172a;
     --card:#1e293b;
     --card-2:#243247;
+    --card-3:#2b3a52;
     --blue:#38bdf8;
     --violet:#8b5cf6;
     --pink:#f472b6;
+    --gold:#f5b942;
     --text:#e2e8f0;
     --muted:#94a3b8;
     --danger:#f87171;
     --success:#4ade80;
+    --border:rgba(148,163,184,0.15);
   }
   *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
   html,body{
-    margin:0; padding:0; height:100%; width:100%;
+    margin:0; padding:0; min-height:100%; width:100%;
     background:
-      radial-gradient(circle at 20% 10%, rgba(139,92,246,0.15), transparent 40%),
-      radial-gradient(circle at 80% 90%, rgba(56,189,248,0.15), transparent 40%),
+      radial-gradient(circle at 15% 8%, rgba(139,92,246,0.16), transparent 42%),
+      radial-gradient(circle at 85% 92%, rgba(56,189,248,0.16), transparent 42%),
+      radial-gradient(circle at 50% 50%, rgba(244,113,197,0.05), transparent 60%),
       var(--bg);
     color:var(--text);
     font-family:"Segoe UI", Roboto, -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
     overflow-x:hidden;
     -webkit-font-smoothing:antialiased;
     user-select:none;
+  }
+  @media (prefers-reduced-motion: reduce){
+    *{ animation-duration:0.001ms !important; transition-duration:0.001ms !important; }
   }
   #app{
     min-height:100dvh;
@@ -43,52 +52,77 @@
   }
   .topbar{
     width:100%;
-    max-width:720px;
+    max-width:760px;
     display:flex;
     align-items:center;
     justify-content:center;
     gap:10px;
-    padding:18px 16px 8px 16px;
+    padding:16px 16px 6px 16px;
+    position:relative;
   }
   .topbar h1{
-    font-size:22px;
+    font-size:21px;
     margin:0;
-    letter-spacing:0.5px;
+    letter-spacing:0.4px;
     display:flex;
     align-items:center;
     gap:8px;
     cursor:pointer;
     user-select:none;
     color:var(--text);
-    text-shadow:0 0 12px rgba(56,189,248,0.35);
+    text-shadow:0 0 14px rgba(56,189,248,0.35);
   }
   .topbar h1:active{ transform:scale(0.98); }
   .icon{ display:inline-flex; flex-shrink:0; }
+  .conn-dot{
+    position:absolute; right:16px; top:50%; transform:translateY(-50%);
+    width:9px; height:9px; border-radius:50%;
+    background:var(--muted);
+    box-shadow:0 0 8px currentColor;
+  }
+  .conn-dot.ok{ background:var(--success); color:var(--success); }
+  .conn-dot.bad{ background:var(--danger); color:var(--danger); }
+
+  .conn-banner{
+    width:100%; max-width:420px;
+    background:rgba(248,113,113,0.1);
+    border:1px solid rgba(248,113,113,0.35);
+    color:#fecaca;
+    padding:12px 14px;
+    border-radius:14px;
+    font-size:12.5px;
+    line-height:1.5;
+    display:none;
+    margin:0 auto 14px auto;
+  }
+  .conn-banner.show{ display:block; }
+  .conn-banner code{ background:rgba(0,0,0,0.25); padding:1px 5px; border-radius:5px; font-size:11px; }
 
   /* ================= AUTH SCREEN ================= */
   #authScreen{
     width:100%;
     max-width:420px;
     margin:auto;
-    padding:24px;
+    padding:20px 24px;
     display:flex;
     flex-direction:column;
     gap:16px;
   }
   .auth-card{
     background:linear-gradient(180deg, var(--card), var(--card-2));
-    border:1px solid rgba(148,163,184,0.15);
-    border-radius:20px;
-    padding:28px 24px;
+    border:1px solid var(--border);
+    border-radius:22px;
+    padding:30px 24px;
     box-shadow:0 20px 60px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.03);
   }
+  .auth-card .hero-seal{ display:flex; justify-content:center; margin-bottom:6px; }
   .auth-card h2{
     margin:0 0 6px 0;
-    font-size:19px;
+    font-size:20px;
     text-align:center;
   }
   .auth-card p.sub{
-    margin:0 0 20px 0;
+    margin:0 0 22px 0;
     text-align:center;
     color:var(--muted);
     font-size:13px;
@@ -100,6 +134,7 @@
     color:var(--muted);
     margin-bottom:6px;
     letter-spacing:0.3px;
+    font-weight:600;
   }
   input[type="text"], input[type="password"], input[type="number"]{
     width:100%;
@@ -111,6 +146,7 @@
     font-size:15px;
     outline:none;
     transition:border-color .15s, box-shadow .15s;
+    font-family:inherit;
   }
   input:focus{
     border-color:var(--blue);
@@ -125,12 +161,12 @@
     border-radius:12px;
     padding:13px 18px;
     font-size:15px;
-    font-weight:600;
+    font-weight:700;
     cursor:pointer;
     color:#fff;
     background:linear-gradient(135deg, var(--blue), var(--violet));
     box-shadow:0 8px 20px rgba(56,189,248,0.25);
-    transition:transform .1s ease, filter .15s ease;
+    transition:transform .1s ease, filter .15s ease, box-shadow .15s;
     width:100%;
   }
   .btn:active{ transform:scale(0.97); }
@@ -138,9 +174,12 @@
   .btn.secondary{
     background:rgba(148,163,184,0.12);
     box-shadow:none;
+    color:var(--text);
   }
+  .btn.small{ width:auto; padding:9px 14px; font-size:13px; border-radius:10px; }
   .btn.danger{ background:linear-gradient(135deg, #ef4444, #f472b6); box-shadow:0 8px 20px rgba(244,113,197,0.25);}
   .btn.success{ background:linear-gradient(135deg, #22c55e, #38bdf8); box-shadow:0 8px 20px rgba(56,189,248,0.25);}
+  .btn.gold{ background:linear-gradient(135deg, #f5b942, #f472b6); box-shadow:0 8px 20px rgba(245,185,66,0.25);}
   .error-msg{
     background:rgba(248,113,113,0.12);
     border:1px solid rgba(248,113,113,0.35);
@@ -157,10 +196,10 @@
   #gameScreen{
     display:none;
     width:100%;
-    max-width:720px;
+    max-width:760px;
     flex-direction:column;
     align-items:center;
-    padding:0 16px 32px 16px;
+    padding:0 16px 28px 16px;
     flex:1;
   }
   .hud{
@@ -170,32 +209,56 @@
     justify-content:space-between;
     gap:12px;
     background:linear-gradient(180deg, var(--card), var(--card-2));
-    border:1px solid rgba(148,163,184,0.15);
-    border-radius:18px;
-    padding:12px 16px;
+    border:1px solid var(--border);
+    border-radius:20px;
+    padding:14px 16px;
     margin-top:6px;
   }
-  .hud-left{ display:flex; align-items:center; gap:10px; min-width:0; }
-  .avatar{ flex-shrink:0; border-radius:50%; box-shadow:0 0 0 2px rgba(148,163,184,0.25); }
-  .hud-name{ font-size:14px; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:120px; }
-  .hud-name .tag{ display:block; font-size:11px; color:var(--muted); font-weight:400; }
+  .hud-left{ display:flex; align-items:center; gap:11px; min-width:0; flex:1; }
+  .avatar-wrap{ position:relative; flex-shrink:0; }
+  .avatar{ border-radius:50%; box-shadow:0 0 0 2px rgba(148,163,184,0.25); display:block; }
+  .lvl-badge{
+    position:absolute; bottom:-4px; right:-4px;
+    background:linear-gradient(135deg, var(--gold), var(--pink));
+    color:#1e293b;
+    font-size:9.5px; font-weight:800;
+    border-radius:999px;
+    padding:1.5px 5px;
+    border:2px solid var(--card);
+    line-height:1.3;
+  }
+  .hud-name-block{ min-width:0; flex:1; }
+  .hud-name{ font-size:14.5px; font-weight:700; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; display:block; }
+  .hud-name .tag{ display:block; font-size:10.5px; color:var(--muted); font-weight:500; margin-top:1px; }
+  .xp-bar-track{
+    margin-top:6px; height:5px; width:100%; max-width:150px;
+    background:rgba(148,163,184,0.18);
+    border-radius:999px; overflow:hidden;
+  }
+  .xp-bar-fill{
+    height:100%; border-radius:999px;
+    background:linear-gradient(90deg, var(--blue), var(--violet));
+    width:0%;
+    transition:width .3s ease;
+  }
+  .hud-right{ display:flex; flex-direction:column; align-items:flex-end; gap:5px; flex-shrink:0; }
   .hud-balance{
-    display:flex; align-items:center; gap:8px;
+    display:flex; align-items:center; gap:7px;
     background:rgba(56,189,248,0.1);
     border:1px solid rgba(56,189,248,0.3);
-    padding:9px 14px;
+    padding:8px 13px;
     border-radius:999px;
-    font-weight:700;
-    font-size:16px;
+    font-weight:800;
+    font-size:15px;
     color:var(--blue);
     white-space:nowrap;
   }
-  .hud-passive{ font-size:11px; color:var(--muted); text-align:right; }
+  .hud-passive{ font-size:10.5px; color:var(--muted); }
 
   .actions-row{
     width:100%;
     display:flex;
-    gap:10px;
+    gap:9px;
     margin-top:12px;
   }
   .action-btn{
@@ -205,17 +268,34 @@
     align-items:center;
     gap:6px;
     background:linear-gradient(180deg, var(--card), var(--card-2));
-    border:1px solid rgba(148,163,184,0.15);
+    border:1px solid var(--border);
     border-radius:16px;
-    padding:12px 8px;
+    padding:12px 6px;
     color:var(--text);
     cursor:pointer;
-    font-size:12px;
-    font-weight:600;
+    font-size:11.5px;
+    font-weight:700;
     transition:transform .1s ease, border-color .15s;
+    text-align:center;
   }
   .action-btn:active{ transform:scale(0.96); border-color:var(--blue); }
+  .action-btn .badge-dot{
+    position:relative;
+  }
+  .action-btn .badge-dot::after{
+    content:attr(data-count);
+    display:none;
+  }
 
+  .stage-name{
+    margin-top:20px;
+    font-size:12px;
+    font-weight:700;
+    letter-spacing:1px;
+    text-transform:uppercase;
+    color:var(--pink);
+    text-shadow:0 0 12px rgba(244,113,197,0.4);
+  }
   .stage{
     position:relative;
     width:100%;
@@ -223,13 +303,13 @@
     flex-direction:column;
     align-items:center;
     justify-content:center;
-    margin-top:26px;
+    margin-top:4px;
     flex:1;
   }
   .seal-wrap{
     position:relative;
-    width:min(78vw, 320px);
-    height:min(78vw, 320px);
+    width:min(72vw, 300px);
+    height:min(72vw, 300px);
     display:flex;
     align-items:center;
     justify-content:center;
@@ -241,23 +321,33 @@
     height:100%;
     filter:drop-shadow(0 20px 40px rgba(0,0,0,0.5));
     transition:transform .12s cubic-bezier(.34,1.56,.64,1);
+    animation:idleSway 3.6s ease-in-out infinite;
   }
-  .seal-wrap.tapped svg{ transform:scale(0.9); }
-  .seal-wrap.blocked svg{ filter:drop-shadow(0 20px 40px rgba(0,0,0,0.5)) grayscale(0.4); }
+  @keyframes idleSway{
+    0%,100%{ transform:rotate(0deg) translateY(0); }
+    50%{ transform:rotate(-1.2deg) translateY(-3px); }
+  }
+  .seal-wrap.tapped svg{ transform:scale(0.88) rotate(0deg); animation:none; }
+  .seal-wrap.blocked svg{ filter:drop-shadow(0 20px 40px rgba(0,0,0,0.5)) grayscale(0.5); animation:none; }
 
-  .cheek{ opacity:0; transition:opacity .2s ease; }
+  .cheek{ opacity:0.22; transition:opacity .2s ease; }
   .cheek.glow{ opacity:1; }
 
   .floaters{ position:absolute; inset:0; pointer-events:none; overflow:visible; }
   .floater{
     position:absolute;
-    font-size:20px;
+    font-size:19px;
     font-weight:800;
     color:var(--pink);
     text-shadow:0 0 10px rgba(244,113,197,0.9), 0 0 20px rgba(244,113,197,0.5);
     display:flex; align-items:center; gap:4px;
     animation:floatUp 0.9s ease-out forwards;
     white-space:nowrap;
+  }
+  .floater.crit{
+    font-size:24px;
+    color:var(--gold);
+    text-shadow:0 0 12px rgba(245,185,66,0.95), 0 0 26px rgba(245,185,66,0.6);
   }
   @keyframes floatUp{
     0%{ transform:translate(-50%,-50%) scale(0.6); opacity:0; }
@@ -266,7 +356,7 @@
   }
 
   .cheat-banner{
-    margin-top:18px;
+    margin-top:16px;
     background:rgba(248,113,113,0.12);
     border:1px solid rgba(248,113,113,0.4);
     color:#fecaca;
@@ -281,14 +371,22 @@
   }
   .cheat-banner.show{ display:flex; }
 
-  .power-info{
-    margin-top:18px;
+  .stat-strip{
+    margin-top:16px;
+    width:100%;
     display:flex;
-    gap:22px;
-    font-size:13px;
-    color:var(--muted);
+    gap:8px;
   }
-  .power-info b{ color:var(--text); }
+  .stat-chip{
+    flex:1;
+    background:rgba(15,23,42,0.5);
+    border:1px solid var(--border);
+    border-radius:14px;
+    padding:9px 6px;
+    text-align:center;
+  }
+  .stat-chip .v{ font-size:14px; font-weight:800; color:var(--text); }
+  .stat-chip .l{ font-size:9.5px; color:var(--muted); margin-top:2px; text-transform:uppercase; letter-spacing:0.4px; }
 
   /* ================= MODALS ================= */
   .modal-overlay{
@@ -306,13 +404,13 @@
   }
   .modal{
     width:100%;
-    max-width:480px;
+    max-width:520px;
     max-height:88vh;
     overflow-y:auto;
     background:linear-gradient(180deg, var(--card), var(--card-2));
     border:1px solid rgba(148,163,184,0.2);
     border-radius:22px 22px 0 0;
-    padding:22px 20px calc(22px + env(safe-area-inset-bottom)) 20px;
+    padding:20px 18px calc(20px + env(safe-area-inset-bottom)) 18px;
     animation:slideUp .22s ease-out;
   }
   @media (min-width:640px){
@@ -322,47 +420,87 @@
   @keyframes popIn{ from{ transform:scale(0.95); opacity:0;} to{ transform:scale(1); opacity:1;} }
   .modal-head{
     display:flex; align-items:center; justify-content:space-between;
-    margin-bottom:16px;
+    margin-bottom:14px;
   }
-  .modal-head h3{ margin:0; font-size:17px; display:flex; align-items:center; gap:8px; }
+  .modal-head h3{ margin:0; font-size:16.5px; display:flex; align-items:center; gap:8px; }
   .close-btn{
     background:rgba(148,163,184,0.15);
     border:none; color:var(--text);
     width:32px; height:32px; border-radius:50%;
     display:flex; align-items:center; justify-content:center;
     cursor:pointer;
+    flex-shrink:0;
+    font-size:15px;
   }
 
-  .shop-item{
-    display:flex; align-items:center; gap:14px;
+  .tabs{
+    display:flex; gap:6px; margin-bottom:14px;
     background:rgba(15,23,42,0.5);
-    border:1px solid rgba(148,163,184,0.15);
-    border-radius:16px;
-    padding:14px;
-    margin-bottom:12px;
+    border-radius:12px;
+    padding:4px;
   }
+  .tab-btn{
+    flex:1; text-align:center;
+    padding:9px 4px;
+    border-radius:9px;
+    font-size:12.5px;
+    font-weight:700;
+    color:var(--muted);
+    cursor:pointer;
+    display:flex; align-items:center; justify-content:center; gap:5px;
+  }
+  .tab-btn.active{
+    background:linear-gradient(135deg, var(--blue), var(--violet));
+    color:#fff;
+  }
+  .tab-panel{ display:none; }
+  .tab-panel.active{ display:block; }
+
+  .shop-item{
+    display:flex; align-items:center; gap:12px;
+    background:rgba(15,23,42,0.5);
+    border:1px solid var(--border);
+    border-radius:16px;
+    padding:12px;
+    margin-bottom:10px;
+    position:relative;
+  }
+  .shop-item.locked{ opacity:0.55; }
   .shop-item .icon-box{
-    width:46px; height:46px; flex-shrink:0;
+    width:42px; height:42px; flex-shrink:0;
     border-radius:12px;
     display:flex; align-items:center; justify-content:center;
     background:rgba(56,189,248,0.12);
   }
   .shop-item .info{ flex:1; min-width:0; }
-  .shop-item .info .title{ font-weight:700; font-size:14px; margin-bottom:2px; }
-  .shop-item .info .desc{ font-size:12px; color:var(--muted); }
+  .shop-item .info .title-row{ display:flex; align-items:center; gap:6px; }
+  .shop-item .info .title{ font-weight:700; font-size:13.5px; }
+  .shop-item .info .owned{
+    font-size:10px; color:var(--blue); background:rgba(56,189,248,0.12);
+    padding:1px 6px; border-radius:999px; font-weight:700;
+  }
+  .shop-item .info .desc{ font-size:11.5px; color:var(--muted); margin-top:2px; }
   .shop-item .buy-btn{
     flex-shrink:0;
-    padding:10px 14px;
+    padding:9px 12px;
     border-radius:10px;
     border:none;
     background:linear-gradient(135deg, var(--blue), var(--violet));
-    color:#fff; font-weight:700; font-size:13px;
+    color:#fff; font-weight:700; font-size:12.5px;
     cursor:pointer;
     display:flex; flex-direction:column; align-items:center; gap:2px;
-    min-width:92px;
+    min-width:84px;
   }
   .shop-item .buy-btn:disabled{ opacity:0.4; cursor:not-allowed; }
-  .buy-btn .cost{ display:flex; align-items:center; gap:4px; font-size:12px; }
+  .buy-btn .cost{ display:flex; align-items:center; gap:4px; font-size:11.5px; }
+  .lock-tag{
+    display:flex; align-items:center; gap:5px;
+    font-size:11px; font-weight:700; color:var(--muted);
+    background:rgba(148,163,184,0.1);
+    padding:8px 10px; border-radius:10px;
+    min-width:84px; justify-content:center; text-align:center;
+    flex-shrink:0;
+  }
 
   .lb-row{
     display:flex; align-items:center; gap:12px;
@@ -400,17 +538,58 @@
   }
   .offline-modal p.desc{ text-align:center; color:var(--muted); font-size:13px; margin:0 0 20px 0; }
 
+  .ach-grid{ display:grid; grid-template-columns:1fr; gap:10px; }
+  .ach-card{
+    display:flex; align-items:center; gap:12px;
+    background:rgba(15,23,42,0.5);
+    border:1px solid var(--border);
+    border-radius:14px;
+    padding:12px;
+  }
+  .ach-card.unlocked{ border-color:rgba(245,185,66,0.4); background:rgba(245,185,66,0.08); }
+  .ach-icon{
+    width:40px; height:40px; border-radius:12px; flex-shrink:0;
+    display:flex; align-items:center; justify-content:center;
+    background:rgba(148,163,184,0.12);
+  }
+  .ach-card.unlocked .ach-icon{ background:rgba(245,185,66,0.2); }
+  .ach-info .title{ font-size:13px; font-weight:700; }
+  .ach-info .desc{ font-size:11px; color:var(--muted); margin-top:2px; }
+  .ach-progress{ margin-left:auto; font-size:11px; color:var(--muted); flex-shrink:0; }
+
+  .admin-status{
+    display:flex; align-items:center; gap:8px;
+    font-size:11.5px; color:var(--muted);
+    background:rgba(15,23,42,0.5);
+    border-radius:10px; padding:8px 12px;
+    margin-bottom:14px;
+  }
   .admin-section{
     background:rgba(15,23,42,0.5);
-    border:1px solid rgba(148,163,184,0.15);
+    border:1px solid var(--border);
     border-radius:16px;
     padding:16px;
-    margin-bottom:16px;
+    margin-bottom:14px;
   }
-  .admin-section h4{ margin:0 0 12px 0; font-size:14px; display:flex; align-items:center; gap:8px; }
+  .admin-section h4{ margin:0 0 4px 0; font-size:14px; display:flex; align-items:center; gap:8px; }
+  .admin-section .hint{ font-size:11.5px; color:var(--muted); margin:0 0 14px 0; line-height:1.5; }
+  .input-with-btn{ display:flex; gap:8px; }
+  .input-with-btn input{ flex:1; }
+  .player-preview{
+    display:none;
+    align-items:center; gap:10px;
+    background:rgba(56,189,248,0.08);
+    border:1px solid rgba(56,189,248,0.25);
+    border-radius:10px;
+    padding:8px 10px;
+    margin-top:10px;
+    font-size:12px;
+  }
+  .player-preview.show{ display:flex; }
+  .player-preview b{ color:var(--blue); }
   .switch-row{
     display:flex; align-items:center; justify-content:space-between;
-    margin-top:10px;
+    margin-top:12px;
   }
   .switch{
     position:relative; width:48px; height:26px;
@@ -425,10 +604,10 @@
     transition:left .15s;
   }
   .switch.on::after{ left:24px; }
-  .admin-msg{ font-size:12px; margin-top:8px; min-height:16px; }
+  .admin-msg{ font-size:12px; margin-top:10px; min-height:16px; font-weight:600; }
   .admin-msg.ok{ color:var(--success); }
   .admin-msg.err{ color:var(--danger); }
-  .row-2{ display:flex; gap:10px; }
+  .row-2{ display:flex; gap:10px; margin-top:12px; }
   .row-2 .btn{ flex:1; }
 
   .toast{
@@ -447,10 +626,12 @@
     pointer-events:none;
     max-width:88vw;
     text-align:center;
+    display:flex; align-items:center; gap:8px;
   }
   .toast.show{ opacity:1; transform:translateX(-50%) translateY(0); }
+  .toast.gold{ border-color:rgba(245,185,66,0.5); box-shadow:0 10px 30px rgba(245,185,66,0.25); }
 
-  .footer-hint{ margin-top:auto; padding-top:18px; font-size:11px; color:rgba(148,163,184,0.5); text-align:center; }
+  .footer-hint{ margin-top:auto; padding-top:16px; font-size:11px; color:rgba(148,163,184,0.5); text-align:center; }
 </style>
 </head>
 <body>
@@ -461,11 +642,14 @@
       <span class="icon" id="titleSealIcon"></span>
       Тюлень Кликер
     </h1>
+    <span class="conn-dot" id="connDot" title="Статус подключения к базе данных"></span>
   </div>
 
   <!-- ======= AUTH SCREEN ======= -->
   <div id="authScreen">
+    <div class="conn-banner" id="connBanner"></div>
     <div class="auth-card">
+      <div class="hero-seal" id="authHeroSeal"></div>
       <h2>Добро пожаловать!</h2>
       <p class="sub">Введите никнейм, чтобы начать эволюцию тюленя</p>
       <div id="authError" class="error-msg"></div>
@@ -485,13 +669,17 @@
   <div id="gameScreen">
     <div class="hud">
       <div class="hud-left">
-        <div id="avatarBox"></div>
-        <div class="hud-name">
-          <span id="hudName">—</span>
+        <div class="avatar-wrap">
+          <div id="avatarBox"></div>
+          <div class="lvl-badge" id="lvlBadge">1</div>
+        </div>
+        <div class="hud-name-block">
+          <span class="hud-name" id="hudName">—</span>
           <span class="tag" id="hudTag">Хранитель тюленя</span>
+          <div class="xp-bar-track"><div class="xp-bar-fill" id="xpBarFill"></div></div>
         </div>
       </div>
-      <div style="display:flex; flex-direction:column; align-items:flex-end; gap:4px;">
+      <div class="hud-right">
         <div class="hud-balance"><span class="icon" id="hudFishIcon"></span><span id="hudCoins">0</span></div>
         <div class="hud-passive" id="hudPassive">+0 Рыбок/сек</div>
       </div>
@@ -500,14 +688,19 @@
     <div class="actions-row">
       <div class="action-btn" id="openShopBtn">
         <span class="icon" id="shopIcon"></span>
-        Магазин улучшений
+        Магазин
+      </div>
+      <div class="action-btn" id="openAchBtn">
+        <span class="icon" id="achIconBtn"></span>
+        Достижения
       </div>
       <div class="action-btn" id="openLbBtn">
         <span class="icon" id="trophyIcon"></span>
-        Таблица лидеров
+        Лидеры
       </div>
     </div>
 
+    <div class="stage-name" id="stageName">Малыш</div>
     <div class="stage">
       <div class="seal-wrap" id="sealWrap">
         <div class="floaters" id="floaters"></div>
@@ -517,9 +710,11 @@
         <span class="icon" id="warnIcon"></span>
         <span>Обнаружен автокликер! Тюлень отдыхает 5 сек.</span>
       </div>
-      <div class="power-info">
-        <div>Сила клика: <b id="infoPower">1</b></div>
-        <div>Доход/сек: <b id="infoPassive">0</b></div>
+      <div class="stat-strip">
+        <div class="stat-chip"><div class="v" id="infoPower">1</div><div class="l">Сила клика</div></div>
+        <div class="stat-chip"><div class="v" id="infoPassive">0</div><div class="l">Рыбок/сек</div></div>
+        <div class="stat-chip"><div class="v" id="infoCrit">0%</div><div class="l">Шанс крита</div></div>
+        <div class="stat-chip"><div class="v" id="infoLevel">1</div><div class="l">Уровень</div></div>
       </div>
     </div>
     <div class="footer-hint">Совет: жмите по тюленю аккуратно, роботов тут не любят 🙂</div>
@@ -544,30 +739,23 @@
       <h3><span class="icon" id="shopModalIcon"></span> Магазин улучшений</h3>
       <button class="close-btn" data-close="shopOverlay">✕</button>
     </div>
-
-    <div class="shop-item">
-      <div class="icon-box" id="finIcon"></div>
-      <div class="info">
-        <div class="title">Сила плавника</div>
-        <div class="desc">Увеличивает силу клика на +1</div>
-      </div>
-      <button class="buy-btn" id="buyPowerBtn">
-        <span>Купить</span>
-        <span class="cost"><span id="powerCost">15</span> <span class="icon icon-mini" id="powerCostIcon"></span></span>
-      </button>
+    <div class="tabs">
+      <div class="tab-btn active" data-tab="power">Сила клика</div>
+      <div class="tab-btn" data-tab="passive">Пасс. доход</div>
     </div>
+    <div class="tab-panel active" id="tabPower"></div>
+    <div class="tab-panel" id="tabPassive"></div>
+  </div>
+</div>
 
-    <div class="shop-item">
-      <div class="icon-box" id="farmIcon"></div>
-      <div class="info">
-        <div class="title">Рыбная ферма</div>
-        <div class="desc">Пассивный доход +1 Рыбка в секунду</div>
-      </div>
-      <button class="buy-btn" id="buyFarmBtn">
-        <span>Купить</span>
-        <span class="cost"><span id="farmCost">20</span> <span class="icon icon-mini" id="farmCostIcon"></span></span>
-      </button>
+<!-- ======= ACHIEVEMENTS MODAL ======= -->
+<div class="modal-overlay" id="achOverlay">
+  <div class="modal">
+    <div class="modal-head">
+      <h3><span class="icon" id="achModalIcon"></span> Достижения</h3>
+      <button class="close-btn" data-close="achOverlay">✕</button>
     </div>
+    <div class="ach-grid" id="achGrid"></div>
   </div>
 </div>
 
@@ -605,13 +793,22 @@
       <h3><span class="icon" id="adminGearIcon"></span> Панель администратора</h3>
       <button class="close-btn" data-close="adminPanelOverlay">✕</button>
     </div>
+    <div class="admin-status">
+      <span class="conn-dot" id="adminConnDot"></span>
+      <span id="adminConnLabel">Проверка соединения с базой...</span>
+    </div>
 
     <div class="admin-section">
       <h4><span class="icon" id="adminShieldIcon"></span> Точечный античит</h4>
-      <div class="field" style="margin-bottom:8px;">
+      <p class="hint">Отключает проверку на автокликер только для указанного игрока. У всех остальных защита работает как обычно.</p>
+      <div class="field" style="margin-bottom:0;">
         <label for="acNickInput">Никнейм игрока</label>
-        <input type="text" id="acNickInput" placeholder="Введите ник">
+        <div class="input-with-btn">
+          <input type="text" id="acNickInput" placeholder="Введите ник">
+          <button class="btn secondary small" id="acFindBtn">Найти</button>
+        </div>
       </div>
+      <div class="player-preview" id="acPreview"></div>
       <div class="switch-row">
         <span style="font-size:13px; color:var(--muted);">Античит выключен для игрока</span>
         <div class="switch" id="acSwitch"></div>
@@ -622,17 +819,22 @@
 
     <div class="admin-section">
       <h4><span class="icon" id="adminCoinIcon"></span> Управление Рыбками</h4>
+      <p class="hint">Мгновенно изменяет баланс любого игрока в базе данных. Если это ник <b>milk</b>, экран обновится сразу же.</p>
       <div class="field">
         <label for="coinNickInput">Никнейм игрока</label>
-        <input type="text" id="coinNickInput" placeholder="Введите ник">
+        <div class="input-with-btn">
+          <input type="text" id="coinNickInput" placeholder="Введите ник">
+          <button class="btn secondary small" id="coinFindBtn">Найти</button>
+        </div>
       </div>
-      <div class="field">
+      <div class="player-preview" id="coinPreview"></div>
+      <div class="field" style="margin-top:12px;">
         <label for="coinAmountInput">Количество Рыбок</label>
         <input type="number" id="coinAmountInput" min="0" placeholder="Например: 1000">
       </div>
       <div class="row-2">
-        <button class="btn success" id="addCoinsBtn">Добавить Рыбки</button>
-        <button class="btn danger" id="subCoinsBtn">Отнять Рыбки</button>
+        <button class="btn success" id="addCoinsBtn">Добавить</button>
+        <button class="btn danger" id="subCoinsBtn">Отнять</button>
       </div>
       <div class="admin-msg" id="coinMsg"></div>
     </div>
@@ -647,9 +849,17 @@
    Монолитный файл: интерфейс + логика + подключение к Supabase
    ========================================================================= */
 
-/* ------------------------- SUPABASE ПОДКЛЮЧЕНИЕ ------------------------- */
-/* Официальная ссылка на проект восстановлена из предоставленного anon-ключа
-   (поле "ref" внутри JWT), так как исходный адрес был неполным. */
+/* ------------------------- SUPABASE ПОДКЛЮЧЕНИЕ -------------------------
+   ВАЖНО: если игра пишет в консоль ошибки вида "ERR_CONNECTION_RESET" —
+   это не баг в JS-коде, а означает, что браузер физически не может
+   достучаться до сервера по адресу SUPABASE_URL. Обычно причина одна из:
+   1) проект Supabase с таким URL не существует или был удалён;
+   2) проект стоит на паузе (бесплатные проекты Supabase засыпают
+      после долгого простоя — зайдите в дашборд и "разбудите" его);
+   3) анон-ключ принадлежит другому проекту, а не этому URL;
+   4) блокировка сети/расширением браузера/файрволом.
+   Проверьте реальный "Project URL" и "anon public key" в дашборде
+   Supabase: Project Settings → API, и подставьте их сюда. */
 const SUPABASE_URL = "https://uytmyorrpnaqzqtwsfnc.supabase.co";
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV5dG15b3JycG5hcXpxdHdzZm5jIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcxNTM5MDgsImV4cCI6MjEwMjcyOTkwOH0.nWolRM9vTEA5PRVKJ1VKJIyTyMPXvEWKqGEDgaG2GIw";
 
@@ -660,6 +870,7 @@ const PLAYERS_TABLE = "players";
 const AUTOSAVE_MS = 5000;
 
 let sb = null;
+let dbOnline = false;
 
 function initSupabase(){
   if (window.supabase && typeof window.supabase.createClient === "function"){
@@ -670,15 +881,93 @@ function initSupabase(){
   return false;
 }
 
+async function testConnection(){
+  const dot = document.getElementById("connDot");
+  const banner = document.getElementById("connBanner");
+  if (!sb){
+    dot.className = "conn-dot bad";
+    return false;
+  }
+  try{
+    const { error } = await sb.from(PLAYERS_TABLE).select("nickname", { head:true, count:"exact" }).limit(1);
+    if (error) throw error;
+    dbOnline = true;
+    dot.className = "conn-dot ok";
+    banner.classList.remove("show");
+    return true;
+  } catch(err){
+    dbOnline = false;
+    dot.className = "conn-dot bad";
+    banner.innerHTML = `Нет соединения с базой данных. Проверьте, что проект Supabase по адресу <code>${SUPABASE_URL}</code> активен (не на паузе) и таблица <code>players</code> создана с политикой доступа для анонимного ключа.`;
+    banner.classList.add("show");
+    return false;
+  }
+}
+
+/* ------------------------------- УРОВНИ ------------------------------- */
+const LEVEL_BASE = 90;
+const LEVEL_POWER = 1.55;
+function xpForLevel(n){
+  if (n <= 1) return 0;
+  return Math.floor(LEVEL_BASE * Math.pow(n - 1, LEVEL_POWER));
+}
+function levelFromTotal(total){
+  let lvl = 1;
+  while (lvl < 60 && xpForLevel(lvl + 1) <= total) lvl++;
+  return lvl;
+}
+
+/* ------------------------------ УЛУЧШЕНИЯ ------------------------------ */
+const UPGRADES = [
+  { id:"fin1", tab:"power", name:"Сила плавника", desc:"+1 к силе клика", unlock:1, baseCost:15, growth:1.15, type:"clickAdd", value:1 },
+  { id:"fin2", tab:"power", name:"Крепкие ласты", desc:"+5 к силе клика", unlock:4, baseCost:150, growth:1.16, type:"clickAdd", value:5 },
+  { id:"fur", tab:"power", name:"Тёплый мех", desc:"+30% к силе клика", unlock:6, baseCost:400, growth:1.35, type:"clickMult", value:0.3 },
+  { id:"crit", tab:"power", name:"Меткий улов", desc:"+5% шанс поймать втрое больше рыбы", unlock:8, baseCost:600, growth:1.55, type:"crit", value:0.05, max:8 },
+  { id:"fin3", tab:"power", name:"Стальные плавники", desc:"+25 к силе клика", unlock:9, baseCost:1200, growth:1.18, type:"clickAdd", value:25 },
+  { id:"goldfin", tab:"power", name:"Золотые плавники", desc:"+120 к силе клика", unlock:16, baseCost:8000, growth:1.2, type:"clickAdd", value:120 },
+
+  { id:"farm1", tab:"passive", name:"Рыбная ферма", desc:"+1 Рыбка в секунду", unlock:1, baseCost:20, growth:1.15, type:"passiveAdd", value:1 },
+  { id:"farm2", tab:"passive", name:"Большая ферма", desc:"+8 Рыбок в секунду", unlock:5, baseCost:250, growth:1.16, type:"passiveAdd", value:8 },
+  { id:"auto", tab:"passive", name:"Автоматизация", desc:"+50% к пассивному доходу", unlock:10, baseCost:1500, growth:1.4, type:"passiveMult", value:0.5, max:6 },
+  { id:"factory", tab:"passive", name:"Рыбный завод", desc:"+45 Рыбок в секунду", unlock:12, baseCost:2200, growth:1.18, type:"passiveAdd", value:45 },
+  { id:"oceanarium", tab:"passive", name:"Океанариум", desc:"+180 Рыбок в секунду", unlock:18, baseCost:9000, growth:1.2, type:"passiveAdd", value:180 },
+];
+
+function upgradeCost(u, owned){
+  return Math.round(u.baseCost * Math.pow(u.growth, owned));
+}
+
+/* ------------------------------ ДОСТИЖЕНИЯ ------------------------------ */
+const ACHIEVEMENTS = [
+  { id:"first_click", title:"Первое прикосновение", desc:"Кликните по тюленю впервые", icon:"fish", check:s=>s.totalClicks>=1 },
+  { id:"clicks_100", title:"Тёплая ладонь", desc:"100 кликов по тюленю", icon:"fish", check:s=>s.totalClicks>=100 },
+  { id:"clicks_1000", title:"Друг тюленя", desc:"1 000 кликов по тюленю", icon:"fish", check:s=>s.totalClicks>=1000 },
+  { id:"clicks_10000", title:"Легенда ластов", desc:"10 000 кликов по тюленю", icon:"fish", check:s=>s.totalClicks>=10000 },
+  { id:"first_upgrade", title:"Первая покупка", desc:"Купите любое улучшение", icon:"cart", check:s=>Object.values(s.upgrades).some(v=>v>0) },
+  { id:"earn_1000", title:"Рыбный старт", desc:"Заработайте 1 000 Рыбок всего", icon:"fish", check:s=>s.totalEarned>=1000 },
+  { id:"earn_100000", title:"Рыбный магнат", desc:"Заработайте 100 000 Рыбок всего", icon:"fish", check:s=>s.totalEarned>=100000 },
+  { id:"earn_1000000", title:"Рыбный миллионер", desc:"Заработайте 1 000 000 Рыбок всего", icon:"fish", check:s=>s.totalEarned>=1000000 },
+  { id:"level_5", title:"Подросток", desc:"Достигните 5 уровня", icon:"sealMark", check:s=>s.level>=5 },
+  { id:"level_10", title:"Взрослый тюлень", desc:"Достигните 10 уровня", icon:"sealMark", check:s=>s.level>=10 },
+  { id:"level_20", title:"Морской лев", desc:"Достигните 20 уровня", icon:"trophy", check:s=>s.level>=20 },
+  { id:"fin_master", title:"Мастер плавников", desc:"Купите все улучшения силы клика хотя бы 1 раз", icon:"fin", check:s=>["fin1","fin2","fin3","fur","crit","goldfin"].every(id=>(s.upgrades[id]||0)>0) },
+  { id:"farm_master", title:"Рыбный барон", desc:"Купите все улучшения фермы хотя бы 1 раз", icon:"farm", check:s=>["farm1","farm2","auto","factory","oceanarium"].every(id=>(s.upgrades[id]||0)>0) },
+];
+
 /* ------------------------------- СОСТОЯНИЕ ------------------------------- */
 const state = {
   nickname: null,
   isOwner: false,
   coins: 0,
+  totalEarned: 0,
+  totalClicks: 0,
   clickPower: 1,
   passiveIncome: 0,
+  critChance: 0,
+  level: 1,
+  upgrades: {},
+  achievements: [],
   anticheatDisabled: false,
-  lastSeen: null,
   deviceId: null,
   dirty: false
 };
@@ -686,7 +975,6 @@ const state = {
 const clickTimestamps = [];
 let sealBlocked = false;
 let blockTimeout = null;
-let cheekTimeout = null;
 let headerClickCount = 0;
 let headerClickTimer = null;
 
@@ -706,12 +994,12 @@ function fmt(n){
   return n.toLocaleString("ru-RU");
 }
 
-function showToast(msg){
+function showToast(msg, gold){
   const t = document.getElementById("toast");
-  t.textContent = msg;
-  t.classList.add("show");
+  t.innerHTML = msg;
+  t.className = "toast show" + (gold ? " gold" : "");
   clearTimeout(showToast._h);
-  showToast._h = setTimeout(()=> t.classList.remove("show"), 2600);
+  showToast._h = setTimeout(()=> t.classList.remove("show"), 3000);
 }
 
 function openModal(id){ document.getElementById(id).classList.add("show"); }
@@ -783,25 +1071,31 @@ const ICONS = {
       <circle cx="15" cy="11.5" r="1" fill="#0f172a"/>
       <path d="M9.5 15.5C10.5 16.4 13.5 16.4 14.5 15.5" stroke="#0f172a" stroke-width="1.2" stroke-linecap="round"/>
     </svg>`,
+  medal: (c="var(--gold)", s=22)=>`
+    <svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="12" cy="14" r="6.5" fill="${c}" fill-opacity="0.22" stroke="${c}" stroke-width="1.7"/>
+      <path d="M9.5 14L11.3 15.8L14.7 12.4" stroke="${c}" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M9 8L6 3M15 8L18 3" stroke="${c}" stroke-width="1.6" stroke-linecap="round"/>
+    </svg>`,
 };
 
 function icon(name, mount, color, size){
   const el = document.getElementById(mount);
   if (el) el.innerHTML = ICONS[name](color, size);
 }
-icon("sealMark","titleSealIcon","var(--pink)",24);
-icon("fish","hudFishIcon","var(--blue)",18);
-icon("cart","shopIcon","var(--blue)",22);
-icon("trophy","trophyIcon","#f59e0b",22);
+icon("sealMark","titleSealIcon","var(--pink)",23);
+icon("fish","hudFishIcon","var(--blue)",17);
+icon("cart","shopIcon","var(--blue)",21);
+icon("medal","achIconBtn","var(--gold)",21);
+icon("trophy","trophyIcon","#f59e0b",21);
 icon("warn","warnIcon","#f87171",20);
-icon("cart","shopModalIcon","var(--blue)",20);
-icon("trophy","lbModalIcon","#f59e0b",20);
-icon("lock","adminLockIcon","var(--violet)",20);
-icon("gear","adminGearIcon","var(--blue)",20);
-icon("shield","adminShieldIcon","var(--pink)",18);
-icon("fish","adminCoinIcon","var(--blue)",18);
-icon("fin","finIcon","var(--blue)",24);
-icon("farm","farmIcon","var(--violet)",24);
+icon("cart","shopModalIcon","var(--blue)",19);
+icon("medal","achModalIcon","var(--gold)",19);
+icon("trophy","lbModalIcon","#f59e0b",19);
+icon("lock","adminLockIcon","var(--violet)",19);
+icon("gear","adminGearIcon","var(--blue)",19);
+icon("shield","adminShieldIcon","var(--pink)",17);
+icon("fish","adminCoinIcon","var(--blue)",17);
 icon("fish","powerCostIcon","var(--blue)",13);
 icon("fish","farmCostIcon","var(--blue)",13);
 icon("fish","offlineFishSmall","var(--pink)",22);
@@ -833,42 +1127,85 @@ function renderAvatar(nick, mountId, size=40){
   if (el) el.innerHTML = svg;
 }
 
-/* --------------------------------- ТЮЛЕНЬ --------------------------------- */
+/* --------------------------------- ТЮЛЕНЬ (эволюция) --------------------------------- */
+const STAGES = [
+  { name:"Малыш",      minLevel:1,  bodyA:"#e8edf3", bodyB:"#aebdd1", accent:"var(--blue)" },
+  { name:"Подросток",  minLevel:5,  bodyA:"#dbe7f5", bodyB:"#8ca4c9", accent:"var(--pink)" },
+  { name:"Тюлень",     minLevel:10, bodyA:"#cfe0f2", bodyB:"#6f88b3", accent:"var(--violet)" },
+  { name:"Морской лев", minLevel:18, bodyA:"#f6e3b4", bodyB:"#c99a4a", accent:"var(--gold)" },
+];
+function getStage(level){
+  let st = STAGES[0];
+  for (const s of STAGES){ if (level >= s.minLevel) st = s; }
+  return st;
+}
+
 const MOUTHS = {
-  neutral: "M9.5 15.3C10.6 16 13.4 16 14.5 15.3",
-  smile:   "M8.7 14.6C10 17 14 17 15.3 14.6",
-  frown:   "M8.7 17C10 15 14 15 15.3 17"
+  neutral: "M92 152C104 160 134 160 146 152",
+  smile:   "M86 146C98 172 142 172 154 146",
+  frown:   "M86 172C98 152 142 152 154 172"
 };
 
 function renderSeal(){
   const box = document.getElementById("sealSvgBox");
+  const st = getStage(state.level);
   box.innerHTML = `
   <svg viewBox="0 0 220 220" xmlns="http://www.w3.org/2000/svg">
     <defs>
-      <radialGradient id="bodyGrad" cx="35%" cy="30%" r="80%">
-        <stop offset="0%" stop-color="#cbd5e1"/>
-        <stop offset="100%" stop-color="#8fa3b8"/>
+      <radialGradient id="bodyGrad" cx="35%" cy="28%" r="80%">
+        <stop offset="0%" stop-color="${st.bodyA}"/>
+        <stop offset="100%" stop-color="${st.bodyB}"/>
+      </radialGradient>
+      <radialGradient id="bellyGrad" cx="50%" cy="30%" r="70%">
+        <stop offset="0%" stop-color="#ffffff" stop-opacity="0.55"/>
+        <stop offset="100%" stop-color="#ffffff" stop-opacity="0"/>
       </radialGradient>
     </defs>
-    <ellipse cx="110" cy="150" rx="70" ry="52" fill="url(#bodyGrad)"/>
-    <ellipse cx="110" cy="90" rx="54" ry="50" fill="url(#bodyGrad)"/>
-    <ellipse id="cheekL" class="cheek" cx="82" cy="100" rx="11" ry="8" fill="var(--pink)"/>
-    <ellipse id="cheekR" class="cheek" cx="138" cy="100" rx="11" ry="8" fill="var(--pink)"/>
+
+    ${st.name === "Морской лев" ? `<circle cx="110" cy="105" r="98" fill="${st.accent}" fill-opacity="0.10"/>` : ""}
+
+    <!-- задние ласты -->
+    <path d="M52 178C36 172 26 188 38 200C46 208 60 204 64 190" fill="url(#bodyGrad)"/>
+    <path d="M168 178C184 172 194 188 182 200C174 208 160 204 156 190" fill="url(#bodyGrad)"/>
+
+    <!-- тело -->
+    <ellipse cx="110" cy="152" rx="66" ry="50" fill="url(#bodyGrad)"/>
+    <ellipse cx="110" cy="162" rx="40" ry="30" fill="url(#bellyGrad)"/>
+
+    <!-- передние ласты -->
+    <path id="finL" d="M46 138C30 132 20 148 30 160C38 168 52 164 58 150" fill="url(#bodyGrad)"/>
+    <path id="finR" d="M174 138C190 132 200 148 190 160C182 168 168 164 162 150" fill="url(#bodyGrad)"/>
+
+    <!-- голова -->
+    <ellipse cx="110" cy="92" rx="56" ry="52" fill="url(#bodyGrad)"/>
+
+    <!-- бандана (подросток+) -->
+    ${st.minLevel >= 5 ? `<path d="M64 84C64 76 150 76 156 84C150 92 64 92 64 84Z" fill="${st.accent}" fill-opacity="0.75"/><path d="M64 84L52 96M156 84L168 96" stroke="${st.accent}" stroke-width="4" stroke-linecap="round" fill="none"/>` : ""}
+
+    <!-- корона (морской лев) -->
+    ${st.name === "Морской лев" ? `<path d="M84 46L92 62L110 40L128 62L136 46L132 66H88Z" fill="${st.accent}"/>` : ""}
+
+    <!-- усы -->
+    <path d="M64 96C50 92 40 92 30 94M64 100C50 100 40 102 30 106" stroke="#94a3b8" stroke-width="1.6" stroke-linecap="round" fill="none"/>
+    <path d="M156 96C170 92 180 92 190 94M156 100C170 100 180 102 190 106" stroke="#94a3b8" stroke-width="1.6" stroke-linecap="round" fill="none"/>
+
+    <ellipse id="cheekL" class="cheek" cx="80" cy="104" rx="12" ry="8.5" fill="var(--pink)"/>
+    <ellipse id="cheekR" class="cheek" cx="140" cy="104" rx="12" ry="8.5" fill="var(--pink)"/>
+
     <g id="eyeL">
-      <circle cx="90" cy="82" r="7" fill="#1e293b"/>
-      <circle id="sparkL" cx="92.5" cy="79.5" r="2" fill="#fff" opacity="0"/>
+      <circle cx="90" cy="84" r="8.5" fill="#1e293b"/>
+      <circle id="sparkL" cx="93" cy="80.5" r="2.6" fill="#fff" opacity="0.9"/>
     </g>
     <g id="eyeR">
-      <circle cx="130" cy="82" r="7" fill="#1e293b"/>
-      <circle id="sparkR" cx="132.5" cy="79.5" r="2" fill="#fff" opacity="0"/>
+      <circle cx="130" cy="84" r="8.5" fill="#1e293b"/>
+      <circle id="sparkR" cx="133" cy="80.5" r="2.6" fill="#fff" opacity="0.9"/>
     </g>
-    <ellipse cx="110" cy="96" rx="9" ry="6" fill="#64748b"/>
-    <path id="mouthPath" d="${MOUTHS.neutral}" stroke="#334155" stroke-width="2.4" stroke-linecap="round" fill="none"/>
-    <path d="M40 145C25 140 18 155 28 168C35 176 48 172 52 160" fill="url(#bodyGrad)"/>
-    <path d="M180 145C195 140 202 155 192 168C185 176 172 172 168 160" fill="url(#bodyGrad)"/>
+
+    <ellipse cx="110" cy="100" rx="10" ry="7" fill="#64748b"/>
+    <circle cx="110" cy="98" r="2.4" fill="#334155"/>
+    <path id="mouthPath" d="${MOUTHS.neutral}" stroke="#334155" stroke-width="2.6" stroke-linecap="round" fill="none"/>
   </svg>`;
 }
-renderSeal();
 
 function setSealFace(mode){
   const mouth = document.getElementById("mouthPath");
@@ -876,24 +1213,25 @@ function setSealFace(mode){
   const eyeR = document.getElementById("eyeR");
   const sparkL = document.getElementById("sparkL");
   const sparkR = document.getElementById("sparkR");
+  if (!mouth) return;
   if (mode === "happy"){
     mouth.setAttribute("d", MOUTHS.smile);
-    eyeL.setAttribute("transform","translate(90 82) scale(1.35) translate(-90 -82)");
-    eyeR.setAttribute("transform","translate(130 82) scale(1.35) translate(-130 -82)");
+    eyeL.setAttribute("transform","translate(90 84) scale(1.3) translate(-90 -84)");
+    eyeR.setAttribute("transform","translate(130 84) scale(1.3) translate(-130 -84)");
     sparkL.setAttribute("opacity","1");
     sparkR.setAttribute("opacity","1");
   } else if (mode === "sad"){
     mouth.setAttribute("d", MOUTHS.frown);
-    eyeL.setAttribute("transform","translate(90 82) scale(0.85,0.5) translate(-90 -82)");
-    eyeR.setAttribute("transform","translate(130 82) scale(0.85,0.5) translate(-130 -82)");
-    sparkL.setAttribute("opacity","0");
-    sparkR.setAttribute("opacity","0");
+    eyeL.setAttribute("transform","translate(90 84) scale(0.85,0.5) translate(-90 -84)");
+    eyeR.setAttribute("transform","translate(130 84) scale(0.85,0.5) translate(-130 -84)");
+    sparkL.setAttribute("opacity","0.3");
+    sparkR.setAttribute("opacity","0.3");
   } else {
     mouth.setAttribute("d", MOUTHS.neutral);
     eyeL.setAttribute("transform","");
     eyeR.setAttribute("transform","");
-    sparkL.setAttribute("opacity","0");
-    sparkR.setAttribute("opacity","0");
+    sparkL.setAttribute("opacity","0.9");
+    sparkR.setAttribute("opacity","0.9");
   }
 }
 
@@ -903,6 +1241,20 @@ const ownerPassField = document.getElementById("ownerPassField");
 const ownerPassInput = document.getElementById("ownerPassInput");
 const authError = document.getElementById("authError");
 const loginBtn = document.getElementById("loginBtn");
+
+// маленький превью-тюлень на экране входа
+document.getElementById("authHeroSeal").innerHTML = `
+  <svg width="96" height="96" viewBox="0 0 220 220" xmlns="http://www.w3.org/2000/svg">
+    <defs><radialGradient id="heroGrad" cx="35%" cy="28%" r="80%">
+      <stop offset="0%" stop-color="#e8edf3"/><stop offset="100%" stop-color="#aebdd1"/>
+    </radialGradient></defs>
+    <ellipse cx="110" cy="152" rx="66" ry="50" fill="url(#heroGrad)"/>
+    <ellipse cx="110" cy="92" rx="56" ry="52" fill="url(#heroGrad)"/>
+    <circle cx="90" cy="84" r="8.5" fill="#1e293b"/><circle cx="93" cy="80.5" r="2.6" fill="#fff"/>
+    <circle cx="130" cy="84" r="8.5" fill="#1e293b"/><circle cx="133" cy="80.5" r="2.6" fill="#fff"/>
+    <ellipse cx="110" cy="100" rx="10" ry="7" fill="#64748b"/>
+    <path d="M92 152C104 160 134 160 146 152" stroke="#334155" stroke-width="2.6" stroke-linecap="round" fill="none"/>
+  </svg>`;
 
 nicknameInput.addEventListener("input", ()=>{
   const val = nicknameInput.value.trim().toLowerCase();
@@ -941,7 +1293,12 @@ async function handleLogin(){
 
   try{
     if (!sb && !initSupabase()){
-      showAuthError("Не удалось подключиться к базе данных. Проверьте интернет-соединение.");
+      showAuthError("Не удалось загрузить библиотеку Supabase. Проверьте интернет-соединение и перезагрузите страницу.");
+      return;
+    }
+    const online = await testConnection();
+    if (!online){
+      showAuthError("Нет связи с базой данных. Подробности — в баннере выше.");
       return;
     }
 
@@ -974,6 +1331,10 @@ async function handleLogin(){
           coins: 0,
           click_power: 1,
           passive_income: 0,
+          total_earned: 0,
+          total_clicks: 0,
+          upgrades: {},
+          achievements: [],
           last_seen: new Date().toISOString(),
           anticheat_disabled_for_user: false
         })
@@ -1002,10 +1363,14 @@ async function handleLogin(){
 async function enterGame(row, myToken){
   state.nickname = row.nickname;
   state.isOwner = row.nickname.toLowerCase() === OWNER_NICKNAME;
-  state.clickPower = row.click_power || 1;
-  state.passiveIncome = row.passive_income || 0;
+  state.totalEarned = row.total_earned || 0;
+  state.totalClicks = row.total_clicks || 0;
+  state.upgrades = row.upgrades && typeof row.upgrades === "object" ? row.upgrades : {};
+  state.achievements = Array.isArray(row.achievements) ? row.achievements : [];
   state.anticheatDisabled = !!row.anticheat_disabled_for_user;
   state.deviceId = myToken;
+
+  recomputeStats();
 
   let startCoins = row.coins || 0;
   let offlineGain = 0;
@@ -1016,6 +1381,7 @@ async function enterGame(row, myToken){
     offlineGain = Math.floor(seconds * state.passiveIncome);
   }
   state.coins = startCoins + offlineGain;
+  if (offlineGain > 0){ state.totalEarned += offlineGain; }
 
   if (row.device_id !== myToken){
     await sb.from(PLAYERS_TABLE).update({ device_id: myToken }).ilike("nickname", row.nickname);
@@ -1027,7 +1393,10 @@ async function enterGame(row, myToken){
   renderAvatar(state.nickname, "avatarBox", 42);
   document.getElementById("hudName").textContent = state.nickname;
   document.getElementById("hudTag").textContent = state.isOwner ? "Владелец океана" : "Хранитель тюленя";
+  renderSeal();
   updateHud();
+  renderShop();
+  renderAchievements();
 
   if (offlineGain > 0){
     document.getElementById("offlineAmount").textContent = fmt(offlineGain);
@@ -1037,10 +1406,32 @@ async function enterGame(row, myToken){
 
   startPassiveIncomeLoop();
   startAutosave();
+  checkAchievements();
   saveProgress(true);
 }
 
 document.getElementById("offlineCloseBtn").addEventListener("click", ()=> closeModal("offlineOverlay"));
+
+/* ------------------------------- РАСЧЁТ ХАРАКТЕРИСТИК ------------------------------- */
+function recomputeStats(){
+  let clickAdd = 0, clickMult = 0, passiveAdd = 0, passiveMult = 0, crit = 0;
+  UPGRADES.forEach(u=>{
+    const owned = state.upgrades[u.id] || 0;
+    if (!owned) return;
+    if (u.type === "clickAdd") clickAdd += u.value * owned;
+    if (u.type === "clickMult") clickMult += u.value * owned;
+    if (u.type === "passiveAdd") passiveAdd += u.value * owned;
+    if (u.type === "passiveMult") passiveMult += u.value * owned;
+    if (u.type === "crit") crit += u.value * owned;
+  });
+  state.clickPower = Math.max(1, Math.round((1 + clickAdd) * (1 + clickMult)));
+  state.passiveIncome = Math.round(passiveAdd * (1 + passiveMult));
+  state.critChance = Math.min(0.5, crit);
+  const newLevel = levelFromTotal(state.totalEarned);
+  const leveledUp = newLevel > state.level;
+  state.level = newLevel;
+  return leveledUp;
+}
 
 /* ------------------------------- HUD / ОБНОВЛЕНИЕ ------------------------------- */
 function updateHud(){
@@ -1048,8 +1439,18 @@ function updateHud(){
   document.getElementById("hudPassive").textContent = `+${fmt(state.passiveIncome)} Рыбок/сек`;
   document.getElementById("infoPower").textContent = fmt(state.clickPower);
   document.getElementById("infoPassive").textContent = fmt(state.passiveIncome);
-  document.getElementById("powerCost").textContent = fmt(state.clickPower * 15);
-  document.getElementById("farmCost").textContent = fmt(state.passiveIncome * 50 + 20);
+  document.getElementById("infoCrit").textContent = Math.round(state.critChance*100) + "%";
+  document.getElementById("infoLevel").textContent = state.level;
+  document.getElementById("lvlBadge").textContent = state.level;
+
+  const curXp = xpForLevel(state.level);
+  const nextXp = xpForLevel(state.level + 1);
+  const span = Math.max(1, nextXp - curXp);
+  const progress = Math.min(1, Math.max(0, (state.totalEarned - curXp) / span));
+  document.getElementById("xpBarFill").style.width = (progress*100).toFixed(1) + "%";
+
+  const st = getStage(state.level);
+  document.getElementById("stageName").textContent = st.name + " · Ур. " + state.level;
 }
 
 /* ------------------------------- ПАССИВНЫЙ ДОХОД ------------------------------- */
@@ -1057,10 +1458,21 @@ function startPassiveIncomeLoop(){
   setInterval(()=>{
     if (state.passiveIncome > 0){
       state.coins += state.passiveIncome;
+      state.totalEarned += state.passiveIncome;
       state.dirty = true;
+      const leveledUp = recomputeStats();
       updateHud();
+      if (leveledUp) onLevelUp();
+      checkAchievements();
     }
   }, 1000);
+}
+
+function onLevelUp(){
+  renderSeal();
+  setSealFace("neutral");
+  showToast(`${ICONS.medal("var(--gold)",16)} Новый уровень! Ур. ${state.level} — ${getStage(state.level).name}`, true);
+  renderShop();
 }
 
 /* ------------------------------- АВТОСОХРАНЕНИЕ ------------------------------- */
@@ -1071,14 +1483,23 @@ function startAutosave(){
 async function saveProgress(silent){
   if (!state.nickname || !sb) return;
   try{
-    await sb.from(PLAYERS_TABLE).update({
+    const { error } = await sb.from(PLAYERS_TABLE).update({
       coins: Math.floor(state.coins),
       click_power: state.clickPower,
       passive_income: state.passiveIncome,
+      total_earned: Math.floor(state.totalEarned),
+      total_clicks: state.totalClicks,
+      upgrades: state.upgrades,
+      achievements: state.achievements,
       last_seen: new Date().toISOString()
     }).ilike("nickname", state.nickname);
+    if (error) throw error;
     state.dirty = false;
+    dbOnline = true;
+    document.getElementById("connDot").className = "conn-dot ok";
   } catch(err){
+    dbOnline = false;
+    document.getElementById("connDot").className = "conn-dot bad";
     console.error("Ошибка автосохранения:", err);
   }
 }
@@ -1091,9 +1512,7 @@ const cheatBanner = document.getElementById("cheatBanner");
 sealWrap.addEventListener("click", handleSealClick);
 
 function handleSealClick(e){
-  if (!e.isTrusted){
-    return; // защита от программных кликов
-  }
+  if (!e.isTrusted) return; // защита от программных кликов
   if (sealBlocked) return;
 
   if (!state.anticheatDisabled && detectAutoclick()){
@@ -1101,12 +1520,19 @@ function handleSealClick(e){
     return;
   }
 
-  const gain = state.clickPower;
+  const isCrit = Math.random() < state.critChance;
+  const gain = isCrit ? state.clickPower * 3 : state.clickPower;
   state.coins += gain;
+  state.totalEarned += gain;
+  state.totalClicks += 1;
   state.dirty = true;
+
+  const leveledUp = recomputeStats();
   updateHud();
-  animateTap(e);
-  spawnFloater(e, gain);
+  animateTap();
+  spawnFloater(e, gain, isCrit);
+  if (leveledUp) onLevelUp();
+  checkAchievements();
 }
 
 function detectAutoclick(){
@@ -1146,7 +1572,7 @@ function triggerBlock(){
   }, 5000);
 }
 
-function animateTap(e){
+function animateTap(){
   sealWrap.classList.add("tapped");
   setSealFace("happy");
   document.getElementById("cheekL").classList.add("glow");
@@ -1163,47 +1589,139 @@ function animateTap(e){
   }, 260);
 }
 
-function spawnFloater(e, amount){
+function spawnFloater(e, amount, isCrit){
   const rect = sealWrap.getBoundingClientRect();
   const x = (e.clientX ? e.clientX - rect.left : rect.width/2);
   const y = (e.clientY ? e.clientY - rect.top : rect.height/2);
   const layer = document.getElementById("floaters");
   const div = document.createElement("div");
-  div.className = "floater";
+  div.className = "floater" + (isCrit ? " crit" : "");
   div.style.left = x + "px";
   div.style.top = y + "px";
-  div.innerHTML = `+${fmt(amount)} ${ICONS.fish("var(--pink)",16)}`;
+  div.innerHTML = `${isCrit ? "КРИТ! " : ""}+${fmt(amount)} ${ICONS.fish(isCrit ? "var(--gold)" : "var(--pink)",16)}`;
   layer.appendChild(div);
   setTimeout(()=> div.remove(), 950);
 }
 
 /* ------------------------------- МАГАЗИН ------------------------------- */
+document.querySelectorAll(".tab-btn").forEach(btn=>{
+  btn.addEventListener("click", ()=>{
+    document.querySelectorAll(".tab-btn").forEach(b=>b.classList.remove("active"));
+    document.querySelectorAll(".tab-panel").forEach(p=>p.classList.remove("active"));
+    btn.classList.add("active");
+    document.getElementById(btn.dataset.tab === "power" ? "tabPower" : "tabPassive").classList.add("active");
+  });
+});
+
 document.getElementById("openShopBtn").addEventListener("click", ()=>{
-  updateHud();
+  renderShop();
   openModal("shopOverlay");
 });
 
-document.getElementById("buyPowerBtn").addEventListener("click", async ()=>{
-  const cost = state.clickPower * 15;
+function renderShop(){
+  const power = UPGRADES.filter(u=>u.tab==="power");
+  const passive = UPGRADES.filter(u=>u.tab==="passive");
+  document.getElementById("tabPower").innerHTML = power.map(renderShopItem).join("");
+  document.getElementById("tabPassive").innerHTML = passive.map(renderShopItem).join("");
+
+  document.querySelectorAll(".buy-btn[data-id]").forEach(btn=>{
+    btn.addEventListener("click", ()=> buyUpgrade(btn.dataset.id));
+  });
+}
+
+function renderShopItem(u){
+  const owned = state.upgrades[u.id] || 0;
+  const locked = state.level < u.unlock;
+  const atMax = u.max && owned >= u.max;
+  const cost = upgradeCost(u, owned);
+  const iconName = u.tab === "power" ? "fin" : "farm";
+
+  if (locked){
+    return `
+    <div class="shop-item locked">
+      <div class="icon-box">${ICONS.lock("var(--muted)",20)}</div>
+      <div class="info">
+        <div class="title-row"><span class="title">${u.name}</span></div>
+        <div class="desc">${u.desc}</div>
+      </div>
+      <div class="lock-tag">${ICONS.lock("var(--muted)",13)} Ур. ${u.unlock}</div>
+    </div>`;
+  }
+
+  return `
+    <div class="shop-item">
+      <div class="icon-box">${ICONS[iconName]("var(--blue)",22)}</div>
+      <div class="info">
+        <div class="title-row">
+          <span class="title">${u.name}</span>
+          ${owned > 0 ? `<span class="owned">×${owned}</span>` : ""}
+        </div>
+        <div class="desc">${u.desc}</div>
+      </div>
+      ${atMax
+        ? `<div class="lock-tag">Максимум</div>`
+        : `<button class="buy-btn" data-id="${u.id}" ${state.coins < cost ? "disabled" : ""}>
+            <span>Купить</span>
+            <span class="cost">${fmt(cost)} ${ICONS.fish("var(--blue)",12)}</span>
+          </button>`
+      }
+    </div>`;
+}
+
+async function buyUpgrade(id){
+  const u = UPGRADES.find(x=>x.id===id);
+  if (!u) return;
+  const owned = state.upgrades[id] || 0;
+  if (u.max && owned >= u.max) return;
+  const cost = upgradeCost(u, owned);
   if (state.coins < cost){ showToast("Недостаточно Рыбок!"); return; }
+
   state.coins -= cost;
-  state.clickPower += 1;
+  state.upgrades[id] = owned + 1;
   state.dirty = true;
+  recomputeStats();
   updateHud();
+  renderShop();
   await saveProgress(true);
-  showToast("Сила плавника увеличена!");
+  checkAchievements();
+  showToast(`Куплено: ${u.name}!`);
+}
+
+/* ------------------------------- ДОСТИЖЕНИЯ ------------------------------- */
+function renderAchievements(){
+  document.getElementById("achGrid").innerHTML = ACHIEVEMENTS.map(a=>{
+    const unlocked = state.achievements.includes(a.id);
+    return `
+      <div class="ach-card ${unlocked ? "unlocked" : ""}">
+        <div class="ach-icon">${ICONS[a.icon](unlocked ? "var(--gold)" : "var(--muted)", 20)}</div>
+        <div class="ach-info">
+          <div class="title">${a.title}</div>
+          <div class="desc">${a.desc}</div>
+        </div>
+        <div class="ach-progress">${unlocked ? ICONS.shield("var(--success)",16) : ICONS.lock("var(--muted)",16)}</div>
+      </div>`;
+  }).join("");
+}
+
+document.getElementById("openAchBtn").addEventListener("click", ()=>{
+  renderAchievements();
+  openModal("achOverlay");
 });
 
-document.getElementById("buyFarmBtn").addEventListener("click", async ()=>{
-  const cost = state.passiveIncome * 50 + 20;
-  if (state.coins < cost){ showToast("Недостаточно Рыбок!"); return; }
-  state.coins -= cost;
-  state.passiveIncome += 1;
-  state.dirty = true;
-  updateHud();
-  await saveProgress(true);
-  showToast("Рыбная ферма построена!");
-});
+function checkAchievements(){
+  let unlockedNew = false;
+  ACHIEVEMENTS.forEach(a=>{
+    if (!state.achievements.includes(a.id) && a.check(state)){
+      state.achievements.push(a.id);
+      unlockedNew = true;
+      showToast(`${ICONS.medal("var(--gold)",16)} Достижение открыто: «${a.title}»`, true);
+    }
+  });
+  if (unlockedNew){
+    state.dirty = true;
+    renderAchievements();
+  }
+}
 
 /* ------------------------------- ТАБЛИЦА ЛИДЕРОВ ------------------------------- */
 document.getElementById("openLbBtn").addEventListener("click", async ()=>{
@@ -1276,11 +1794,24 @@ function tryAdminLogin(){
     closeModal("adminLoginOverlay");
     document.getElementById("acMsg").textContent = "";
     document.getElementById("coinMsg").textContent = "";
+    document.getElementById("acPreview").classList.remove("show");
+    document.getElementById("coinPreview").classList.remove("show");
+    refreshAdminConnStatus();
     openModal("adminPanelOverlay");
   } else {
     errEl.textContent = "Неверный код доступа!";
     errEl.classList.add("show");
   }
+}
+
+async function refreshAdminConnStatus(){
+  const dot = document.getElementById("adminConnDot");
+  const label = document.getElementById("adminConnLabel");
+  label.textContent = "Проверка соединения...";
+  dot.className = "conn-dot";
+  const ok = await testConnection();
+  dot.className = "conn-dot " + (ok ? "ok" : "bad");
+  label.textContent = ok ? "База данных на связи" : "Нет соединения с базой данных";
 }
 
 /* --- Точечный античит --- */
@@ -1289,6 +1820,27 @@ const acSwitch = document.getElementById("acSwitch");
 acSwitch.addEventListener("click", ()=>{
   acSwitchState = !acSwitchState;
   acSwitch.classList.toggle("on", acSwitchState);
+});
+
+document.getElementById("acFindBtn").addEventListener("click", async ()=>{
+  const nick = document.getElementById("acNickInput").value.trim();
+  const prev = document.getElementById("acPreview");
+  if (!nick) return;
+  try{
+    const { data, error } = await sb.from(PLAYERS_TABLE).select("nickname, anticheat_disabled_for_user, coins").ilike("nickname", nick).maybeSingle();
+    if (error || !data){
+      prev.classList.add("show");
+      prev.innerHTML = `Игрок не найден`;
+      return;
+    }
+    acSwitchState = !!data.anticheat_disabled_for_user;
+    acSwitch.classList.toggle("on", acSwitchState);
+    prev.classList.add("show");
+    prev.innerHTML = `Найден игрок <b>${escapeHtml(data.nickname)}</b> · баланс: <b>${fmt(data.coins||0)}</b> · античит сейчас: <b>${acSwitchState ? "выключен" : "включён"}</b>`;
+  } catch(err){
+    prev.classList.add("show");
+    prev.innerHTML = "Ошибка соединения с базой данных";
+  }
 });
 
 document.getElementById("acSaveBtn").addEventListener("click", async ()=>{
@@ -1321,6 +1873,25 @@ document.getElementById("acSaveBtn").addEventListener("click", async ()=>{
 });
 
 /* --- Управление Рыбками --- */
+document.getElementById("coinFindBtn").addEventListener("click", async ()=>{
+  const nick = document.getElementById("coinNickInput").value.trim();
+  const prev = document.getElementById("coinPreview");
+  if (!nick) return;
+  try{
+    const { data, error } = await sb.from(PLAYERS_TABLE).select("nickname, coins, total_earned").ilike("nickname", nick).maybeSingle();
+    if (error || !data){
+      prev.classList.add("show");
+      prev.innerHTML = `Игрок не найден`;
+      return;
+    }
+    prev.classList.add("show");
+    prev.innerHTML = `Найден игрок <b>${escapeHtml(data.nickname)}</b> · текущий баланс: <b>${fmt(data.coins||0)}</b> Рыбок`;
+  } catch(err){
+    prev.classList.add("show");
+    prev.innerHTML = "Ошибка соединения с базой данных";
+  }
+});
+
 async function adjustCoins(delta){
   const nick = document.getElementById("coinNickInput").value.trim();
   const amountRaw = document.getElementById("coinAmountInput").value;
@@ -1373,7 +1944,11 @@ document.getElementById("addCoinsBtn").addEventListener("click", ()=> adjustCoin
 document.getElementById("subCoinsBtn").addEventListener("click", ()=> adjustCoins(-1));
 
 /* ------------------------------- СТАРТ ------------------------------- */
-initSupabase();
+(async function boot(){
+  if (initSupabase()){
+    await testConnection();
+  }
+})();
 </script>
 </body>
 </html>
