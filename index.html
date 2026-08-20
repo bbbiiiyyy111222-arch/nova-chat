@@ -1,342 +1,1379 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Кликер Тюлень — Технические работы</title>
-    
-       <!-- ПРИМЕРЫ ПРАВИЛЬНОГО ПОДКЛЮЧЕНИЯ -->
-<script src="https://unpkg.com"></script>
-<!-- или -->
-<script src="https://unpkg.com"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#0f172a">
+<title>Тюлень Кликер: Эволюция</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<style>
+  :root{
+    --bg:#0f172a;
+    --card:#1e293b;
+    --card-2:#243247;
+    --blue:#38bdf8;
+    --violet:#8b5cf6;
+    --pink:#f472b6;
+    --text:#e2e8f0;
+    --muted:#94a3b8;
+    --danger:#f87171;
+    --success:#4ade80;
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+  html,body{
+    margin:0; padding:0; height:100%; width:100%;
+    background:
+      radial-gradient(circle at 20% 10%, rgba(139,92,246,0.15), transparent 40%),
+      radial-gradient(circle at 80% 90%, rgba(56,189,248,0.15), transparent 40%),
+      var(--bg);
+    color:var(--text);
+    font-family:"Segoe UI", Roboto, -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
+    overflow-x:hidden;
+    -webkit-font-smoothing:antialiased;
+    user-select:none;
+  }
+  #app{
+    min-height:100dvh;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+  }
+  .topbar{
+    width:100%;
+    max-width:720px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:10px;
+    padding:18px 16px 8px 16px;
+  }
+  .topbar h1{
+    font-size:22px;
+    margin:0;
+    letter-spacing:0.5px;
+    display:flex;
+    align-items:center;
+    gap:8px;
+    cursor:pointer;
+    user-select:none;
+    color:var(--text);
+    text-shadow:0 0 12px rgba(56,189,248,0.35);
+  }
+  .topbar h1:active{ transform:scale(0.98); }
+  .icon{ display:inline-flex; flex-shrink:0; }
 
+  /* ================= AUTH SCREEN ================= */
+  #authScreen{
+    width:100%;
+    max-width:420px;
+    margin:auto;
+    padding:24px;
+    display:flex;
+    flex-direction:column;
+    gap:16px;
+  }
+  .auth-card{
+    background:linear-gradient(180deg, var(--card), var(--card-2));
+    border:1px solid rgba(148,163,184,0.15);
+    border-radius:20px;
+    padding:28px 24px;
+    box-shadow:0 20px 60px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.03);
+  }
+  .auth-card h2{
+    margin:0 0 6px 0;
+    font-size:19px;
+    text-align:center;
+  }
+  .auth-card p.sub{
+    margin:0 0 20px 0;
+    text-align:center;
+    color:var(--muted);
+    font-size:13px;
+  }
+  .field{ margin-bottom:14px; }
+  .field label{
+    display:block;
+    font-size:12px;
+    color:var(--muted);
+    margin-bottom:6px;
+    letter-spacing:0.3px;
+  }
+  input[type="text"], input[type="password"], input[type="number"]{
+    width:100%;
+    padding:13px 14px;
+    border-radius:12px;
+    border:1px solid rgba(148,163,184,0.25);
+    background:rgba(15,23,42,0.6);
+    color:var(--text);
+    font-size:15px;
+    outline:none;
+    transition:border-color .15s, box-shadow .15s;
+  }
+  input:focus{
+    border-color:var(--blue);
+    box-shadow:0 0 0 3px rgba(56,189,248,0.18);
+  }
+  .btn{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    gap:8px;
+    border:none;
+    border-radius:12px;
+    padding:13px 18px;
+    font-size:15px;
+    font-weight:600;
+    cursor:pointer;
+    color:#fff;
+    background:linear-gradient(135deg, var(--blue), var(--violet));
+    box-shadow:0 8px 20px rgba(56,189,248,0.25);
+    transition:transform .1s ease, filter .15s ease;
+    width:100%;
+  }
+  .btn:active{ transform:scale(0.97); }
+  .btn:disabled{ opacity:0.5; cursor:not-allowed; }
+  .btn.secondary{
+    background:rgba(148,163,184,0.12);
+    box-shadow:none;
+  }
+  .btn.danger{ background:linear-gradient(135deg, #ef4444, #f472b6); box-shadow:0 8px 20px rgba(244,113,197,0.25);}
+  .btn.success{ background:linear-gradient(135deg, #22c55e, #38bdf8); box-shadow:0 8px 20px rgba(56,189,248,0.25);}
+  .error-msg{
+    background:rgba(248,113,113,0.12);
+    border:1px solid rgba(248,113,113,0.35);
+    color:#fecaca;
+    padding:10px 12px;
+    border-radius:10px;
+    font-size:13px;
+    margin-bottom:14px;
+    display:none;
+  }
+  .error-msg.show{ display:block; }
 
+  /* ================= GAME SCREEN ================= */
+  #gameScreen{
+    display:none;
+    width:100%;
+    max-width:720px;
+    flex-direction:column;
+    align-items:center;
+    padding:0 16px 32px 16px;
+    flex:1;
+  }
+  .hud{
+    width:100%;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:12px;
+    background:linear-gradient(180deg, var(--card), var(--card-2));
+    border:1px solid rgba(148,163,184,0.15);
+    border-radius:18px;
+    padding:12px 16px;
+    margin-top:6px;
+  }
+  .hud-left{ display:flex; align-items:center; gap:10px; min-width:0; }
+  .avatar{ flex-shrink:0; border-radius:50%; box-shadow:0 0 0 2px rgba(148,163,184,0.25); }
+  .hud-name{ font-size:14px; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:120px; }
+  .hud-name .tag{ display:block; font-size:11px; color:var(--muted); font-weight:400; }
+  .hud-balance{
+    display:flex; align-items:center; gap:8px;
+    background:rgba(56,189,248,0.1);
+    border:1px solid rgba(56,189,248,0.3);
+    padding:9px 14px;
+    border-radius:999px;
+    font-weight:700;
+    font-size:16px;
+    color:var(--blue);
+    white-space:nowrap;
+  }
+  .hud-passive{ font-size:11px; color:var(--muted); text-align:right; }
 
+  .actions-row{
+    width:100%;
+    display:flex;
+    gap:10px;
+    margin-top:12px;
+  }
+  .action-btn{
+    flex:1;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:6px;
+    background:linear-gradient(180deg, var(--card), var(--card-2));
+    border:1px solid rgba(148,163,184,0.15);
+    border-radius:16px;
+    padding:12px 8px;
+    color:var(--text);
+    cursor:pointer;
+    font-size:12px;
+    font-weight:600;
+    transition:transform .1s ease, border-color .15s;
+  }
+  .action-btn:active{ transform:scale(0.96); border-color:var(--blue); }
 
-    <style>
-        body { 
-            background: #0f172a; 
-            color: #f8fafc; 
-            font-family: sans-serif; 
-            text-align: center; 
-            padding: 40px 20px; 
-            user-select: none; 
-        }
-        .container { 
-            background: #1e293b; 
-            padding: 30px; 
-            border-radius: 20px; 
-            max-width: 450px; 
-            margin: 0 auto; 
-            box-shadow: 0 10px 25px rgba(0,0,0,0.3); 
-        }
-        h1 { color: #38bdf8; margin-bottom: 20px; }
-        
-        .seal-btn { 
-            background: none; 
-            border: none; 
-            cursor: pointer; 
-            transition: transform 0.1s; 
-            width: 150px; 
-            height: 150px; 
-            margin: 0 auto; 
-            display: block; 
-            -webkit-tap-highlight-color: transparent; 
-        }
-        .seal-btn:active { transform: scale(0.9); }
-        .counter { color: #94a3b8; margin: 15px 0 5px; font-weight: bold; }
-        
-        .cheat-warning { 
-            color: #ef4444; 
-            font-size: 0.9rem; 
-            font-weight: bold; 
-            height: 20px; 
-            margin-bottom: 15px; 
-            visibility: hidden; 
-        }
-        .timer { 
-            display: flex; 
-            justify-content: center; 
-            gap: 15px; 
-            margin-bottom: 30px; 
-        }
-        .box { 
-            background: #0f172a; 
-            padding: 15px; 
-            border-radius: 10px; 
-            min-width: 70px; 
-        }
-        .num { 
-            font-size: 1.8rem; 
-            font-weight: bold; 
-            color: #38bdf8; 
-        }
-        .text { 
-            font-size: 0.8rem; 
-            color: #64748b; 
-            margin-top: 5px; 
-        }
-        #auth-form, #admin-panel { 
-            display: none; 
-            background: #0f172a; 
-            padding: 20px; 
-            border-radius: 12px; 
-            margin-top: 20px; 
-            text-align: left; 
-        }
-        input { 
-            width: 100%; 
-            padding: 10px; 
-            margin: 10px 0; 
-            border-radius: 6px; 
-            border: 1px solid #334155; 
-            background: #1e293b; 
-            color: #fff; 
-            box-sizing: border-box; 
-        }
-        button.action-btn { 
-            width: 100%; 
-            padding: 10px; 
-            background: #38bdf8; 
-            color: #0f172a; 
-            border: none; 
-            border-radius: 6px; 
-            font-weight: bold; 
-            cursor: pointer; 
-        }
-    </style>
+  .stage{
+    position:relative;
+    width:100%;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    margin-top:26px;
+    flex:1;
+  }
+  .seal-wrap{
+    position:relative;
+    width:min(78vw, 320px);
+    height:min(78vw, 320px);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    cursor:pointer;
+    touch-action:manipulation;
+  }
+  .seal-wrap svg{
+    width:100%;
+    height:100%;
+    filter:drop-shadow(0 20px 40px rgba(0,0,0,0.5));
+    transition:transform .12s cubic-bezier(.34,1.56,.64,1);
+  }
+  .seal-wrap.tapped svg{ transform:scale(0.9); }
+  .seal-wrap.blocked svg{ filter:drop-shadow(0 20px 40px rgba(0,0,0,0.5)) grayscale(0.4); }
+
+  .cheek{ opacity:0; transition:opacity .2s ease; }
+  .cheek.glow{ opacity:1; }
+
+  .floaters{ position:absolute; inset:0; pointer-events:none; overflow:visible; }
+  .floater{
+    position:absolute;
+    font-size:20px;
+    font-weight:800;
+    color:var(--pink);
+    text-shadow:0 0 10px rgba(244,113,197,0.9), 0 0 20px rgba(244,113,197,0.5);
+    display:flex; align-items:center; gap:4px;
+    animation:floatUp 0.9s ease-out forwards;
+    white-space:nowrap;
+  }
+  @keyframes floatUp{
+    0%{ transform:translate(-50%,-50%) scale(0.6); opacity:0; }
+    15%{ opacity:1; transform:translate(-50%,-70%) scale(1.15); }
+    100%{ transform:translate(-50%,-180%) scale(1); opacity:0; }
+  }
+
+  .cheat-banner{
+    margin-top:18px;
+    background:rgba(248,113,113,0.12);
+    border:1px solid rgba(248,113,113,0.4);
+    color:#fecaca;
+    padding:10px 16px;
+    border-radius:12px;
+    font-size:13px;
+    font-weight:600;
+    display:none;
+    align-items:center;
+    gap:8px;
+    text-align:center;
+  }
+  .cheat-banner.show{ display:flex; }
+
+  .power-info{
+    margin-top:18px;
+    display:flex;
+    gap:22px;
+    font-size:13px;
+    color:var(--muted);
+  }
+  .power-info b{ color:var(--text); }
+
+  /* ================= MODALS ================= */
+  .modal-overlay{
+    display:none;
+    position:fixed; inset:0;
+    background:rgba(2,6,23,0.72);
+    backdrop-filter:blur(4px);
+    z-index:100;
+    align-items:flex-end;
+    justify-content:center;
+  }
+  .modal-overlay.show{ display:flex; }
+  @media (min-width:640px){
+    .modal-overlay{ align-items:center; }
+  }
+  .modal{
+    width:100%;
+    max-width:480px;
+    max-height:88vh;
+    overflow-y:auto;
+    background:linear-gradient(180deg, var(--card), var(--card-2));
+    border:1px solid rgba(148,163,184,0.2);
+    border-radius:22px 22px 0 0;
+    padding:22px 20px calc(22px + env(safe-area-inset-bottom)) 20px;
+    animation:slideUp .22s ease-out;
+  }
+  @media (min-width:640px){
+    .modal{ border-radius:22px; animation:popIn .18s ease-out; }
+  }
+  @keyframes slideUp{ from{ transform:translateY(30px); opacity:0;} to{ transform:translateY(0); opacity:1;} }
+  @keyframes popIn{ from{ transform:scale(0.95); opacity:0;} to{ transform:scale(1); opacity:1;} }
+  .modal-head{
+    display:flex; align-items:center; justify-content:space-between;
+    margin-bottom:16px;
+  }
+  .modal-head h3{ margin:0; font-size:17px; display:flex; align-items:center; gap:8px; }
+  .close-btn{
+    background:rgba(148,163,184,0.15);
+    border:none; color:var(--text);
+    width:32px; height:32px; border-radius:50%;
+    display:flex; align-items:center; justify-content:center;
+    cursor:pointer;
+  }
+
+  .shop-item{
+    display:flex; align-items:center; gap:14px;
+    background:rgba(15,23,42,0.5);
+    border:1px solid rgba(148,163,184,0.15);
+    border-radius:16px;
+    padding:14px;
+    margin-bottom:12px;
+  }
+  .shop-item .icon-box{
+    width:46px; height:46px; flex-shrink:0;
+    border-radius:12px;
+    display:flex; align-items:center; justify-content:center;
+    background:rgba(56,189,248,0.12);
+  }
+  .shop-item .info{ flex:1; min-width:0; }
+  .shop-item .info .title{ font-weight:700; font-size:14px; margin-bottom:2px; }
+  .shop-item .info .desc{ font-size:12px; color:var(--muted); }
+  .shop-item .buy-btn{
+    flex-shrink:0;
+    padding:10px 14px;
+    border-radius:10px;
+    border:none;
+    background:linear-gradient(135deg, var(--blue), var(--violet));
+    color:#fff; font-weight:700; font-size:13px;
+    cursor:pointer;
+    display:flex; flex-direction:column; align-items:center; gap:2px;
+    min-width:92px;
+  }
+  .shop-item .buy-btn:disabled{ opacity:0.4; cursor:not-allowed; }
+  .buy-btn .cost{ display:flex; align-items:center; gap:4px; font-size:12px; }
+
+  .lb-row{
+    display:flex; align-items:center; gap:12px;
+    padding:11px 12px;
+    border-radius:12px;
+    margin-bottom:8px;
+    background:rgba(15,23,42,0.4);
+    border:1px solid rgba(148,163,184,0.1);
+  }
+  .lb-row.me{
+    border-color:var(--pink);
+    background:rgba(244,113,197,0.12);
+    box-shadow:0 0 18px rgba(244,113,197,0.18);
+  }
+  .lb-rank{
+    width:26px; height:26px; border-radius:50%;
+    display:flex; align-items:center; justify-content:center;
+    font-size:12px; font-weight:800;
+    background:rgba(148,163,184,0.15);
+    flex-shrink:0;
+  }
+  .lb-rank.gold{ background:#f59e0b; color:#1e293b; }
+  .lb-rank.silver{ background:#cbd5e1; color:#1e293b; }
+  .lb-rank.bronze{ background:#d97706; color:#1e293b; }
+  .lb-name{ flex:1; font-size:14px; font-weight:600; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .lb-coins{ font-size:13px; font-weight:700; color:var(--blue); display:flex; align-items:center; gap:4px; }
+  .lb-empty{ text-align:center; color:var(--muted); font-size:13px; padding:20px 0; }
+
+  .offline-modal .big-fish{ display:flex; justify-content:center; margin-bottom:10px; }
+  .offline-modal .amount{
+    text-align:center; font-size:30px; font-weight:800; color:var(--pink);
+    text-shadow:0 0 18px rgba(244,113,197,0.5);
+    display:flex; align-items:center; justify-content:center; gap:8px;
+    margin-bottom:6px;
+  }
+  .offline-modal p.desc{ text-align:center; color:var(--muted); font-size:13px; margin:0 0 20px 0; }
+
+  .admin-section{
+    background:rgba(15,23,42,0.5);
+    border:1px solid rgba(148,163,184,0.15);
+    border-radius:16px;
+    padding:16px;
+    margin-bottom:16px;
+  }
+  .admin-section h4{ margin:0 0 12px 0; font-size:14px; display:flex; align-items:center; gap:8px; }
+  .switch-row{
+    display:flex; align-items:center; justify-content:space-between;
+    margin-top:10px;
+  }
+  .switch{
+    position:relative; width:48px; height:26px;
+    background:rgba(148,163,184,0.25);
+    border-radius:999px; cursor:pointer; flex-shrink:0;
+    transition:background .15s;
+  }
+  .switch.on{ background:var(--success); }
+  .switch::after{
+    content:''; position:absolute; top:2px; left:2px;
+    width:22px; height:22px; border-radius:50%; background:#fff;
+    transition:left .15s;
+  }
+  .switch.on::after{ left:24px; }
+  .admin-msg{ font-size:12px; margin-top:8px; min-height:16px; }
+  .admin-msg.ok{ color:var(--success); }
+  .admin-msg.err{ color:var(--danger); }
+  .row-2{ display:flex; gap:10px; }
+  .row-2 .btn{ flex:1; }
+
+  .toast{
+    position:fixed; top:calc(14px + env(safe-area-inset-top)); left:50%;
+    transform:translateX(-50%) translateY(-20px);
+    background:var(--card-2);
+    border:1px solid rgba(148,163,184,0.25);
+    color:var(--text);
+    padding:11px 18px;
+    border-radius:12px;
+    font-size:13px;
+    z-index:200;
+    opacity:0;
+    transition:opacity .2s, transform .2s;
+    box-shadow:0 10px 30px rgba(0,0,0,0.4);
+    pointer-events:none;
+    max-width:88vw;
+    text-align:center;
+  }
+  .toast.show{ opacity:1; transform:translateX(-50%) translateY(0); }
+
+  .footer-hint{ margin-top:auto; padding-top:18px; font-size:11px; color:rgba(148,163,184,0.5); text-align:center; }
+</style>
 </head>
 <body>
+<div id="app">
 
-    <div class="container">
-        <h1>🦭 Кликер Тюлень</h1>
-        <p>Идут технические работы. Скоро запуск!</p>
+  <div class="topbar">
+    <h1 id="siteTitle">
+      <span class="icon" id="titleSealIcon"></span>
+      Тюлень Кликер
+    </h1>
+  </div>
 
-        <!-- Блок кликера -->
-        <div>
-            <button class="seal-btn" id="seal-trigger">
-                <svg viewBox="0 0 100 100" width="100%" height="100%">
-                    <circle cx="50" cy="55" r="35" fill="#94a3b8"/>
-                    <ellipse cx="35" cy="45" r="5" rx="4" ry="6" fill="#0f172a"/>
-                    <ellipse cx="65" cy="45" r="5" rx="4" ry="6" fill="#0f172a"/>
-                    <circle cx="33" cy="43" r="1.5" fill="#ffffff"/>
-                    <circle cx="63" cy="43" r="1.5" fill="#ffffff"/>
-                    <ellipse cx="50" cy="54" r="8" rx="7" ry="5" fill="#475569"/>
-                    <polygon points="46,54 54,54 50,59" fill="#0f172a"/>
-                    <path d="M 44,62 Q 50,66 50,60 Q 50,66 56,62" stroke="#0f172a" stroke-width="2" fill="none"/>
-                    <ellipse cx="50" cy="59" r="4" rx="5" ry="3" fill="#f472b6" opacity="0.5"/>
-                    <path d="M 12,65 Q 5,60 8,72 Q 15,75 20,68" fill="#64748b"/>
-                    <path d="M 88,65 Q 95,60 92,72 Q 85,75 80,68" fill="#64748b"/>
-                    <path d="M 30,56 L 15,54 M 30,59 L 12,59 M 30,62 L 16,65" stroke="#0f172a" stroke-width="1.5"/>
-                    <path d="M 70,56 L 85,54 M 70,59 L 88,59 M 70,62 L 84,65" stroke="#0f172a" stroke-width="1.5"/>
-                </svg>
-            </button>
-            <div class="counter">Кликов: <span id="clicks">0</span></div>
-            <div class="cheat-warning" id="warning-text">Обнаружен автокликер! Блокировка 3 сек.</div>
-        </div>
-
-        <!-- Блок таймера -->
-        <div class="timer">
-            <div class="box"><div class="num" id="days">00</div><div class="text">Дни</div></div>
-            <div class="box"><div class="num" id="hours">00</div><div class="text">Часы</div></div>
-            <div class="box"><div class="num" id="mins">00</div><div class="text">Мин</div></div>
-            <div class="box"><div class="num" id="secs">00</div><div class="text">Сек</div></div>
-        </div>
-
-        <!-- Форма авторизации -->
-        <div id="auth-form">
-            <p style="margin-bottom: 10px; font-weight: bold;">🔑 Введите пароль администратора:</p>
-            <input type="password" id="pass-input" placeholder="Пароль...">
-            <button class="action-btn" onclick="checkPassword()">Войти в админку</button>
-        </div>
-
-        <!-- Панель управления -->
-        <div id="admin-panel">
-            <h3 style="color: #f472b6; margin-bottom: 10px;">⚙️ Управление временем для всех</h3>
-            <input type="datetime-local" id="datetime">
-            <button class="action-btn" onclick="saveNewDate()">Сохранить время</button>
-        </div>
+  <!-- ======= AUTH SCREEN ======= -->
+  <div id="authScreen">
+    <div class="auth-card">
+      <h2>Добро пожаловать!</h2>
+      <p class="sub">Введите никнейм, чтобы начать эволюцию тюленя</p>
+      <div id="authError" class="error-msg"></div>
+      <div class="field">
+        <label for="nicknameInput">Ваш никнейм</label>
+        <input type="text" id="nicknameInput" maxlength="20" autocomplete="off" placeholder="Например: SealMaster">
+      </div>
+      <div class="field" id="ownerPassField" style="display:none;">
+        <label for="ownerPassInput">Пароль владельца</label>
+        <input type="password" id="ownerPassInput" autocomplete="off" placeholder="Секретный пароль">
+      </div>
+      <button class="btn" id="loginBtn">Войти в игру</button>
     </div>
-    <script>
-        // --- НАЧАЛО ЧАСТИ 2 (КЛИКЕР И АНТИЧИТ) ---
-        let count = 0;
-        let lastClickTime = 0;
-        let clickIntervals = [];
-        let isBlocked = false;
+  </div>
 
-        const sealTrigger = document.getElementById("seal-trigger");
+  <!-- ======= GAME SCREEN ======= -->
+  <div id="gameScreen">
+    <div class="hud">
+      <div class="hud-left">
+        <div id="avatarBox"></div>
+        <div class="hud-name">
+          <span id="hudName">—</span>
+          <span class="tag" id="hudTag">Хранитель тюленя</span>
+        </div>
+      </div>
+      <div style="display:flex; flex-direction:column; align-items:flex-end; gap:4px;">
+        <div class="hud-balance"><span class="icon" id="hudFishIcon"></span><span id="hudCoins">0</span></div>
+        <div class="hud-passive" id="hudPassive">+0 Рыбок/сек</div>
+      </div>
+    </div>
 
-        function registerClick(e) {
-            if (isBlocked) return;
+    <div class="actions-row">
+      <div class="action-btn" id="openShopBtn">
+        <span class="icon" id="shopIcon"></span>
+        Магазин улучшений
+      </div>
+      <div class="action-btn" id="openLbBtn">
+        <span class="icon" id="trophyIcon"></span>
+        Таблица лидеров
+      </div>
+    </div>
 
-            // Блокировка эмуляции кликов через консоль или скрипты
-            if (e && !e.isTrusted) {
-                triggerAntiCheat();
-                return;
-            }
+    <div class="stage">
+      <div class="seal-wrap" id="sealWrap">
+        <div class="floaters" id="floaters"></div>
+        <div id="sealSvgBox"></div>
+      </div>
+      <div class="cheat-banner" id="cheatBanner">
+        <span class="icon" id="warnIcon"></span>
+        <span>Обнаружен автокликер! Тюлень отдыхает 5 сек.</span>
+      </div>
+      <div class="power-info">
+        <div>Сила клика: <b id="infoPower">1</b></div>
+        <div>Доход/сек: <b id="infoPassive">0</b></div>
+      </div>
+    </div>
+    <div class="footer-hint">Совет: жмите по тюленю аккуратно, роботов тут не любят 🙂</div>
+  </div>
 
-            const now = performance.now();
-            
-            if (lastClickTime > 0) {
-                const interval = now - lastClickTime;
-                clickIntervals.push(interval);
-                
-                // Рассматриваем только окно из 10 последних кликов
-                if (clickIntervals.length > 10) clickIntervals.shift();
+</div>
 
-                // Если интервалы между кликами слишком стабильно малы
-                if (clickIntervals.length >= 5) {
-                    const averageInterval = clickIntervals.reduce((a, b) => a + b, 0) / clickIntervals.length;
-                    if (averageInterval < 90) {
-                        triggerAntiCheat();
-                        return;
-                    }
-                }
-            }
+<!-- ======= OFFLINE PROGRESS MODAL ======= -->
+<div class="modal-overlay" id="offlineOverlay">
+  <div class="modal offline-modal">
+    <div class="big-fish" id="offlineFishIcon"></div>
+    <div class="amount"><span id="offlineAmount">0</span> <span class="icon" id="offlineFishSmall"></span></div>
+    <p class="desc" id="offlineDesc">Пока вас не было, ваш тюлень ловил рыбу!</p>
+    <button class="btn" id="offlineCloseBtn">Забрать улов</button>
+  </div>
+</div>
 
-            lastClickTime = now;
-            count++;
-            document.getElementById("clicks").innerText = count;
+<!-- ======= SHOP MODAL ======= -->
+<div class="modal-overlay" id="shopOverlay">
+  <div class="modal">
+    <div class="modal-head">
+      <h3><span class="icon" id="shopModalIcon"></span> Магазин улучшений</h3>
+      <button class="close-btn" data-close="shopOverlay">✕</button>
+    </div>
+
+    <div class="shop-item">
+      <div class="icon-box" id="finIcon"></div>
+      <div class="info">
+        <div class="title">Сила плавника</div>
+        <div class="desc">Увеличивает силу клика на +1</div>
+      </div>
+      <button class="buy-btn" id="buyPowerBtn">
+        <span>Купить</span>
+        <span class="cost"><span id="powerCost">15</span> <span class="icon icon-mini" id="powerCostIcon"></span></span>
+      </button>
+    </div>
+
+    <div class="shop-item">
+      <div class="icon-box" id="farmIcon"></div>
+      <div class="info">
+        <div class="title">Рыбная ферма</div>
+        <div class="desc">Пассивный доход +1 Рыбка в секунду</div>
+      </div>
+      <button class="buy-btn" id="buyFarmBtn">
+        <span>Купить</span>
+        <span class="cost"><span id="farmCost">20</span> <span class="icon icon-mini" id="farmCostIcon"></span></span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ======= LEADERBOARD MODAL ======= -->
+<div class="modal-overlay" id="lbOverlay">
+  <div class="modal">
+    <div class="modal-head">
+      <h3><span class="icon" id="lbModalIcon"></span> Таблица лидеров</h3>
+      <button class="close-btn" data-close="lbOverlay">✕</button>
+    </div>
+    <div id="lbList"><div class="lb-empty">Загрузка...</div></div>
+  </div>
+</div>
+
+<!-- ======= ADMIN LOGIN MODAL ======= -->
+<div class="modal-overlay" id="adminLoginOverlay">
+  <div class="modal">
+    <div class="modal-head">
+      <h3><span class="icon" id="adminLockIcon"></span> Доступ администратора</h3>
+      <button class="close-btn" data-close="adminLoginOverlay">✕</button>
+    </div>
+    <div class="field">
+      <label for="adminPassInput">Секретный код</label>
+      <input type="password" id="adminPassInput" autocomplete="off" placeholder="••••••••">
+    </div>
+    <div id="adminLoginError" class="error-msg"></div>
+    <button class="btn" id="adminLoginBtn">Войти</button>
+  </div>
+</div>
+
+<!-- ======= ADMIN PANEL MODAL ======= -->
+<div class="modal-overlay" id="adminPanelOverlay">
+  <div class="modal">
+    <div class="modal-head">
+      <h3><span class="icon" id="adminGearIcon"></span> Панель администратора</h3>
+      <button class="close-btn" data-close="adminPanelOverlay">✕</button>
+    </div>
+
+    <div class="admin-section">
+      <h4><span class="icon" id="adminShieldIcon"></span> Точечный античит</h4>
+      <div class="field" style="margin-bottom:8px;">
+        <label for="acNickInput">Никнейм игрока</label>
+        <input type="text" id="acNickInput" placeholder="Введите ник">
+      </div>
+      <div class="switch-row">
+        <span style="font-size:13px; color:var(--muted);">Античит выключен для игрока</span>
+        <div class="switch" id="acSwitch"></div>
+      </div>
+      <button class="btn secondary" id="acSaveBtn" style="margin-top:12px;">Применить</button>
+      <div class="admin-msg" id="acMsg"></div>
+    </div>
+
+    <div class="admin-section">
+      <h4><span class="icon" id="adminCoinIcon"></span> Управление Рыбками</h4>
+      <div class="field">
+        <label for="coinNickInput">Никнейм игрока</label>
+        <input type="text" id="coinNickInput" placeholder="Введите ник">
+      </div>
+      <div class="field">
+        <label for="coinAmountInput">Количество Рыбок</label>
+        <input type="number" id="coinAmountInput" min="0" placeholder="Например: 1000">
+      </div>
+      <div class="row-2">
+        <button class="btn success" id="addCoinsBtn">Добавить Рыбки</button>
+        <button class="btn danger" id="subCoinsBtn">Отнять Рыбки</button>
+      </div>
+      <div class="admin-msg" id="coinMsg"></div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* =========================================================================
+   ТЮЛЕНЬ КЛИКЕР: ЭВОЛЮЦИЯ
+   Монолитный файл: интерфейс + логика + подключение к Supabase
+   ========================================================================= */
+
+/* ------------------------- SUPABASE ПОДКЛЮЧЕНИЕ ------------------------- */
+/* Официальная ссылка на проект восстановлена из предоставленного anon-ключа
+   (поле "ref" внутри JWT), так как исходный адрес был неполным. */
+const SUPABASE_URL = "https://uytmyorrpnaqzqtwsfnc.supabase.co";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV5dG15b3JycG5hcXpxdHdzZm5jIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcxNTM5MDgsImV4cCI6MjEwMjcyOTkwOH0.nWolRM9vTEA5PRVKJ1VKJIyTyMPXvEWKqGEDgaG2GIw";
+
+const OWNER_NICKNAME = "milk";
+const OWNER_PASSWORD = "sealckik1";
+const ADMIN_PASSWORD = "67seven";
+const PLAYERS_TABLE = "players";
+const AUTOSAVE_MS = 5000;
+
+let sb = null;
+
+function initSupabase(){
+  if (window.supabase && typeof window.supabase.createClient === "function"){
+    sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    return true;
+  }
+  console.error("Библиотека Supabase не найдена (window.supabase.createClient отсутствует).");
+  return false;
+}
+
+/* ------------------------------- СОСТОЯНИЕ ------------------------------- */
+const state = {
+  nickname: null,
+  isOwner: false,
+  coins: 0,
+  clickPower: 1,
+  passiveIncome: 0,
+  anticheatDisabled: false,
+  lastSeen: null,
+  deviceId: null,
+  dirty: false
+};
+
+const clickTimestamps = [];
+let sealBlocked = false;
+let blockTimeout = null;
+let cheekTimeout = null;
+let headerClickCount = 0;
+let headerClickTimer = null;
+
+/* ------------------------------- УТИЛИТЫ ------------------------------- */
+function getDeviceToken(nick){
+  const key = "seal_owner_token_" + nick.toLowerCase();
+  let token = localStorage.getItem(key);
+  if (!token){
+    token = "dev-" + Math.random().toString(36).slice(2) + Date.now().toString(36);
+    localStorage.setItem(key, token);
+  }
+  return token;
+}
+
+function fmt(n){
+  n = Math.floor(n);
+  return n.toLocaleString("ru-RU");
+}
+
+function showToast(msg){
+  const t = document.getElementById("toast");
+  t.textContent = msg;
+  t.classList.add("show");
+  clearTimeout(showToast._h);
+  showToast._h = setTimeout(()=> t.classList.remove("show"), 2600);
+}
+
+function openModal(id){ document.getElementById(id).classList.add("show"); }
+function closeModal(id){ document.getElementById(id).classList.remove("show"); }
+
+document.querySelectorAll("[data-close]").forEach(btn=>{
+  btn.addEventListener("click", ()=> closeModal(btn.getAttribute("data-close")));
+});
+document.querySelectorAll(".modal-overlay").forEach(ov=>{
+  ov.addEventListener("click", (e)=>{ if (e.target === ov) ov.classList.remove("show"); });
+});
+
+/* --------------------------- SVG: ИКОНКИ (UI) --------------------------- */
+const ICONS = {
+  fish: (c="var(--blue)", s=18)=>`
+    <svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M3 12C6 6 13 5 17 8.5C18.5 7 20 6.5 21.5 7C20.8 8.6 20.8 10 21 11C20.8 12 20.8 13.4 21.5 15C20 15.5 18.5 15 17 13.5C13 17 6 16 3 10.5C4.2 11.3 5.2 11.6 6 11.5C5.2 11.4 4.2 11.1 3 12Z" fill="${c}"/>
+      <circle cx="8.4" cy="10.6" r="1" fill="#0f172a"/>
+    </svg>`,
+  cart: (c="var(--blue)", s=22)=>`
+    <svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M3 4H5L6.6 14.2C6.8 15.3 7.8 16 8.9 16H17.4C18.4 16 19.3 15.4 19.6 14.4L21.4 8.4C21.7 7.4 21 6.4 19.9 6.4H6.2" stroke="${c}" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+      <circle cx="9" cy="20" r="1.4" fill="${c}"/>
+      <circle cx="17" cy="20" r="1.4" fill="${c}"/>
+    </svg>`,
+  trophy: (c="#f59e0b", s=22)=>`
+    <svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M7 4H17V9C17 12 14.5 14 12 14C9.5 14 7 12 7 9V4Z" fill="${c}"/>
+      <path d="M7 5C5 5 3.5 6.2 3.5 8C3.5 10 5.2 11 7 11" stroke="${c}" stroke-width="1.6" stroke-linecap="round"/>
+      <path d="M17 5C19 5 20.5 6.2 20.5 8C20.5 10 18.8 11 17 11" stroke="${c}" stroke-width="1.6" stroke-linecap="round"/>
+      <rect x="10.2" y="14" width="3.6" height="3" fill="${c}"/>
+      <rect x="8" y="18" width="8" height="2" rx="1" fill="${c}"/>
+    </svg>`,
+  warn: (c="#f87171", s=20)=>`
+    <svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M12 3L22 20H2L12 3Z" fill="${c}" fill-opacity="0.18" stroke="${c}" stroke-width="1.6" stroke-linejoin="round"/>
+      <rect x="11.25" y="9" width="1.5" height="5.5" rx="0.75" fill="${c}"/>
+      <circle cx="12" cy="17" r="1" fill="${c}"/>
+    </svg>`,
+  lock: (c="var(--violet)", s=22)=>`
+    <svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect x="5" y="10.5" width="14" height="10" rx="2.5" fill="${c}" fill-opacity="0.18" stroke="${c}" stroke-width="1.6"/>
+      <path d="M8 10.5V7.5C8 5 9.8 3.2 12 3.2C14.2 3.2 16 5 16 7.5V10.5" stroke="${c}" stroke-width="1.6" stroke-linecap="round"/>
+      <circle cx="12" cy="15" r="1.6" fill="${c}"/>
+    </svg>`,
+  gear: (c="var(--blue)", s=22)=>`
+    <svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="12" cy="12" r="3.2" stroke="${c}" stroke-width="1.7"/>
+      <path d="M12 3V5.2M12 18.8V21M21 12H18.8M5.2 12H3M18.1 5.9L16.6 7.4M7.4 16.6L5.9 18.1M18.1 18.1L16.6 16.6M7.4 7.4L5.9 5.9" stroke="${c}" stroke-width="1.7" stroke-linecap="round"/>
+    </svg>`,
+  shield: (c="var(--pink)", s=20)=>`
+    <svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M12 3L19 6V11C19 15.4 16 18.8 12 20C8 18.8 5 15.4 5 11V6L12 3Z" fill="${c}" fill-opacity="0.18" stroke="${c}" stroke-width="1.6" stroke-linejoin="round"/>
+      <path d="M9 12L11 14L15 10" stroke="${c}" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>`,
+  fin: (c="var(--blue)", s=22)=>`
+    <svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M6 20C6 12 11 4 19 4C17 9 17 15 6 20Z" fill="${c}" fill-opacity="0.25" stroke="${c}" stroke-width="1.6" stroke-linejoin="round"/>
+    </svg>`,
+  farm: (c="var(--violet)", s=22)=>`
+    <svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M4 20V11L12 5L20 11V20H4Z" fill="${c}" fill-opacity="0.2" stroke="${c}" stroke-width="1.6" stroke-linejoin="round"/>
+      <rect x="10" y="14" width="4" height="6" fill="${c}"/>
+    </svg>`,
+  sealMark: (c="var(--pink)", s=22)=>`
+    <svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <ellipse cx="12" cy="13" rx="8" ry="7" fill="${c}" fill-opacity="0.85"/>
+      <circle cx="9" cy="11.5" r="1" fill="#0f172a"/>
+      <circle cx="15" cy="11.5" r="1" fill="#0f172a"/>
+      <path d="M9.5 15.5C10.5 16.4 13.5 16.4 14.5 15.5" stroke="#0f172a" stroke-width="1.2" stroke-linecap="round"/>
+    </svg>`,
+};
+
+function icon(name, mount, color, size){
+  const el = document.getElementById(mount);
+  if (el) el.innerHTML = ICONS[name](color, size);
+}
+icon("sealMark","titleSealIcon","var(--pink)",24);
+icon("fish","hudFishIcon","var(--blue)",18);
+icon("cart","shopIcon","var(--blue)",22);
+icon("trophy","trophyIcon","#f59e0b",22);
+icon("warn","warnIcon","#f87171",20);
+icon("cart","shopModalIcon","var(--blue)",20);
+icon("trophy","lbModalIcon","#f59e0b",20);
+icon("lock","adminLockIcon","var(--violet)",20);
+icon("gear","adminGearIcon","var(--blue)",20);
+icon("shield","adminShieldIcon","var(--pink)",18);
+icon("fish","adminCoinIcon","var(--blue)",18);
+icon("fin","finIcon","var(--blue)",24);
+icon("farm","farmIcon","var(--violet)",24);
+icon("fish","powerCostIcon","var(--blue)",13);
+icon("fish","farmCostIcon","var(--blue)",13);
+icon("fish","offlineFishSmall","var(--pink)",22);
+document.getElementById("offlineFishIcon").innerHTML = ICONS.fish("var(--pink)", 54);
+
+/* ------------------------------- АВАТАРКА ------------------------------- */
+function hashNick(nick){
+  let h = 0;
+  for (let i=0;i<nick.length;i++){ h = (h*31 + nick.charCodeAt(i)) >>> 0; }
+  return h;
+}
+function renderAvatar(nick, mountId, size=40){
+  const h = hashNick(nick || "?");
+  const hue1 = h % 360;
+  const hue2 = (hue1 + 55) % 360;
+  const initial = (nick || "?").trim().charAt(0).toUpperCase() || "?";
+  const svg = `
+    <svg width="${size}" height="${size}" viewBox="0 0 40 40" class="avatar" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="g${h}" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stop-color="hsl(${hue1},70%,55%)"/>
+          <stop offset="100%" stop-color="hsl(${hue2},70%,45%)"/>
+        </linearGradient>
+      </defs>
+      <circle cx="20" cy="20" r="20" fill="url(#g${h})"/>
+      <text x="20" y="26" text-anchor="middle" font-size="17" font-weight="700" fill="#fff" font-family="Segoe UI, Arial, sans-serif">${initial}</text>
+    </svg>`;
+  const el = document.getElementById(mountId);
+  if (el) el.innerHTML = svg;
+}
+
+/* --------------------------------- ТЮЛЕНЬ --------------------------------- */
+const MOUTHS = {
+  neutral: "M9.5 15.3C10.6 16 13.4 16 14.5 15.3",
+  smile:   "M8.7 14.6C10 17 14 17 15.3 14.6",
+  frown:   "M8.7 17C10 15 14 15 15.3 17"
+};
+
+function renderSeal(){
+  const box = document.getElementById("sealSvgBox");
+  box.innerHTML = `
+  <svg viewBox="0 0 220 220" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <radialGradient id="bodyGrad" cx="35%" cy="30%" r="80%">
+        <stop offset="0%" stop-color="#cbd5e1"/>
+        <stop offset="100%" stop-color="#8fa3b8"/>
+      </radialGradient>
+    </defs>
+    <ellipse cx="110" cy="150" rx="70" ry="52" fill="url(#bodyGrad)"/>
+    <ellipse cx="110" cy="90" rx="54" ry="50" fill="url(#bodyGrad)"/>
+    <ellipse id="cheekL" class="cheek" cx="82" cy="100" rx="11" ry="8" fill="var(--pink)"/>
+    <ellipse id="cheekR" class="cheek" cx="138" cy="100" rx="11" ry="8" fill="var(--pink)"/>
+    <g id="eyeL">
+      <circle cx="90" cy="82" r="7" fill="#1e293b"/>
+      <circle id="sparkL" cx="92.5" cy="79.5" r="2" fill="#fff" opacity="0"/>
+    </g>
+    <g id="eyeR">
+      <circle cx="130" cy="82" r="7" fill="#1e293b"/>
+      <circle id="sparkR" cx="132.5" cy="79.5" r="2" fill="#fff" opacity="0"/>
+    </g>
+    <ellipse cx="110" cy="96" rx="9" ry="6" fill="#64748b"/>
+    <path id="mouthPath" d="${MOUTHS.neutral}" stroke="#334155" stroke-width="2.4" stroke-linecap="round" fill="none"/>
+    <path d="M40 145C25 140 18 155 28 168C35 176 48 172 52 160" fill="url(#bodyGrad)"/>
+    <path d="M180 145C195 140 202 155 192 168C185 176 172 172 168 160" fill="url(#bodyGrad)"/>
+  </svg>`;
+}
+renderSeal();
+
+function setSealFace(mode){
+  const mouth = document.getElementById("mouthPath");
+  const eyeL = document.getElementById("eyeL");
+  const eyeR = document.getElementById("eyeR");
+  const sparkL = document.getElementById("sparkL");
+  const sparkR = document.getElementById("sparkR");
+  if (mode === "happy"){
+    mouth.setAttribute("d", MOUTHS.smile);
+    eyeL.setAttribute("transform","translate(90 82) scale(1.35) translate(-90 -82)");
+    eyeR.setAttribute("transform","translate(130 82) scale(1.35) translate(-130 -82)");
+    sparkL.setAttribute("opacity","1");
+    sparkR.setAttribute("opacity","1");
+  } else if (mode === "sad"){
+    mouth.setAttribute("d", MOUTHS.frown);
+    eyeL.setAttribute("transform","translate(90 82) scale(0.85,0.5) translate(-90 -82)");
+    eyeR.setAttribute("transform","translate(130 82) scale(0.85,0.5) translate(-130 -82)");
+    sparkL.setAttribute("opacity","0");
+    sparkR.setAttribute("opacity","0");
+  } else {
+    mouth.setAttribute("d", MOUTHS.neutral);
+    eyeL.setAttribute("transform","");
+    eyeR.setAttribute("transform","");
+    sparkL.setAttribute("opacity","0");
+    sparkR.setAttribute("opacity","0");
+  }
+}
+
+/* ------------------------------- АВТОРИЗАЦИЯ ------------------------------- */
+const nicknameInput = document.getElementById("nicknameInput");
+const ownerPassField = document.getElementById("ownerPassField");
+const ownerPassInput = document.getElementById("ownerPassInput");
+const authError = document.getElementById("authError");
+const loginBtn = document.getElementById("loginBtn");
+
+nicknameInput.addEventListener("input", ()=>{
+  const val = nicknameInput.value.trim().toLowerCase();
+  ownerPassField.style.display = (val === OWNER_NICKNAME) ? "block" : "none";
+});
+
+function showAuthError(msg){
+  authError.textContent = msg;
+  authError.classList.add("show");
+}
+function clearAuthError(){
+  authError.textContent = "";
+  authError.classList.remove("show");
+}
+
+loginBtn.addEventListener("click", handleLogin);
+nicknameInput.addEventListener("keydown", e=>{ if (e.key === "Enter") handleLogin(); });
+ownerPassInput.addEventListener("keydown", e=>{ if (e.key === "Enter") handleLogin(); });
+
+async function handleLogin(){
+  clearAuthError();
+  const rawNick = nicknameInput.value.trim();
+  if (!rawNick){ showAuthError("Введите никнейм!"); return; }
+  if (rawNick.length < 2){ showAuthError("Никнейм слишком короткий!"); return; }
+
+  const isOwnerAttempt = rawNick.toLowerCase() === OWNER_NICKNAME;
+  if (isOwnerAttempt){
+    if (ownerPassInput.value !== OWNER_PASSWORD){
+      showAuthError("Неверный пароль владельца! Доступ запрещён.");
+      return;
+    }
+  }
+
+  loginBtn.disabled = true;
+  loginBtn.textContent = "Входим...";
+
+  try{
+    if (!sb && !initSupabase()){
+      showAuthError("Не удалось подключиться к базе данных. Проверьте интернет-соединение.");
+      return;
+    }
+
+    const { data: existing, error: selErr } = await sb
+      .from(PLAYERS_TABLE)
+      .select("*")
+      .ilike("nickname", rawNick)
+      .maybeSingle();
+
+    if (selErr){
+      showAuthError("Ошибка базы данных: " + selErr.message);
+      return;
+    }
+
+    const myToken = getDeviceToken(rawNick);
+
+    if (existing){
+      const ownsAccount = isOwnerAttempt || existing.device_id === myToken;
+      if (!ownsAccount){
+        showAuthError("Этот никнейм уже занят!");
+        return;
+      }
+      await enterGame(existing, myToken);
+    } else {
+      const { data: created, error: insErr } = await sb
+        .from(PLAYERS_TABLE)
+        .insert({
+          nickname: rawNick,
+          device_id: myToken,
+          coins: 0,
+          click_power: 1,
+          passive_income: 0,
+          last_seen: new Date().toISOString(),
+          anticheat_disabled_for_user: false
+        })
+        .select()
+        .maybeSingle();
+
+      if (insErr){
+        if (insErr.code === "23505"){
+          showAuthError("Этот никнейм уже занят!");
+        } else {
+          showAuthError("Ошибка при создании аккаунта: " + insErr.message);
         }
+        return;
+      }
+      await enterGame(created, myToken);
+    }
+  } catch(err){
+    console.error(err);
+    showAuthError("Непредвиденная ошибка подключения к базе данных.");
+  } finally {
+    loginBtn.disabled = false;
+    loginBtn.textContent = "Войти в игру";
+  }
+}
 
-        function triggerAntiCheat() {
-            isBlocked = true;
-            document.getElementById("warning-text").style.visibility = "visible";
-            clickIntervals = [];
-            
-            setTimeout(() => {
-                isBlocked = false;
-                document.getElementById("warning-text").style.visibility = "hidden";
-                lastClickTime = performance.now();
-            }, 3000);
-        }
+async function enterGame(row, myToken){
+  state.nickname = row.nickname;
+  state.isOwner = row.nickname.toLowerCase() === OWNER_NICKNAME;
+  state.clickPower = row.click_power || 1;
+  state.passiveIncome = row.passive_income || 0;
+  state.anticheatDisabled = !!row.anticheat_disabled_for_user;
+  state.deviceId = myToken;
 
-        // Назначаем прослушивание кликов на кнопку
-        sealTrigger.addEventListener("click", registerClick);
-        // --- КОНЕЦ ЧАСТИ 2 ---
-        // --- НАЧАЛО ЧАСТИ 3 (ПАРОЛЬ И ИНИЦИАЛИЗАЦИЯ SUPABASE) ---
-        const SUPABASE_URL = "https://supabase.co";
-        const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV5dG15b3JycG5hcXpxdHdzZm5jIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcxNTM5MDgsImV4cCI6MjEwMjcyOTkwOH0.nWolRM9vTEA5PRVKJ1VKJIyTyMPXvEWKqGEDgaG2GIw";
-        
-        let supabase;
-        let targetDate = null;
-        let timerInterval = null;
+  let startCoins = row.coins || 0;
+  let offlineGain = 0;
+  if (row.last_seen){
+    const last = new Date(row.last_seen).getTime();
+    const now = Date.now();
+    const seconds = Math.max(0, Math.floor((now - last)/1000));
+    offlineGain = Math.floor(seconds * state.passiveIncome);
+  }
+  state.coins = startCoins + offlineGain;
 
-        // Открываем форму авторизации, если в адресной строке есть ?admin=true
-        const urlParams = new URLSearchParams(window.location.search);
-        if (urlParams.get('admin') === 'true') {
-            document.getElementById('auth-form').style.display = 'block';
-        }
+  if (row.device_id !== myToken){
+    await sb.from(PLAYERS_TABLE).update({ device_id: myToken }).ilike("nickname", row.nickname);
+  }
 
-        // Функция проверки пароля
-        window.checkPassword = function() {
-            const pass = document.getElementById('pass-input').value;
-            if (pass === 'seal') {
-                document.getElementById('auth-form').style.display = 'none';
-                document.getElementById('admin-panel').style.display = 'block';
-            } else {
-                alert('Неверный пароль!');
-            }
-        }
+  document.getElementById("authScreen").style.display = "none";
+  document.getElementById("gameScreen").style.display = "flex";
 
-        // Функция безопасного старта Supabase
-        function initSupabase() {
-            if (!window.supabase || !window.supabase.createClient) {
-                setTimeout(initSupabase, 300); // Если сеть лагает, мягко пробуем снова через 300мс
-                return;
-            }
-            
-            supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-            loadTargetDate(); // Эту функцию мы добавим в Части 4
+  renderAvatar(state.nickname, "avatarBox", 42);
+  document.getElementById("hudName").textContent = state.nickname;
+  document.getElementById("hudTag").textContent = state.isOwner ? "Владелец океана" : "Хранитель тюленя";
+  updateHud();
 
-            // Подписка на Realtime изменения таблицы settings для всех игроков на лету
-            supabase
-                .channel('public:settings')
-                .on('postgres_changes', { event: '*', filter: 'id=eq.main_timer', table: 'settings', schema: 'public' }, payload => {
-                    if (payload.new && payload.new.target_date) {
-                        targetDate = new Date(payload.new.target_date).getTime();
-                    }
-                })
-                .subscribe();
-        }
+  if (offlineGain > 0){
+    document.getElementById("offlineAmount").textContent = fmt(offlineGain);
+    document.getElementById("offlineDesc").textContent = `Пока вас не было, ваш тюлень поймал ${fmt(offlineGain)} Рыбок!`;
+    openModal("offlineOverlay");
+  }
 
-        setTimeout(initSupabase, 100);
-        // --- КОНЕЦ ЧАСТИ 3 ---
-        // --- НАЧАЛО ЧАСТИ 4 (ДАННЫЕ И ТАЙМЕР) ---
-        async function loadTargetDate() {
-            let { data } = await supabase
-                .from('settings')
-                .select('target_date')
-                .eq('id', 'main_timer')
-                .maybeSingle();
+  startPassiveIncomeLoop();
+  startAutosave();
+  saveProgress(true);
+}
 
-            if (!data) {
-                const defaultDate = new Date();
-                defaultDate.setDate(defaultDate.getDate() + 7);
-                await supabase.from('settings').upsert({ id: 'main_timer', target_date: defaultDate.toISOString() });
-                targetDate = defaultDate.getTime();
-            } else {
-                targetDate = new Date(data.target_date).getTime();
-            }
+document.getElementById("offlineCloseBtn").addEventListener("click", ()=> closeModal("offlineOverlay"));
 
-            const localDate = new Date(targetDate);
-            localDate.setMinutes(localDate.getMinutes() - localDate.getTimezoneOffset());
-            document.getElementById('datetime').value = localDate.toISOString().slice(0, 16);
-            
-            startTimer();
-        }
+/* ------------------------------- HUD / ОБНОВЛЕНИЕ ------------------------------- */
+function updateHud(){
+  document.getElementById("hudCoins").textContent = fmt(state.coins);
+  document.getElementById("hudPassive").textContent = `+${fmt(state.passiveIncome)} Рыбок/сек`;
+  document.getElementById("infoPower").textContent = fmt(state.clickPower);
+  document.getElementById("infoPassive").textContent = fmt(state.passiveIncome);
+  document.getElementById("powerCost").textContent = fmt(state.clickPower * 15);
+  document.getElementById("farmCost").textContent = fmt(state.passiveIncome * 50 + 20);
+}
 
-        window.saveNewDate = async function() {
-            if (!supabase) return alert('База данных ещё не подключилась. Подождите 2 секунды.');
-            
-            const inputVal = document.getElementById('datetime').value;
-            if (!inputVal) return alert('Выберите дату!');
-            
-            const isoDate = new Date(inputVal).toISOString();
-            targetDate = new Date(inputVal).getTime();
-            
-            startTimer();
+/* ------------------------------- ПАССИВНЫЙ ДОХОД ------------------------------- */
+function startPassiveIncomeLoop(){
+  setInterval(()=>{
+    if (state.passiveIncome > 0){
+      state.coins += state.passiveIncome;
+      state.dirty = true;
+      updateHud();
+    }
+  }, 1000);
+}
 
-            const { error } = await supabase
-                .from('settings')
-                .upsert({ id: 'main_timer', target_date: isoDate });
+/* ------------------------------- АВТОСОХРАНЕНИЕ ------------------------------- */
+function startAutosave(){
+  setInterval(()=> saveProgress(false), AUTOSAVE_MS);
+}
 
-            if (error) {
-                alert('Ошибка: ' + error.message + '\n\nПодсказка: Отключите RLS для таблицы settings в панели Supabase!');
-            } else {
-                alert('Время успешно обновлено для всех игроков!');
-            }
-        }
+async function saveProgress(silent){
+  if (!state.nickname || !sb) return;
+  try{
+    await sb.from(PLAYERS_TABLE).update({
+      coins: Math.floor(state.coins),
+      click_power: state.clickPower,
+      passive_income: state.passiveIncome,
+      last_seen: new Date().toISOString()
+    }).ilike("nickname", state.nickname);
+    state.dirty = false;
+  } catch(err){
+    console.error("Ошибка автосохранения:", err);
+  }
+}
+window.addEventListener("beforeunload", ()=>{ if (state.dirty) saveProgress(true); });
 
-        function startTimer() {
-            if (timerInterval) clearInterval(timerInterval);
-            
-            function update() {
-                if (!targetDate) return;
-                const now = new Date().getTime();
-                const distance = targetDate - now;
+/* ------------------------------- КЛИК ПО ТЮЛЕНЮ ------------------------------- */
+const sealWrap = document.getElementById("sealWrap");
+const cheatBanner = document.getElementById("cheatBanner");
 
-                if (distance < 0) {
-                    document.querySelector(".timer").innerHTML = "<b style='color:#34d399; font-size: 1.2rem;'>ИГРА ЗАПУЩЕНА!</b>";
-                    clearInterval(timerInterval);
-                    return;
-                }
+sealWrap.addEventListener("click", handleSealClick);
 
-                const days = Math.floor(distance / (1000 * 60 * 60 * 24));
-                const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-                const mins = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
-                const secs = Math.floor((distance % (1000 * 60)) / 1000);
+function handleSealClick(e){
+  if (!e.isTrusted){
+    return; // защита от программных кликов
+  }
+  if (sealBlocked) return;
 
-                document.getElementById("days").innerText = String(days).padStart(2, '0');
-                document.getElementById("hours").innerText = String(hours).padStart(2, '0');
-                document.getElementById("mins").innerText = String(mins).padStart(2, '0');
-                document.getElementById("secs").innerText = String(secs).padStart(2, '0');
-            }
-            
-            timerInterval = setInterval(update, 1000);
-            update();
-        }
-        // --- КОНЕЦ ЧАСТИ 4 ---
-    </script>
+  if (!state.anticheatDisabled && detectAutoclick()){
+    triggerBlock();
+    return;
+  }
+
+  const gain = state.clickPower;
+  state.coins += gain;
+  state.dirty = true;
+  updateHud();
+  animateTap(e);
+  spawnFloater(e, gain);
+}
+
+function detectAutoclick(){
+  const now = performance.now();
+  clickTimestamps.push(now);
+  if (clickTimestamps.length > 15) clickTimestamps.shift();
+  if (clickTimestamps.length < 15) return false;
+
+  const intervals = [];
+  for (let i=1;i<clickTimestamps.length;i++){
+    intervals.push(clickTimestamps[i] - clickTimestamps[i-1]);
+  }
+
+  let identical = true;
+  for (let i=1;i<intervals.length;i++){
+    if (Math.abs(intervals[i] - intervals[0]) > 1){ identical = false; break; }
+  }
+
+  const totalTime = clickTimestamps[clickTimestamps.length-1] - clickTimestamps[0];
+  const avgRate = (clickTimestamps.length - 1) / (totalTime / 1000);
+
+  return identical || avgRate > 12;
+}
+
+function triggerBlock(){
+  sealBlocked = true;
+  sealWrap.classList.add("blocked");
+  setSealFace("sad");
+  cheatBanner.classList.add("show");
+  clickTimestamps.length = 0;
+  clearTimeout(blockTimeout);
+  blockTimeout = setTimeout(()=>{
+    sealBlocked = false;
+    sealWrap.classList.remove("blocked");
+    setSealFace("neutral");
+    cheatBanner.classList.remove("show");
+  }, 5000);
+}
+
+function animateTap(e){
+  sealWrap.classList.add("tapped");
+  setSealFace("happy");
+  document.getElementById("cheekL").classList.add("glow");
+  document.getElementById("cheekR").classList.add("glow");
+  clearTimeout(animateTap._t1);
+  clearTimeout(animateTap._t2);
+  animateTap._t1 = setTimeout(()=>{
+    document.getElementById("cheekL").classList.remove("glow");
+    document.getElementById("cheekR").classList.remove("glow");
+  }, 200);
+  animateTap._t2 = setTimeout(()=>{
+    sealWrap.classList.remove("tapped");
+    setSealFace("neutral");
+  }, 260);
+}
+
+function spawnFloater(e, amount){
+  const rect = sealWrap.getBoundingClientRect();
+  const x = (e.clientX ? e.clientX - rect.left : rect.width/2);
+  const y = (e.clientY ? e.clientY - rect.top : rect.height/2);
+  const layer = document.getElementById("floaters");
+  const div = document.createElement("div");
+  div.className = "floater";
+  div.style.left = x + "px";
+  div.style.top = y + "px";
+  div.innerHTML = `+${fmt(amount)} ${ICONS.fish("var(--pink)",16)}`;
+  layer.appendChild(div);
+  setTimeout(()=> div.remove(), 950);
+}
+
+/* ------------------------------- МАГАЗИН ------------------------------- */
+document.getElementById("openShopBtn").addEventListener("click", ()=>{
+  updateHud();
+  openModal("shopOverlay");
+});
+
+document.getElementById("buyPowerBtn").addEventListener("click", async ()=>{
+  const cost = state.clickPower * 15;
+  if (state.coins < cost){ showToast("Недостаточно Рыбок!"); return; }
+  state.coins -= cost;
+  state.clickPower += 1;
+  state.dirty = true;
+  updateHud();
+  await saveProgress(true);
+  showToast("Сила плавника увеличена!");
+});
+
+document.getElementById("buyFarmBtn").addEventListener("click", async ()=>{
+  const cost = state.passiveIncome * 50 + 20;
+  if (state.coins < cost){ showToast("Недостаточно Рыбок!"); return; }
+  state.coins -= cost;
+  state.passiveIncome += 1;
+  state.dirty = true;
+  updateHud();
+  await saveProgress(true);
+  showToast("Рыбная ферма построена!");
+});
+
+/* ------------------------------- ТАБЛИЦА ЛИДЕРОВ ------------------------------- */
+document.getElementById("openLbBtn").addEventListener("click", async ()=>{
+  openModal("lbOverlay");
+  await loadLeaderboard();
+});
+
+async function loadLeaderboard(){
+  const listEl = document.getElementById("lbList");
+  listEl.innerHTML = `<div class="lb-empty">Загрузка...</div>`;
+  try{
+    const { data, error } = await sb
+      .from(PLAYERS_TABLE)
+      .select("nickname, coins")
+      .order("coins", { ascending:false })
+      .limit(5);
+
+    if (error){
+      listEl.innerHTML = `<div class="lb-empty">Не удалось загрузить таблицу лидеров</div>`;
+      return;
+    }
+    if (!data || data.length === 0){
+      listEl.innerHTML = `<div class="lb-empty">Пока никто не поймал ни одной рыбки</div>`;
+      return;
+    }
+
+    const rankClasses = ["gold","silver","bronze"];
+    listEl.innerHTML = data.map((p, idx)=>{
+      const isMe = state.nickname && p.nickname.toLowerCase() === state.nickname.toLowerCase();
+      const rc = rankClasses[idx] || "";
+      return `
+        <div class="lb-row ${isMe ? "me" : ""}">
+          <div class="lb-rank ${rc}">${idx+1}</div>
+          <div class="lb-name">${escapeHtml(p.nickname)}${isMe ? " (вы)" : ""}</div>
+          <div class="lb-coins">${fmt(p.coins)} ${ICONS.fish("var(--blue)",13)}</div>
+        </div>`;
+    }).join("");
+  } catch(err){
+    listEl.innerHTML = `<div class="lb-empty">Ошибка соединения с базой данных</div>`;
+  }
+}
+
+function escapeHtml(str){
+  const d = document.createElement("div");
+  d.textContent = str;
+  return d.innerHTML;
+}
+
+/* ------------------------------- АДМИН-ПАСХАЛКА ------------------------------- */
+document.getElementById("siteTitle").addEventListener("click", ()=>{
+  headerClickCount++;
+  clearTimeout(headerClickTimer);
+  headerClickTimer = setTimeout(()=>{ headerClickCount = 0; }, 1200);
+  if (headerClickCount >= 3){
+    headerClickCount = 0;
+    clearTimeout(headerClickTimer);
+    document.getElementById("adminPassInput").value = "";
+    document.getElementById("adminLoginError").classList.remove("show");
+    openModal("adminLoginOverlay");
+  }
+});
+
+document.getElementById("adminLoginBtn").addEventListener("click", tryAdminLogin);
+document.getElementById("adminPassInput").addEventListener("keydown", e=>{ if (e.key === "Enter") tryAdminLogin(); });
+
+function tryAdminLogin(){
+  const val = document.getElementById("adminPassInput").value;
+  const errEl = document.getElementById("adminLoginError");
+  if (val === ADMIN_PASSWORD){
+    closeModal("adminLoginOverlay");
+    document.getElementById("acMsg").textContent = "";
+    document.getElementById("coinMsg").textContent = "";
+    openModal("adminPanelOverlay");
+  } else {
+    errEl.textContent = "Неверный код доступа!";
+    errEl.classList.add("show");
+  }
+}
+
+/* --- Точечный античит --- */
+let acSwitchState = false;
+const acSwitch = document.getElementById("acSwitch");
+acSwitch.addEventListener("click", ()=>{
+  acSwitchState = !acSwitchState;
+  acSwitch.classList.toggle("on", acSwitchState);
+});
+
+document.getElementById("acSaveBtn").addEventListener("click", async ()=>{
+  const nick = document.getElementById("acNickInput").value.trim();
+  const msgEl = document.getElementById("acMsg");
+  if (!nick){ msgEl.textContent = "Введите никнейм игрока"; msgEl.className = "admin-msg err"; return; }
+  try{
+    const { data, error } = await sb
+      .from(PLAYERS_TABLE)
+      .update({ anticheat_disabled_for_user: acSwitchState })
+      .ilike("nickname", nick)
+      .select()
+      .maybeSingle();
+
+    if (error || !data){
+      msgEl.textContent = "Игрок не найден или ошибка базы данных";
+      msgEl.className = "admin-msg err";
+      return;
+    }
+    msgEl.textContent = `Готово: античит для «${data.nickname}» ${acSwitchState ? "выключен" : "включён"}`;
+    msgEl.className = "admin-msg ok";
+
+    if (state.nickname && nick.toLowerCase() === state.nickname.toLowerCase()){
+      state.anticheatDisabled = acSwitchState;
+    }
+  } catch(err){
+    msgEl.textContent = "Ошибка соединения с базой данных";
+    msgEl.className = "admin-msg err";
+  }
+});
+
+/* --- Управление Рыбками --- */
+async function adjustCoins(delta){
+  const nick = document.getElementById("coinNickInput").value.trim();
+  const amountRaw = document.getElementById("coinAmountInput").value;
+  const amount = Math.abs(parseInt(amountRaw, 10) || 0);
+  const msgEl = document.getElementById("coinMsg");
+
+  if (!nick){ msgEl.textContent = "Введите никнейм игрока"; msgEl.className = "admin-msg err"; return; }
+  if (!amount){ msgEl.textContent = "Введите количество Рыбок"; msgEl.className = "admin-msg err"; return; }
+
+  try{
+    const { data: target, error: selErr } = await sb
+      .from(PLAYERS_TABLE)
+      .select("*")
+      .ilike("nickname", nick)
+      .maybeSingle();
+
+    if (selErr || !target){
+      msgEl.textContent = "Игрок не найден";
+      msgEl.className = "admin-msg err";
+      return;
+    }
+
+    const newBalance = Math.max(0, (target.coins || 0) + delta * amount);
+
+    const { error: updErr } = await sb
+      .from(PLAYERS_TABLE)
+      .update({ coins: newBalance })
+      .ilike("nickname", nick);
+
+    if (updErr){
+      msgEl.textContent = "Ошибка обновления базы данных";
+      msgEl.className = "admin-msg err";
+      return;
+    }
+
+    msgEl.textContent = `Баланс «${target.nickname}» теперь: ${fmt(newBalance)} Рыбок`;
+    msgEl.className = "admin-msg ok";
+
+    if (state.nickname && nick.toLowerCase() === state.nickname.toLowerCase()){
+      state.coins = newBalance;
+      updateHud();
+    }
+  } catch(err){
+    msgEl.textContent = "Ошибка соединения с базой данных";
+    msgEl.className = "admin-msg err";
+  }
+}
+
+document.getElementById("addCoinsBtn").addEventListener("click", ()=> adjustCoins(1));
+document.getElementById("subCoinsBtn").addEventListener("click", ()=> adjustCoins(-1));
+
+/* ------------------------------- СТАРТ ------------------------------- */
+initSupabase();
+</script>
 </body>
 </html>
