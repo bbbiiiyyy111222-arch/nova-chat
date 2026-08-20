@@ -881,6 +881,13 @@ function initSupabase(){
   return false;
 }
 
+function withTimeout(promise, ms, label){
+  return Promise.race([
+    promise,
+    new Promise((_, reject)=> setTimeout(()=> reject(new Error("TIMEOUT:" + (label||""))), ms))
+  ]);
+}
+
 async function testConnection(){
   const dot = document.getElementById("connDot");
   const banner = document.getElementById("connBanner");
@@ -889,7 +896,10 @@ async function testConnection(){
     return false;
   }
   try{
-    const { error } = await sb.from(PLAYERS_TABLE).select("nickname", { head:true, count:"exact" }).limit(1);
+    const { error } = await withTimeout(
+      sb.from(PLAYERS_TABLE).select("nickname", { head:true, count:"exact" }).limit(1),
+      12000, "ping"
+    );
     if (error) throw error;
     dbOnline = true;
     dot.className = "conn-dot ok";
@@ -898,7 +908,10 @@ async function testConnection(){
   } catch(err){
     dbOnline = false;
     dot.className = "conn-dot bad";
-    banner.innerHTML = `Нет соединения с базой данных. Проверьте, что проект Supabase по адресу <code>${SUPABASE_URL}</code> активен (не на паузе) и таблица <code>players</code> создана с политикой доступа для анонимного ключа.`;
+    const isTimeout = String(err && err.message).startsWith("TIMEOUT");
+    banner.innerHTML = isTimeout
+      ? `База данных не отвечает больше 12 секунд. Часто это значит, что бесплатный проект Supabase «уснул» — откройте его дашборд на supabase.com, дождитесь, пока он проснётся, и попробуйте снова.`
+      : `Нет соединения с базой данных. Проверьте, что проект Supabase по адресу <code>${SUPABASE_URL}</code> активен (не на паузе) и таблица <code>players</code> создана с политикой доступа для анонимного ключа.`;
     banner.classList.add("show");
     return false;
   }
@@ -1245,7 +1258,7 @@ const loginBtn = document.getElementById("loginBtn");
 // маленький превью-тюлень на экране входа
 document.getElementById("authHeroSeal").innerHTML = `
   <svg width="96" height="96" viewBox="0 0 220 220" xmlns="http://www.w3.org/2000/svg">
-    <defs><radialGradient id="heroGrad" cx="35%" cy="28%" r="80%">
+    <defs><radialGradient id="heroGrad" gradientUnits="userSpaceOnUse" cx="85" cy="55" r="175">
       <stop offset="0%" stop-color="#e8edf3"/><stop offset="100%" stop-color="#aebdd1"/>
     </radialGradient></defs>
     <ellipse cx="110" cy="152" rx="66" ry="50" fill="url(#heroGrad)"/>
@@ -1302,11 +1315,10 @@ async function handleLogin(){
       return;
     }
 
-    const { data: existing, error: selErr } = await sb
-      .from(PLAYERS_TABLE)
-      .select("*")
-      .ilike("nickname", rawNick)
-      .maybeSingle();
+    const { data: existing, error: selErr } = await withTimeout(
+      sb.from(PLAYERS_TABLE).select("*").ilike("nickname", rawNick).maybeSingle(),
+      12000, "select"
+    );
 
     if (selErr){
       showAuthError("Ошибка базы данных: " + selErr.message);
@@ -1323,23 +1335,25 @@ async function handleLogin(){
       }
       await enterGame(existing, myToken);
     } else {
-      const { data: created, error: insErr } = await sb
-        .from(PLAYERS_TABLE)
-        .insert({
-          nickname: rawNick,
-          device_id: myToken,
-          coins: 0,
-          click_power: 1,
-          passive_income: 0,
-          total_earned: 0,
-          total_clicks: 0,
-          upgrades: {},
-          achievements: [],
-          last_seen: new Date().toISOString(),
-          anticheat_disabled_for_user: false
-        })
-        .select()
-        .maybeSingle();
+      const { data: created, error: insErr } = await withTimeout(
+        sb.from(PLAYERS_TABLE)
+          .insert({
+            nickname: rawNick,
+            device_id: myToken,
+            coins: 0,
+            click_power: 1,
+            passive_income: 0,
+            total_earned: 0,
+            total_clicks: 0,
+            upgrades: {},
+            achievements: [],
+            last_seen: new Date().toISOString(),
+            anticheat_disabled_for_user: false
+          })
+          .select()
+          .maybeSingle(),
+        12000, "insert"
+      );
 
       if (insErr){
         if (insErr.code === "23505"){
@@ -1353,7 +1367,10 @@ async function handleLogin(){
     }
   } catch(err){
     console.error(err);
-    showAuthError("Непредвиденная ошибка подключения к базе данных.");
+    const isTimeout = String(err && err.message).startsWith("TIMEOUT");
+    showAuthError(isTimeout
+      ? "База данных не отвечает больше 12 секунд. Проект Supabase мог уснуть — откройте его дашборд и попробуйте снова через минуту."
+      : "Непредвиденная ошибка подключения к базе данных.");
   } finally {
     loginBtn.disabled = false;
     loginBtn.textContent = "Войти в игру";
