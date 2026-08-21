@@ -819,16 +819,6 @@
 
 </div>
 
-<!-- ======= OFFLINE PROGRESS MODAL ======= -->
-<div class="modal-overlay" id="offlineOverlay">
-  <div class="modal offline-modal">
-    <div class="big-fish" id="offlineFishIcon"></div>
-    <div class="amount"><span id="offlineAmount">0</span> <span class="icon" id="offlineFishSmall"></span></div>
-    <p class="desc" id="offlineDesc">Пока вас не было, ваш тюлень ловил рыбу!</p>
-    <button class="btn" id="offlineCloseBtn">Забрать улов</button>
-  </div>
-</div>
-
 <!-- ======= SHOP MODAL ======= -->
 <div class="modal-overlay" id="shopOverlay">
   <div class="modal">
@@ -1072,10 +1062,19 @@ async function testConnection(){
     dbOnline = false;
     dot.className = "conn-dot bad";
     const isTimeout = String(err && err.message).startsWith("TIMEOUT");
-    banner.innerHTML = isTimeout
-      ? `База данных не отвечает больше 12 секунд. Часто это значит, что бесплатный проект Supabase «уснул» — откройте его дашборд на supabase.com, дождитесь, пока он проснётся, и попробуйте снова.`
-      : `Нет соединения с базой данных. Проверьте, что проект Supabase по адресу <code>${SUPABASE_URL}</code> активен (не на паузе) и таблица <code>players</code> создана с политикой доступа для анонимного ключа.`;
+    const isNetworkBlock = !isTimeout && (err instanceof TypeError || /fetch|network|reset/i.test(String(err && err.message)));
+    let text;
+    if (isTimeout){
+      text = `База данных не отвечает больше 12 секунд. Часто это значит, что бесплатный проект Supabase «уснул» — откройте его дашборд на supabase.com, дождитесь, пока он проснётся, и попробуйте снова.`;
+    } else if (isNetworkBlock){
+      text = `Браузер не может достучаться до <code>${SUPABASE_URL}</code> (соединение обрывается). Обычно это НЕ баг игры, а блокировка на вашей стороне: антивирус/файрвол, VPN, блокировщик рекламы или DNS провайдера режут домен *.supabase.co. Попробуйте: другую сеть (мобильный интернет), отключить VPN/адблок, режим инкогнито, или другой браузер.`;
+    } else {
+      text = `Нет соединения с базой данных. Проверьте, что проект Supabase по адресу <code>${SUPABASE_URL}</code> активен (не на паузе) и таблица <code>players</code> создана с политикой доступа для анонимного ключа.`;
+    }
+    banner.innerHTML = text + ` <button id="connRetryBtn" class="btn small secondary" style="margin-top:8px;">Проверить снова</button>`;
     banner.classList.add("show");
+    const retryBtn = document.getElementById("connRetryBtn");
+    if (retryBtn) retryBtn.addEventListener("click", ()=> testConnection());
     return false;
   }
 }
@@ -1352,14 +1351,12 @@ icon("shield","adminShieldIcon","var(--pink)",17);
 icon("fish","adminCoinIcon","var(--blue)",17);
 icon("fish","powerCostIcon","var(--blue)",13);
 icon("fish","farmCostIcon","var(--blue)",13);
-icon("fish","offlineFishSmall","var(--pink)",22);
 icon("rebirth","prestigeIconBtn","var(--gold)",21);
 icon("rebirth","prestigeModalIcon","var(--gold)",19);
 icon("pearl","pearlIcon","var(--gold)",16);
 icon("warn","blockedIcon","var(--muted)",20);
 icon("ban","adminBanIcon","var(--danger)",17);
 icon("gift","adminGiftIcon","var(--gold)",17);
-document.getElementById("offlineFishIcon").innerHTML = ICONS.fish("var(--pink)", 54);
 
 /* ------------------------------- АВАТАРКА ------------------------------- */
 function hashNick(nick){
@@ -1661,15 +1658,7 @@ async function enterGame(row, myToken){
   document.getElementById("blockedNotice").classList.toggle("show", state.clickingDisabled);
 
   let startCoins = row.coins || 0;
-  let offlineGain = 0;
-  if (row.last_seen){
-    const last = new Date(row.last_seen).getTime();
-    const now = Date.now();
-    const seconds = Math.max(0, Math.floor((now - last)/1000));
-    offlineGain = Math.floor(seconds * state.passiveIncome);
-  }
-  state.coins = startCoins + offlineGain;
-  if (offlineGain > 0){ state.totalEarned += offlineGain; }
+  state.coins = startCoins;
 
   if (row.device_id !== myToken){
     await sb.from(PLAYERS_TABLE).update({ device_id: myToken }).ilike("nickname", row.nickname);
@@ -1688,21 +1677,13 @@ async function enterGame(row, myToken){
   renderSkins();
   renderPrestige();
 
-  if (offlineGain > 0){
-    document.getElementById("offlineAmount").textContent = fmt(offlineGain);
-    document.getElementById("offlineDesc").textContent = `Пока вас не было, ваш тюлень поймал ${fmt(offlineGain)} Рыбок!`;
-    openModal("offlineOverlay");
-  }
-
   startPassiveIncomeLoop();
   startAutosave();
   checkAchievements();
   saveProgress(true);
 }
 
-document.getElementById("offlineCloseBtn").addEventListener("click", ()=> closeModal("offlineOverlay"));
-
-/* ------------------------------- РАСЧЁТ ХАРАКТЕРИСТИК ------------------------------- */
+/* РАЗДЕЛ РАСЧЁТА ХАРАКТЕРИСТИК */
 function recomputeStats(){
   let clickAdd = 0, clickMult = 0, passiveAdd = 0, passiveMult = 0, crit = 0;
   UPGRADES.forEach(u=>{
