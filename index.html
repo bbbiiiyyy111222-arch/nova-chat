@@ -632,6 +632,95 @@
   .toast.gold{ border-color:rgba(245,185,66,0.5); box-shadow:0 10px 30px rgba(245,185,66,0.25); }
 
   .footer-hint{ margin-top:auto; padding-top:16px; font-size:11px; color:rgba(148,163,184,0.5); text-align:center; }
+
+  .pearl-chip{
+    display:inline-flex; align-items:center; gap:6px;
+    background:rgba(245,185,66,0.12);
+    border:1px solid rgba(245,185,66,0.35);
+    color:var(--gold);
+    padding:7px 12px;
+    border-radius:999px;
+    font-weight:800;
+    font-size:13px;
+  }
+  .skin-grid{ display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+  @media (max-width:380px){ .skin-grid{ grid-template-columns:1fr; } }
+  .skin-card{
+    background:rgba(15,23,42,0.5);
+    border:1px solid var(--border);
+    border-radius:14px;
+    padding:12px;
+    display:flex; flex-direction:column; align-items:center; gap:8px;
+    text-align:center;
+  }
+  .skin-card.equipped{ border-color:var(--blue); box-shadow:0 0 16px rgba(56,189,248,0.25); }
+  .skin-swatch{
+    width:52px; height:52px; border-radius:50%;
+    box-shadow:inset 0 -6px 10px rgba(0,0,0,0.15), 0 0 0 2px rgba(255,255,255,0.08);
+  }
+  .skin-name{ font-size:12.5px; font-weight:700; }
+  .skin-req{ font-size:10.5px; color:var(--muted); }
+  .skin-btn{
+    width:100%; padding:7px; border-radius:9px; border:none;
+    font-size:11.5px; font-weight:700; cursor:pointer;
+    background:rgba(148,163,184,0.15); color:var(--text);
+  }
+  .skin-btn.equip{ background:linear-gradient(135deg, var(--blue), var(--violet)); color:#fff; }
+  .skin-btn:disabled{ opacity:0.45; cursor:not-allowed; }
+
+  .prestige-hero{
+    text-align:center;
+    background:rgba(245,185,66,0.08);
+    border:1px solid rgba(245,185,66,0.3);
+    border-radius:16px;
+    padding:18px;
+    margin-bottom:16px;
+  }
+  .prestige-hero .big{ font-size:26px; font-weight:800; color:var(--gold); }
+  .prestige-hero .small{ font-size:12px; color:var(--muted); margin-top:4px; }
+  .prestige-progress-track{
+    margin-top:12px; height:8px; border-radius:999px;
+    background:rgba(148,163,184,0.15); overflow:hidden;
+  }
+  .prestige-progress-fill{ height:100%; background:linear-gradient(90deg, var(--gold), var(--pink)); width:0%; transition:width .3s; }
+  .rebirth-btn{
+    width:100%; margin-top:14px;
+    background:linear-gradient(135deg, var(--gold), var(--pink));
+    box-shadow:0 8px 20px rgba(245,185,66,0.3);
+  }
+  .rebirth-btn.confirming{ background:linear-gradient(135deg, var(--danger), var(--pink)); }
+  .locked-notice{
+    display:flex; align-items:center; justify-content:center; gap:6px;
+    color:var(--muted); font-size:12px; margin-top:10px;
+  }
+
+  .blocked-notice{
+    margin-top:16px;
+    background:rgba(148,163,184,0.1);
+    border:1px solid var(--border);
+    color:var(--muted);
+    padding:10px 16px;
+    border-radius:12px;
+    font-size:13px;
+    font-weight:600;
+    display:none;
+    align-items:center;
+    gap:8px;
+    text-align:center;
+  }
+  .blocked-notice.show{ display:flex; }
+
+  select.styled-select{
+    width:100%;
+    padding:12px 14px;
+    border-radius:12px;
+    border:1px solid rgba(148,163,184,0.25);
+    background:rgba(15,23,42,0.6);
+    color:var(--text);
+    font-size:14px;
+    outline:none;
+    font-family:inherit;
+  }
 </style>
 </head>
 <body>
@@ -692,11 +781,15 @@
       </div>
       <div class="action-btn" id="openAchBtn">
         <span class="icon" id="achIconBtn"></span>
-        Достижения
+        Коллекция
       </div>
       <div class="action-btn" id="openLbBtn">
         <span class="icon" id="trophyIcon"></span>
         Лидеры
+      </div>
+      <div class="action-btn" id="openPrestigeBtn">
+        <span class="icon" id="prestigeIconBtn"></span>
+        Перерождение
       </div>
     </div>
 
@@ -709,6 +802,10 @@
       <div class="cheat-banner" id="cheatBanner">
         <span class="icon" id="warnIcon"></span>
         <span>Обнаружен автокликер! Тюлень отдыхает 5 сек.</span>
+      </div>
+      <div class="blocked-notice" id="blockedNotice">
+        <span class="icon" id="blockedIcon"></span>
+        <span>Ваш кликер отключён администратором.</span>
       </div>
       <div class="stat-strip">
         <div class="stat-chip"><div class="v" id="infoPower">1</div><div class="l">Сила клика</div></div>
@@ -748,14 +845,42 @@
   </div>
 </div>
 
-<!-- ======= ACHIEVEMENTS MODAL ======= -->
+<!-- ======= COLLECTION MODAL (achievements + skins) ======= -->
 <div class="modal-overlay" id="achOverlay">
   <div class="modal">
     <div class="modal-head">
-      <h3><span class="icon" id="achModalIcon"></span> Достижения</h3>
+      <h3><span class="icon" id="achModalIcon"></span> Коллекция</h3>
       <button class="close-btn" data-close="achOverlay">✕</button>
     </div>
-    <div class="ach-grid" id="achGrid"></div>
+    <div class="tabs">
+      <div class="tab-btn active" data-coltab="ach">Достижения</div>
+      <div class="tab-btn" data-coltab="skins">Тюлени</div>
+    </div>
+    <div class="tab-panel active" id="tabAch">
+      <div class="ach-grid" id="achGrid"></div>
+    </div>
+    <div class="tab-panel" id="tabSkins">
+      <div class="skin-grid" id="skinGrid"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ======= PRESTIGE MODAL ======= -->
+<div class="modal-overlay" id="prestigeOverlay">
+  <div class="modal">
+    <div class="modal-head">
+      <h3><span class="icon" id="prestigeModalIcon"></span> Перерождение</h3>
+      <button class="close-btn" data-close="prestigeOverlay">✕</button>
+    </div>
+    <div class="prestige-hero">
+      <div class="pearl-chip"><span class="icon" id="pearlIcon"></span><span id="pearlBalance">0</span> Жемчужин</div>
+      <div class="big" id="prestigeCountLabel">0 перерождений</div>
+      <div class="small">Перерождение сбрасывает Рыбок, уровень и улучшения, но даёт Жемчужины и постоянный бонус к силе клика и доходу.</div>
+      <div class="prestige-progress-track"><div class="prestige-progress-fill" id="prestigeProgressFill"></div></div>
+      <div class="small" id="prestigeProgressLabel">0 / 50 000</div>
+      <button class="btn rebirth-btn" id="rebirthBtn">Переродиться</button>
+    </div>
+    <div id="prestigeShop"></div>
   </div>
 </div>
 
@@ -815,6 +940,44 @@
       </div>
       <button class="btn secondary" id="acSaveBtn" style="margin-top:12px;">Применить</button>
       <div class="admin-msg" id="acMsg"></div>
+    </div>
+
+    <div class="admin-section">
+      <h4><span class="icon" id="adminBanIcon"></span> Блокировка кликера</h4>
+      <p class="hint">Полностью запрещает игроку кликать по тюленю (клики просто не засчитываются). Действует независимо от античита.</p>
+      <div class="field" style="margin-bottom:0;">
+        <label for="banNickInput">Никнейм игрока</label>
+        <div class="input-with-btn">
+          <input type="text" id="banNickInput" placeholder="Введите ник">
+          <button class="btn secondary small" id="banFindBtn">Найти</button>
+        </div>
+      </div>
+      <div class="player-preview" id="banPreview"></div>
+      <div class="switch-row">
+        <span style="font-size:13px; color:var(--muted);">Кликер заблокирован</span>
+        <div class="switch" id="banSwitch"></div>
+      </div>
+      <button class="btn secondary" id="banSaveBtn" style="margin-top:12px;">Применить</button>
+      <div class="admin-msg" id="banMsg"></div>
+    </div>
+
+    <div class="admin-section">
+      <h4><span class="icon" id="adminGiftIcon"></span> Выдача тюленя (скина)</h4>
+      <p class="hint">Открывает игроку любой скин тюленя из коллекции, даже обычно недоступный по уровню.</p>
+      <div class="field" style="margin-bottom:0;">
+        <label for="giftNickInput">Никнейм игрока</label>
+        <div class="input-with-btn">
+          <input type="text" id="giftNickInput" placeholder="Введите ник">
+          <button class="btn secondary small" id="giftFindBtn">Найти</button>
+        </div>
+      </div>
+      <div class="player-preview" id="giftPreview"></div>
+      <div class="field" style="margin-top:12px;">
+        <label for="giftSkinSelect">Скин</label>
+        <select class="styled-select" id="giftSkinSelect"></select>
+      </div>
+      <button class="btn gold" id="giftSaveBtn" style="margin-top:12px;">Выдать тюленя</button>
+      <div class="admin-msg" id="giftMsg"></div>
     </div>
 
     <div class="admin-section">
@@ -981,9 +1144,64 @@ const state = {
   upgrades: {},
   achievements: [],
   anticheatDisabled: false,
+  clickingDisabled: false,
+  equippedSkin: "default",
+  grantedSkins: [],
+  prestigeCount: 0,
+  pearls: 0,
+  prestigeUpgrades: {},
   deviceId: null,
   dirty: false
 };
+
+/* ------------------------------- ПЕРЕРОЖДЕНИЕ (ПРЕСТИЖ) ------------------------------- */
+const PRESTIGE_REQUIREMENT = 50000;
+const PRESTIGE_UPGRADES = [
+  { id:"mult", name:"Сила предков", desc:"+5% к силе клика и доходу навсегда", baseCost:5, growth:1.6 },
+  { id:"startBonus", name:"Дар моря", desc:"+150 стартовых Рыбок после каждого перерождения", baseCost:3, growth:1.5 },
+];
+function prestigeUpgradeCost(u, owned){
+  return Math.round(u.baseCost * Math.pow(u.growth, owned));
+}
+function prestigeMultiplier(){
+  const base = 1 + state.prestigeCount * 0.05;
+  const bought = 1 + (state.prestigeUpgrades.mult || 0) * 0.05;
+  return base * bought;
+}
+function pearlsForRebirth(){
+  return Math.max(1, Math.floor(Math.sqrt(state.totalEarned / 5000)));
+}
+
+/* ------------------------------- СКИНЫ ТЮЛЕНЯ ------------------------------- */
+const SKINS = [
+  { id:"default",  name:"Обычный",       bodyA:"#e8edf3", bodyB:"#aebdd1", unlock:{type:"default"} },
+  { id:"blue",      name:"Голубой",       bodyA:"#dbe9f7", bodyB:"#5ea3d8", unlock:{type:"level", value:2} },
+  { id:"pink",      name:"Розовый",       bodyA:"#fbdce8", bodyB:"#e585ac", unlock:{type:"level", value:3} },
+  { id:"violet",    name:"Сиреневый",     bodyA:"#e9defa", bodyB:"#a284dd", unlock:{type:"level", value:4} },
+  { id:"snow",      name:"Снежный",       bodyA:"#ffffff", bodyB:"#dbe6f0", unlock:{type:"level", value:5} },
+  { id:"mint",      name:"Мятный",        bodyA:"#d9f5ea", bodyB:"#65c298", unlock:{type:"level", value:6} },
+  { id:"sunset",    name:"Закатный",      bodyA:"#ffe3cf", bodyB:"#ea8a56", unlock:{type:"level", value:8} },
+  { id:"panda",     name:"Панда",         bodyA:"#ffffff", bodyB:"#33363f", unlock:{type:"level", value:10} },
+  { id:"tiger",     name:"Тигровый",      bodyA:"#ffd9a0", bodyB:"#d9691f", unlock:{type:"level", value:12} },
+  { id:"galaxy",    name:"Космический",   bodyA:"#8b7fe0", bodyB:"#242866", unlock:{type:"level", value:16} },
+  { id:"gold",      name:"Золотой",       bodyA:"#fff3c4", bodyB:"#d99a1f", unlock:{type:"level", value:20} },
+  { id:"rainbow",   name:"Радужный",      bodyA:"#ff8fa3", bodyB:"#8fd6ff", unlock:{type:"prestige", value:1}, rainbow:true },
+  { id:"shadow",    name:"Теневой",       bodyA:"#565c6e", bodyB:"#191b24", unlock:{type:"prestige", value:3} },
+  { id:"event",     name:"Праздничный",   bodyA:"#ffd7d7", bodyB:"#d64545", unlock:{type:"admin"}, hat:true },
+];
+function isSkinUnlocked(skin){
+  if (state.grantedSkins.includes(skin.id)) return true;
+  if (skin.unlock.type === "default") return true;
+  if (skin.unlock.type === "level") return state.level >= skin.unlock.value;
+  if (skin.unlock.type === "prestige") return state.prestigeCount >= skin.unlock.value;
+  return false;
+}
+function skinRequirementLabel(skin){
+  if (skin.unlock.type === "default") return "Открыт с самого начала";
+  if (skin.unlock.type === "level") return "Открывается на уровне " + skin.unlock.value;
+  if (skin.unlock.type === "prestige") return "Нужно перерождений: " + skin.unlock.value;
+  return "Только по подарку администратора";
+}
 
 const clickTimestamps = [];
 let sealBlocked = false;
@@ -1090,6 +1308,29 @@ const ICONS = {
       <path d="M9.5 14L11.3 15.8L14.7 12.4" stroke="${c}" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
       <path d="M9 8L6 3M15 8L18 3" stroke="${c}" stroke-width="1.6" stroke-linecap="round"/>
     </svg>`,
+  pearl: (c="var(--gold)", s=18)=>`
+    <svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="12" cy="12" r="8" fill="${c}" fill-opacity="0.85"/>
+      <ellipse cx="9.5" cy="9" rx="2.4" ry="1.6" fill="#fff" fill-opacity="0.6"/>
+    </svg>`,
+  rebirth: (c="var(--gold)", s=22)=>`
+    <svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M4 12C4 7.6 7.6 4 12 4C15 4 17.6 5.7 19 8.2" stroke="${c}" stroke-width="1.8" stroke-linecap="round"/>
+      <path d="M20 12C20 16.4 16.4 20 12 20C9 20 6.4 18.3 5 15.8" stroke="${c}" stroke-width="1.8" stroke-linecap="round"/>
+      <path d="M19 4V8.4H14.6" stroke="${c}" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M5 20V15.6H9.4" stroke="${c}" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>`,
+  ban: (c="var(--danger)", s=20)=>`
+    <svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="12" cy="12" r="8.5" stroke="${c}" stroke-width="1.7"/>
+      <path d="M6.5 6.5L17.5 17.5" stroke="${c}" stroke-width="1.7" stroke-linecap="round"/>
+    </svg>`,
+  gift: (c="var(--gold)", s=18)=>`
+    <svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect x="4" y="10" width="16" height="10" rx="1.5" fill="${c}" fill-opacity="0.2" stroke="${c}" stroke-width="1.6"/>
+      <path d="M4 10H20V13H4V10Z" fill="${c}" fill-opacity="0.4" stroke="${c}" stroke-width="1.6" stroke-linejoin="round"/>
+      <path d="M12 10V20M12 10C10 10 8.5 8.6 8.5 7.2C8.5 6 9.4 5 10.6 5C11.9 5 12 7.5 12 10ZM12 10C14 10 15.5 8.6 15.5 7.2C15.5 6 14.6 5 13.4 5C12.1 5 12 7.5 12 10Z" stroke="${c}" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>`,
 };
 
 function icon(name, mount, color, size){
@@ -1112,6 +1353,12 @@ icon("fish","adminCoinIcon","var(--blue)",17);
 icon("fish","powerCostIcon","var(--blue)",13);
 icon("fish","farmCostIcon","var(--blue)",13);
 icon("fish","offlineFishSmall","var(--pink)",22);
+icon("rebirth","prestigeIconBtn","var(--gold)",21);
+icon("rebirth","prestigeModalIcon","var(--gold)",19);
+icon("pearl","pearlIcon","var(--gold)",16);
+icon("warn","blockedIcon","var(--muted)",20);
+icon("ban","adminBanIcon","var(--danger)",17);
+icon("gift","adminGiftIcon","var(--gold)",17);
 document.getElementById("offlineFishIcon").innerHTML = ICONS.fish("var(--pink)", 54);
 
 /* ------------------------------- АВАТАРКА ------------------------------- */
@@ -1142,52 +1389,53 @@ function renderAvatar(nick, mountId, size=40){
 
 /* --------------------------------- ТЮЛЕНЬ (эволюция) --------------------------------- */
 const STAGES = [
-  { name:"Малыш",      minLevel:1,  bodyA:"#e8edf3", bodyB:"#aebdd1", accent:"var(--blue)" },
-  { name:"Подросток",  minLevel:5,  bodyA:"#dbe7f5", bodyB:"#8ca4c9", accent:"var(--pink)" },
-  { name:"Тюлень",     minLevel:10, bodyA:"#cfe0f2", bodyB:"#6f88b3", accent:"var(--violet)" },
-  { name:"Морской лев", minLevel:18, bodyA:"#f6e3b4", bodyB:"#c99a4a", accent:"var(--gold)" },
+  { name:"Малыш",       minLevel:1,  accent:"var(--blue)" },
+  { name:"Подросток",   minLevel:5,  accent:"var(--pink)" },
+  { name:"Тюлень",      minLevel:10, accent:"var(--violet)" },
+  { name:"Морской лев", minLevel:18, accent:"var(--gold)" },
 ];
 function getStage(level){
   let st = STAGES[0];
   for (const s of STAGES){ if (level >= s.minLevel) st = s; }
   return st;
 }
+function getEquippedSkin(){
+  return SKINS.find(s=>s.id === state.equippedSkin) || SKINS[0];
+}
 
 const MOUTHS = {
-  neutral: "M92 152C104 160 134 160 146 152",
-  smile:   "M86 146C98 172 142 172 154 146",
-  frown:   "M86 172C98 152 142 152 154 172"
+  neutral: "M97 108Q110 115 123 108",
+  smile:   "M93 105Q110 123 127 105",
+  frown:   "M93 118Q110 103 127 118"
 };
 
 function renderSeal(){
   const box = document.getElementById("sealSvgBox");
   const st = getStage(state.level);
+  const skin = getEquippedSkin();
+  const gradStops = skin.rainbow
+    ? `<stop offset="0%" stop-color="#ff8fa3"/><stop offset="25%" stop-color="#ffd18f"/><stop offset="50%" stop-color="#9ff0b0"/><stop offset="75%" stop-color="#8fd6ff"/><stop offset="100%" stop-color="#c79bff"/>`
+    : `<stop offset="0%" stop-color="${skin.bodyA}"/><stop offset="100%" stop-color="${skin.bodyB}"/>`;
   box.innerHTML = `
   <svg viewBox="0 0 220 220" xmlns="http://www.w3.org/2000/svg">
     <defs>
       <radialGradient id="bodyGrad" gradientUnits="userSpaceOnUse" cx="85" cy="55" r="175">
-        <stop offset="0%" stop-color="${st.bodyA}"/>
-        <stop offset="100%" stop-color="${st.bodyB}"/>
-      </radialGradient>
-      <radialGradient id="bellyGrad" cx="50%" cy="30%" r="70%">
-        <stop offset="0%" stop-color="#ffffff" stop-opacity="0.55"/>
-        <stop offset="100%" stop-color="#ffffff" stop-opacity="0"/>
+        ${gradStops}
       </radialGradient>
     </defs>
 
     ${st.name === "Морской лев" ? `<circle cx="110" cy="105" r="98" fill="${st.accent}" fill-opacity="0.10"/>` : ""}
 
-    <!-- задние ласты -->
-    <path d="M52 178C36 172 26 188 38 200C46 208 60 204 64 190" fill="url(#bodyGrad)"/>
-    <path d="M168 178C184 172 194 188 182 200C174 208 160 204 156 190" fill="url(#bodyGrad)"/>
+    <!-- задние ласты (позади тела) -->
+    <path d="M56 176C42 172 34 186 44 197C51 204 62 200 66 189" fill="url(#bodyGrad)"/>
+    <path d="M164 176C178 172 186 186 176 197C169 204 158 200 154 189" fill="url(#bodyGrad)"/>
+
+    <!-- передние ласты (позади тела, видны только кончики) -->
+    <path id="finL" d="M52 132C38 130 30 144 38 156C44 164 56 161 62 150" fill="url(#bodyGrad)"/>
+    <path id="finR" d="M168 132C182 130 190 144 182 156C176 164 164 161 158 150" fill="url(#bodyGrad)"/>
 
     <!-- тело -->
-    <ellipse cx="110" cy="152" rx="66" ry="50" fill="url(#bodyGrad)"/>
-    <ellipse cx="110" cy="162" rx="40" ry="30" fill="url(#bellyGrad)"/>
-
-    <!-- передние ласты -->
-    <path id="finL" d="M46 138C30 132 20 148 30 160C38 168 52 164 58 150" fill="url(#bodyGrad)"/>
-    <path id="finR" d="M174 138C190 132 200 148 190 160C182 168 168 164 162 150" fill="url(#bodyGrad)"/>
+    <ellipse cx="110" cy="152" rx="64" ry="50" fill="url(#bodyGrad)"/>
 
     <!-- голова -->
     <ellipse cx="110" cy="92" rx="56" ry="52" fill="url(#bodyGrad)"/>
@@ -1198,12 +1446,15 @@ function renderSeal(){
     <!-- корона (морской лев) -->
     ${st.name === "Морской лев" ? `<path d="M84 46L92 62L110 40L128 62L136 46L132 66H88Z" fill="${st.accent}"/>` : ""}
 
-    <!-- усы -->
-    <path d="M64 96C50 92 40 92 30 94M64 100C50 100 40 102 30 106" stroke="#94a3b8" stroke-width="1.6" stroke-linecap="round" fill="none"/>
-    <path d="M156 96C170 92 180 92 190 94M156 100C170 100 180 102 190 106" stroke="#94a3b8" stroke-width="1.6" stroke-linecap="round" fill="none"/>
+    <!-- праздничная шапка (событийный скин) -->
+    ${skin.hat ? `<path d="M78 52C90 26 130 26 142 52C130 44 90 44 78 52Z" fill="#d64545"/><circle cx="140" cy="30" r="8" fill="#fff"/><rect x="76" y="48" width="68" height="9" rx="4" fill="#fff"/>` : ""}
 
-    <ellipse id="cheekL" class="cheek" cx="80" cy="104" rx="12" ry="8.5" fill="var(--pink)"/>
-    <ellipse id="cheekR" class="cheek" cx="140" cy="104" rx="12" ry="8.5" fill="var(--pink)"/>
+    <!-- усы -->
+    <path d="M62 98C48 95 38 95 28 97M62 102C48 103 38 105 28 109" stroke="#94a3b8" stroke-width="1.6" stroke-linecap="round" fill="none"/>
+    <path d="M158 98C172 95 182 95 192 97M158 102C172 103 182 105 192 109" stroke="#94a3b8" stroke-width="1.6" stroke-linecap="round" fill="none"/>
+
+    <ellipse id="cheekL" class="cheek" cx="85" cy="100" rx="10" ry="7" fill="var(--pink)"/>
+    <ellipse id="cheekR" class="cheek" cx="135" cy="100" rx="10" ry="7" fill="var(--pink)"/>
 
     <g id="eyeL">
       <circle cx="90" cy="84" r="8.5" fill="#1e293b"/>
@@ -1214,9 +1465,8 @@ function renderSeal(){
       <circle id="sparkR" cx="133" cy="80.5" r="2.6" fill="#fff" opacity="0.9"/>
     </g>
 
-    <ellipse cx="110" cy="100" rx="10" ry="7" fill="#64748b"/>
-    <circle cx="110" cy="98" r="2.4" fill="#334155"/>
-    <path id="mouthPath" d="${MOUTHS.neutral}" stroke="#334155" stroke-width="2.6" stroke-linecap="round" fill="none"/>
+    <ellipse cx="110" cy="98" rx="8" ry="5.5" fill="#8a94a3"/>
+    <path id="mouthPath" d="${MOUTHS.neutral}" stroke="#5b6472" stroke-width="2.4" stroke-linecap="round" fill="none"/>
   </svg>`;
 }
 
@@ -1261,12 +1511,16 @@ document.getElementById("authHeroSeal").innerHTML = `
     <defs><radialGradient id="heroGrad" gradientUnits="userSpaceOnUse" cx="85" cy="55" r="175">
       <stop offset="0%" stop-color="#e8edf3"/><stop offset="100%" stop-color="#aebdd1"/>
     </radialGradient></defs>
-    <ellipse cx="110" cy="152" rx="66" ry="50" fill="url(#heroGrad)"/>
+    <path d="M52 132C38 130 30 144 38 156C44 164 56 161 62 150" fill="url(#heroGrad)"/>
+    <path d="M168 132C182 130 190 144 182 156C176 164 164 161 158 150" fill="url(#heroGrad)"/>
+    <ellipse cx="110" cy="152" rx="64" ry="50" fill="url(#heroGrad)"/>
     <ellipse cx="110" cy="92" rx="56" ry="52" fill="url(#heroGrad)"/>
+    <ellipse cx="85" cy="100" rx="10" ry="7" fill="var(--pink)" opacity="0.3"/>
+    <ellipse cx="135" cy="100" rx="10" ry="7" fill="var(--pink)" opacity="0.3"/>
     <circle cx="90" cy="84" r="8.5" fill="#1e293b"/><circle cx="93" cy="80.5" r="2.6" fill="#fff"/>
     <circle cx="130" cy="84" r="8.5" fill="#1e293b"/><circle cx="133" cy="80.5" r="2.6" fill="#fff"/>
-    <ellipse cx="110" cy="100" rx="10" ry="7" fill="#64748b"/>
-    <path d="M92 152C104 160 134 160 146 152" stroke="#334155" stroke-width="2.6" stroke-linecap="round" fill="none"/>
+    <ellipse cx="110" cy="98" rx="8" ry="5.5" fill="#8a94a3"/>
+    <path d="M97 108Q110 115 123 108" stroke="#5b6472" stroke-width="2.4" stroke-linecap="round" fill="none"/>
   </svg>`;
 
 nicknameInput.addEventListener("input", ()=>{
@@ -1348,7 +1602,13 @@ async function handleLogin(){
             upgrades: {},
             achievements: [],
             last_seen: new Date().toISOString(),
-            anticheat_disabled_for_user: false
+            anticheat_disabled_for_user: false,
+            clicking_disabled: false,
+            equipped_skin: "default",
+            granted_skins: [],
+            prestige_count: 0,
+            pearls: 0,
+            prestige_upgrades: {}
           })
           .select()
           .maybeSingle(),
@@ -1385,9 +1645,20 @@ async function enterGame(row, myToken){
   state.upgrades = row.upgrades && typeof row.upgrades === "object" ? row.upgrades : {};
   state.achievements = Array.isArray(row.achievements) ? row.achievements : [];
   state.anticheatDisabled = !!row.anticheat_disabled_for_user;
+  state.clickingDisabled = !!row.clicking_disabled;
+  state.grantedSkins = Array.isArray(row.granted_skins) ? row.granted_skins : [];
+  state.equippedSkin = row.equipped_skin || "default";
+  state.prestigeCount = row.prestige_count || 0;
+  state.pearls = row.pearls || 0;
+  state.prestigeUpgrades = row.prestige_upgrades && typeof row.prestige_upgrades === "object" ? row.prestige_upgrades : {};
   state.deviceId = myToken;
 
   recomputeStats();
+
+  const equippedOk = SKINS.find(s=>s.id===state.equippedSkin && isSkinUnlocked(s));
+  if (!equippedOk) state.equippedSkin = "default";
+
+  document.getElementById("blockedNotice").classList.toggle("show", state.clickingDisabled);
 
   let startCoins = row.coins || 0;
   let offlineGain = 0;
@@ -1414,6 +1685,8 @@ async function enterGame(row, myToken){
   updateHud();
   renderShop();
   renderAchievements();
+  renderSkins();
+  renderPrestige();
 
   if (offlineGain > 0){
     document.getElementById("offlineAmount").textContent = fmt(offlineGain);
@@ -1441,8 +1714,9 @@ function recomputeStats(){
     if (u.type === "passiveMult") passiveMult += u.value * owned;
     if (u.type === "crit") crit += u.value * owned;
   });
-  state.clickPower = Math.max(1, Math.round((1 + clickAdd) * (1 + clickMult)));
-  state.passiveIncome = Math.round(passiveAdd * (1 + passiveMult));
+  const pMult = prestigeMultiplier();
+  state.clickPower = Math.max(1, Math.round((1 + clickAdd) * (1 + clickMult) * pMult));
+  state.passiveIncome = Math.round(passiveAdd * (1 + passiveMult) * pMult);
   state.critChance = Math.min(0.5, crit);
   const newLevel = levelFromTotal(state.totalEarned);
   const leveledUp = newLevel > state.level;
@@ -1490,6 +1764,7 @@ function onLevelUp(){
   setSealFace("neutral");
   showToast(`${ICONS.medal("var(--gold)",16)} Новый уровень! Ур. ${state.level} — ${getStage(state.level).name}`, true);
   renderShop();
+  renderSkins();
 }
 
 /* ------------------------------- АВТОСОХРАНЕНИЕ ------------------------------- */
@@ -1508,6 +1783,10 @@ async function saveProgress(silent){
       total_clicks: state.totalClicks,
       upgrades: state.upgrades,
       achievements: state.achievements,
+      equipped_skin: state.equippedSkin,
+      prestige_count: state.prestigeCount,
+      pearls: Math.floor(state.pearls),
+      prestige_upgrades: state.prestigeUpgrades,
       last_seen: new Date().toISOString()
     }).ilike("nickname", state.nickname);
     if (error) throw error;
@@ -1530,6 +1809,10 @@ sealWrap.addEventListener("click", handleSealClick);
 
 function handleSealClick(e){
   if (!e.isTrusted) return; // защита от программных кликов
+  if (state.clickingDisabled){
+    document.getElementById("blockedNotice").classList.add("show");
+    return;
+  }
   if (sealBlocked) return;
 
   if (!state.anticheatDisabled && detectAutoclick()){
@@ -1621,12 +1904,21 @@ function spawnFloater(e, amount, isCrit){
 }
 
 /* ------------------------------- МАГАЗИН ------------------------------- */
-document.querySelectorAll(".tab-btn").forEach(btn=>{
+document.querySelectorAll("#shopOverlay .tab-btn[data-tab]").forEach(btn=>{
   btn.addEventListener("click", ()=>{
-    document.querySelectorAll(".tab-btn").forEach(b=>b.classList.remove("active"));
-    document.querySelectorAll(".tab-panel").forEach(p=>p.classList.remove("active"));
+    document.querySelectorAll("#shopOverlay .tab-btn").forEach(b=>b.classList.remove("active"));
+    document.querySelectorAll("#shopOverlay .tab-panel").forEach(p=>p.classList.remove("active"));
     btn.classList.add("active");
     document.getElementById(btn.dataset.tab === "power" ? "tabPower" : "tabPassive").classList.add("active");
+  });
+});
+
+document.querySelectorAll("#achOverlay .tab-btn[data-coltab]").forEach(btn=>{
+  btn.addEventListener("click", ()=>{
+    document.querySelectorAll("#achOverlay .tab-btn").forEach(b=>b.classList.remove("active"));
+    document.querySelectorAll("#achOverlay .tab-panel").forEach(p=>p.classList.remove("active"));
+    btn.classList.add("active");
+    document.getElementById(btn.dataset.coltab === "ach" ? "tabAch" : "tabSkins").classList.add("active");
   });
 });
 
@@ -1722,7 +2014,138 @@ function renderAchievements(){
 
 document.getElementById("openAchBtn").addEventListener("click", ()=>{
   renderAchievements();
+  renderSkins();
   openModal("achOverlay");
+});
+
+/* ------------------------------- СКИНЫ (ОТРИСОВКА) ------------------------------- */
+function renderSkins(){
+  const grid = document.getElementById("skinGrid");
+  if (!grid) return;
+  grid.innerHTML = SKINS.map(skin=>{
+    const unlocked = isSkinUnlocked(skin);
+    const equipped = state.equippedSkin === skin.id;
+    const swatchBg = skin.rainbow
+      ? "linear-gradient(135deg,#ff8fa3,#ffd18f,#9ff0b0,#8fd6ff,#c79bff)"
+      : `linear-gradient(135deg, ${skin.bodyA}, ${skin.bodyB})`;
+    return `
+      <div class="skin-card ${equipped ? "equipped" : ""}">
+        <div class="skin-swatch" style="background:${swatchBg};"></div>
+        <div class="skin-name">${skin.name}</div>
+        ${unlocked
+          ? `<div class="skin-req">${equipped ? "Надет" : "Открыт"}</div>
+             <button class="skin-btn ${equipped ? "" : "equip"}" data-equip="${skin.id}" ${equipped ? "disabled" : ""}>${equipped ? "Надето" : "Надеть"}</button>`
+          : `<div class="skin-req">${skinRequirementLabel(skin)}</div>
+             <button class="skin-btn" disabled>${ICONS.lock("var(--muted)",12)}</button>`
+        }
+      </div>`;
+  }).join("");
+
+  grid.querySelectorAll("[data-equip]").forEach(btn=>{
+    btn.addEventListener("click", ()=>{
+      state.equippedSkin = btn.dataset.equip;
+      state.dirty = true;
+      renderSeal();
+      renderSkins();
+      saveProgress(true);
+      showToast("Тюлень переодет!");
+    });
+  });
+}
+
+/* ------------------------------- ПЕРЕРОЖДЕНИЕ (ОТРИСОВКА) ------------------------------- */
+let rebirthConfirming = false;
+
+function renderPrestige(){
+  document.getElementById("pearlBalance").textContent = fmt(state.pearls);
+  document.getElementById("prestigeCountLabel").textContent = state.prestigeCount + (state.prestigeCount === 1 ? " перерождение" : " перерождений");
+  const progress = Math.min(1, state.totalEarned / PRESTIGE_REQUIREMENT);
+  document.getElementById("prestigeProgressFill").style.width = (progress*100).toFixed(1) + "%";
+  document.getElementById("prestigeProgressLabel").textContent = `${fmt(state.totalEarned)} / ${fmt(PRESTIGE_REQUIREMENT)}`;
+
+  const btn = document.getElementById("rebirthBtn");
+  const ready = state.totalEarned >= PRESTIGE_REQUIREMENT;
+  btn.disabled = !ready;
+  btn.textContent = ready
+    ? (rebirthConfirming ? `Точно? +${pearlsForRebirth()} жемчужин` : "Переродиться")
+    : "Пока рано перерождаться";
+  btn.classList.toggle("confirming", rebirthConfirming && ready);
+
+  document.getElementById("prestigeShop").innerHTML = PRESTIGE_UPGRADES.map(u=>{
+    const owned = state.prestigeUpgrades[u.id] || 0;
+    const cost = prestigeUpgradeCost(u, owned);
+    return `
+      <div class="shop-item">
+        <div class="icon-box">${ICONS.pearl("var(--gold)",22)}</div>
+        <div class="info">
+          <div class="title-row"><span class="title">${u.name}</span>${owned > 0 ? `<span class="owned">×${owned}</span>` : ""}</div>
+          <div class="desc">${u.desc}</div>
+        </div>
+        <button class="buy-btn" data-pu="${u.id}" ${state.pearls < cost ? "disabled" : ""}>
+          <span>Купить</span>
+          <span class="cost">${fmt(cost)} ${ICONS.pearl("var(--gold)",12)}</span>
+        </button>
+      </div>`;
+  }).join("");
+
+  document.querySelectorAll("[data-pu]").forEach(btn2=>{
+    btn2.addEventListener("click", ()=> buyPrestigeUpgrade(btn2.dataset.pu));
+  });
+}
+
+async function buyPrestigeUpgrade(id){
+  const u = PRESTIGE_UPGRADES.find(x=>x.id===id);
+  if (!u) return;
+  const owned = state.prestigeUpgrades[id] || 0;
+  const cost = prestigeUpgradeCost(u, owned);
+  if (state.pearls < cost){ showToast("Недостаточно Жемчужин!"); return; }
+  state.pearls -= cost;
+  state.prestigeUpgrades[id] = owned + 1;
+  state.dirty = true;
+  recomputeStats();
+  updateHud();
+  renderPrestige();
+  await saveProgress(true);
+  showToast(`Куплено: ${u.name}!`);
+}
+
+document.getElementById("openPrestigeBtn").addEventListener("click", ()=>{
+  rebirthConfirming = false;
+  renderPrestige();
+  openModal("prestigeOverlay");
+});
+
+document.getElementById("rebirthBtn").addEventListener("click", async ()=>{
+  if (state.totalEarned < PRESTIGE_REQUIREMENT) return;
+  if (!rebirthConfirming){
+    rebirthConfirming = true;
+    renderPrestige();
+    clearTimeout(window._rebirthResetT);
+    window._rebirthResetT = setTimeout(()=>{ rebirthConfirming = false; renderPrestige(); }, 4000);
+    return;
+  }
+  rebirthConfirming = false;
+  clearTimeout(window._rebirthResetT);
+
+  const gained = pearlsForRebirth();
+  const startBonus = (state.prestigeUpgrades.startBonus || 0) * 150;
+
+  state.pearls += gained;
+  state.prestigeCount += 1;
+  state.coins = startBonus;
+  state.totalEarned = 0;
+  state.upgrades = {};
+  state.dirty = true;
+
+  recomputeStats();
+  updateHud();
+  renderSeal();
+  renderShop();
+  renderSkins();
+  renderPrestige();
+  checkAchievements();
+  await saveProgress(true);
+  showToast(`${ICONS.rebirth("var(--gold)",16)} Тюлень переродился! +${gained} Жемчужин`, true);
 });
 
 function checkAchievements(){
@@ -1813,6 +2236,11 @@ function tryAdminLogin(){
     document.getElementById("coinMsg").textContent = "";
     document.getElementById("acPreview").classList.remove("show");
     document.getElementById("coinPreview").classList.remove("show");
+    document.getElementById("banPreview").classList.remove("show");
+    document.getElementById("giftPreview").classList.remove("show");
+    document.getElementById("banMsg").textContent = "";
+    document.getElementById("giftMsg").textContent = "";
+    populateGiftSkinSelect();
     refreshAdminConnStatus();
     openModal("adminPanelOverlay");
   } else {
@@ -1844,7 +2272,10 @@ document.getElementById("acFindBtn").addEventListener("click", async ()=>{
   const prev = document.getElementById("acPreview");
   if (!nick) return;
   try{
-    const { data, error } = await sb.from(PLAYERS_TABLE).select("nickname, anticheat_disabled_for_user, coins").ilike("nickname", nick).maybeSingle();
+    const { data, error } = await withTimeout(
+      sb.from(PLAYERS_TABLE).select("nickname, anticheat_disabled_for_user, coins").ilike("nickname", nick).maybeSingle(),
+      12000, "ac-find"
+    );
     if (error || !data){
       prev.classList.add("show");
       prev.innerHTML = `Игрок не найден`;
@@ -1856,7 +2287,7 @@ document.getElementById("acFindBtn").addEventListener("click", async ()=>{
     prev.innerHTML = `Найден игрок <b>${escapeHtml(data.nickname)}</b> · баланс: <b>${fmt(data.coins||0)}</b> · античит сейчас: <b>${acSwitchState ? "выключен" : "включён"}</b>`;
   } catch(err){
     prev.classList.add("show");
-    prev.innerHTML = "Ошибка соединения с базой данных";
+    prev.innerHTML = String(err&&err.message).startsWith("TIMEOUT") ? "База данных не отвечает (тайм-аут)" : "Ошибка соединения с базой данных";
   }
 });
 
@@ -1865,12 +2296,14 @@ document.getElementById("acSaveBtn").addEventListener("click", async ()=>{
   const msgEl = document.getElementById("acMsg");
   if (!nick){ msgEl.textContent = "Введите никнейм игрока"; msgEl.className = "admin-msg err"; return; }
   try{
-    const { data, error } = await sb
-      .from(PLAYERS_TABLE)
-      .update({ anticheat_disabled_for_user: acSwitchState })
-      .ilike("nickname", nick)
-      .select()
-      .maybeSingle();
+    const { data, error } = await withTimeout(
+      sb.from(PLAYERS_TABLE)
+        .update({ anticheat_disabled_for_user: acSwitchState })
+        .ilike("nickname", nick)
+        .select()
+        .maybeSingle(),
+      12000, "ac-save"
+    );
 
     if (error || !data){
       msgEl.textContent = "Игрок не найден или ошибка базы данных";
@@ -1884,7 +2317,7 @@ document.getElementById("acSaveBtn").addEventListener("click", async ()=>{
       state.anticheatDisabled = acSwitchState;
     }
   } catch(err){
-    msgEl.textContent = "Ошибка соединения с базой данных";
+    msgEl.textContent = String(err&&err.message).startsWith("TIMEOUT") ? "База данных не отвечает (тайм-аут)" : "Ошибка соединения с базой данных";
     msgEl.className = "admin-msg err";
   }
 });
@@ -1895,7 +2328,10 @@ document.getElementById("coinFindBtn").addEventListener("click", async ()=>{
   const prev = document.getElementById("coinPreview");
   if (!nick) return;
   try{
-    const { data, error } = await sb.from(PLAYERS_TABLE).select("nickname, coins, total_earned").ilike("nickname", nick).maybeSingle();
+    const { data, error } = await withTimeout(
+      sb.from(PLAYERS_TABLE).select("nickname, coins, total_earned").ilike("nickname", nick).maybeSingle(),
+      12000, "coin-find"
+    );
     if (error || !data){
       prev.classList.add("show");
       prev.innerHTML = `Игрок не найден`;
@@ -1905,7 +2341,7 @@ document.getElementById("coinFindBtn").addEventListener("click", async ()=>{
     prev.innerHTML = `Найден игрок <b>${escapeHtml(data.nickname)}</b> · текущий баланс: <b>${fmt(data.coins||0)}</b> Рыбок`;
   } catch(err){
     prev.classList.add("show");
-    prev.innerHTML = "Ошибка соединения с базой данных";
+    prev.innerHTML = String(err&&err.message).startsWith("TIMEOUT") ? "База данных не отвечает (тайм-аут)" : "Ошибка соединения с базой данных";
   }
 });
 
@@ -1919,11 +2355,10 @@ async function adjustCoins(delta){
   if (!amount){ msgEl.textContent = "Введите количество Рыбок"; msgEl.className = "admin-msg err"; return; }
 
   try{
-    const { data: target, error: selErr } = await sb
-      .from(PLAYERS_TABLE)
-      .select("*")
-      .ilike("nickname", nick)
-      .maybeSingle();
+    const { data: target, error: selErr } = await withTimeout(
+      sb.from(PLAYERS_TABLE).select("*").ilike("nickname", nick).maybeSingle(),
+      12000, "coin-select"
+    );
 
     if (selErr || !target){
       msgEl.textContent = "Игрок не найден";
@@ -1933,10 +2368,10 @@ async function adjustCoins(delta){
 
     const newBalance = Math.max(0, (target.coins || 0) + delta * amount);
 
-    const { error: updErr } = await sb
-      .from(PLAYERS_TABLE)
-      .update({ coins: newBalance })
-      .ilike("nickname", nick);
+    const { error: updErr } = await withTimeout(
+      sb.from(PLAYERS_TABLE).update({ coins: newBalance }).ilike("nickname", nick),
+      12000, "coin-update"
+    );
 
     if (updErr){
       msgEl.textContent = "Ошибка обновления базы данных";
@@ -1952,13 +2387,141 @@ async function adjustCoins(delta){
       updateHud();
     }
   } catch(err){
-    msgEl.textContent = "Ошибка соединения с базой данных";
+    msgEl.textContent = String(err&&err.message).startsWith("TIMEOUT") ? "База данных не отвечает (тайм-аут)" : "Ошибка соединения с базой данных";
     msgEl.className = "admin-msg err";
   }
 }
 
 document.getElementById("addCoinsBtn").addEventListener("click", ()=> adjustCoins(1));
 document.getElementById("subCoinsBtn").addEventListener("click", ()=> adjustCoins(-1));
+
+/* --- Блокировка кликера --- */
+let banSwitchState = false;
+const banSwitch = document.getElementById("banSwitch");
+banSwitch.addEventListener("click", ()=>{
+  banSwitchState = !banSwitchState;
+  banSwitch.classList.toggle("on", banSwitchState);
+});
+
+document.getElementById("banFindBtn").addEventListener("click", async ()=>{
+  const nick = document.getElementById("banNickInput").value.trim();
+  const prev = document.getElementById("banPreview");
+  if (!nick) return;
+  try{
+    const { data, error } = await withTimeout(
+      sb.from(PLAYERS_TABLE).select("nickname, clicking_disabled, coins").ilike("nickname", nick).maybeSingle(),
+      12000, "ban-find"
+    );
+    if (error || !data){
+      prev.classList.add("show");
+      prev.innerHTML = "Игрок не найден";
+      return;
+    }
+    banSwitchState = !!data.clicking_disabled;
+    banSwitch.classList.toggle("on", banSwitchState);
+    prev.classList.add("show");
+    prev.innerHTML = `Найден игрок <b>${escapeHtml(data.nickname)}</b> · баланс: <b>${fmt(data.coins||0)}</b> · кликер сейчас: <b>${banSwitchState ? "заблокирован" : "работает"}</b>`;
+  } catch(err){
+    prev.classList.add("show");
+    prev.innerHTML = String(err&&err.message).startsWith("TIMEOUT") ? "База данных не отвечает (тайм-аут)" : "Ошибка соединения с базой данных";
+  }
+});
+
+document.getElementById("banSaveBtn").addEventListener("click", async ()=>{
+  const nick = document.getElementById("banNickInput").value.trim();
+  const msgEl = document.getElementById("banMsg");
+  if (!nick){ msgEl.textContent = "Введите никнейм игрока"; msgEl.className = "admin-msg err"; return; }
+  try{
+    const { data, error } = await withTimeout(
+      sb.from(PLAYERS_TABLE).update({ clicking_disabled: banSwitchState }).ilike("nickname", nick).select().maybeSingle(),
+      12000, "ban-save"
+    );
+    if (error || !data){
+      msgEl.textContent = "Игрок не найден или ошибка базы данных";
+      msgEl.className = "admin-msg err";
+      return;
+    }
+    msgEl.textContent = `Готово: кликер для «${data.nickname}» ${banSwitchState ? "заблокирован" : "разблокирован"}`;
+    msgEl.className = "admin-msg ok";
+    if (state.nickname && nick.toLowerCase() === state.nickname.toLowerCase()){
+      state.clickingDisabled = banSwitchState;
+      document.getElementById("blockedNotice").classList.toggle("show", banSwitchState);
+    }
+  } catch(err){
+    msgEl.textContent = String(err&&err.message).startsWith("TIMEOUT") ? "База данных не отвечает (тайм-аут)" : "Ошибка соединения с базой данных";
+    msgEl.className = "admin-msg err";
+  }
+});
+
+/* --- Выдача тюленя (скина) --- */
+function populateGiftSkinSelect(){
+  const sel = document.getElementById("giftSkinSelect");
+  sel.innerHTML = SKINS.map(s=>`<option value="${s.id}">${s.name}</option>`).join("");
+}
+
+document.getElementById("giftFindBtn").addEventListener("click", async ()=>{
+  const nick = document.getElementById("giftNickInput").value.trim();
+  const prev = document.getElementById("giftPreview");
+  if (!nick) return;
+  try{
+    const { data, error } = await withTimeout(
+      sb.from(PLAYERS_TABLE).select("nickname, granted_skins, equipped_skin").ilike("nickname", nick).maybeSingle(),
+      12000, "gift-find"
+    );
+    if (error || !data){
+      prev.classList.add("show");
+      prev.innerHTML = "Игрок не найден";
+      return;
+    }
+    const owned = Array.isArray(data.granted_skins) ? data.granted_skins : [];
+    prev.classList.add("show");
+    prev.innerHTML = `Найден игрок <b>${escapeHtml(data.nickname)}</b> · подарено скинов: <b>${owned.length}</b> · сейчас надет: <b>${escapeHtml(data.equipped_skin||"default")}</b>`;
+  } catch(err){
+    prev.classList.add("show");
+    prev.innerHTML = String(err&&err.message).startsWith("TIMEOUT") ? "База данных не отвечает (тайм-аут)" : "Ошибка соединения с базой данных";
+  }
+});
+
+document.getElementById("giftSaveBtn").addEventListener("click", async ()=>{
+  const nick = document.getElementById("giftNickInput").value.trim();
+  const skinId = document.getElementById("giftSkinSelect").value;
+  const msgEl = document.getElementById("giftMsg");
+  if (!nick){ msgEl.textContent = "Введите никнейм игрока"; msgEl.className = "admin-msg err"; return; }
+  try{
+    const { data: target, error: selErr } = await withTimeout(
+      sb.from(PLAYERS_TABLE).select("nickname, granted_skins").ilike("nickname", nick).maybeSingle(),
+      12000, "gift-select"
+    );
+    if (selErr || !target){
+      msgEl.textContent = "Игрок не найден";
+      msgEl.className = "admin-msg err";
+      return;
+    }
+    const owned = Array.isArray(target.granted_skins) ? target.granted_skins.slice() : [];
+    if (!owned.includes(skinId)) owned.push(skinId);
+
+    const { error: updErr } = await withTimeout(
+      sb.from(PLAYERS_TABLE).update({ granted_skins: owned }).ilike("nickname", nick),
+      12000, "gift-update"
+    );
+    if (updErr){
+      msgEl.textContent = "Ошибка обновления базы данных";
+      msgEl.className = "admin-msg err";
+      return;
+    }
+    const skinName = (SKINS.find(s=>s.id===skinId)||{}).name || skinId;
+    msgEl.textContent = `Игроку «${target.nickname}» выдан скин «${skinName}»`;
+    msgEl.className = "admin-msg ok";
+
+    if (state.nickname && nick.toLowerCase() === state.nickname.toLowerCase()){
+      if (!state.grantedSkins.includes(skinId)) state.grantedSkins.push(skinId);
+      renderSkins();
+    }
+  } catch(err){
+    msgEl.textContent = String(err&&err.message).startsWith("TIMEOUT") ? "База данных не отвечает (тайм-аут)" : "Ошибка соединения с базой данных";
+    msgEl.className = "admin-msg err";
+  }
+});
 
 /* ------------------------------- СТАРТ ------------------------------- */
 (async function boot(){
