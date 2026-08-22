@@ -83,6 +83,15 @@
   .conn-dot.ok{ background:var(--success); color:var(--success); }
   .conn-dot.bad{ background:var(--danger); color:var(--danger); }
 
+  .sound-toggle{
+    position:absolute; right:36px; top:50%; transform:translateY(-50%);
+    width:28px; height:28px; border-radius:50%;
+    background:rgba(148,163,184,0.12);
+    border:none;
+    display:flex; align-items:center; justify-content:center;
+    cursor:pointer;
+  }
+
   .conn-banner{
     width:100%; max-width:420px;
     background:rgba(248,113,113,0.1);
@@ -692,6 +701,85 @@
     font-size:12.5px;
   }
 
+  .global-banner{
+    position:fixed;
+    top:calc(-80px);
+    left:50%;
+    transform:translateX(-50%);
+    width:min(92vw, 480px);
+    z-index:180;
+    background:linear-gradient(135deg, rgba(56,189,248,0.95), rgba(139,92,246,0.95));
+    color:#fff;
+    padding:12px 18px;
+    border-radius:0 0 16px 16px;
+    font-size:13.5px;
+    font-weight:700;
+    text-align:center;
+    box-shadow:0 12px 30px rgba(0,0,0,0.35);
+    transition:top .45s cubic-bezier(.34,1.2,.64,1);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:8px;
+    cursor:pointer;
+    padding-top:calc(12px + env(safe-area-inset-top));
+  }
+  .global-banner.show{ top:0; }
+
+  .fish-rain-layer{
+    position:fixed;
+    inset:0;
+    z-index:160;
+    pointer-events:none;
+    overflow:hidden;
+    display:none;
+  }
+  .fish-rain-layer.active{ display:block; }
+  .falling-fish{
+    position:absolute;
+    top:-40px;
+    pointer-events:auto;
+    cursor:pointer;
+    animation-name:fishFall;
+    animation-timing-function:linear;
+    animation-fill-mode:forwards;
+    filter:drop-shadow(0 4px 10px rgba(0,0,0,0.35));
+    touch-action:manipulation;
+  }
+  .falling-fish.caught{
+    animation:none !important;
+    pointer-events:none;
+  }
+  @keyframes fishFall{
+    from{ transform:translateY(0) rotate(-8deg); }
+    to{ transform:translateY(112vh) rotate(8deg); }
+  }
+  @keyframes fishCatchPop{
+    0%{ transform:scale(1); opacity:1; }
+    100%{ transform:scale(1.8); opacity:0; }
+  }
+  .falling-fish.caught .fish-inner{
+    animation:fishCatchPop .35s ease-out forwards;
+  }
+  .rain-banner{
+    position:fixed;
+    top:calc(14px + env(safe-area-inset-top));
+    left:50%;
+    transform:translateX(-50%);
+    z-index:181;
+    background:linear-gradient(135deg, var(--gold), var(--pink));
+    color:#1e293b;
+    padding:10px 20px;
+    border-radius:999px;
+    font-weight:800;
+    font-size:15px;
+    box-shadow:0 10px 30px rgba(245,185,66,0.4);
+    display:none;
+    align-items:center;
+    gap:8px;
+  }
+  .rain-banner.show{ display:flex; animation:eventPulse 1.4s ease-in-out infinite; }
+
   .pearl-chip{
     display:inline-flex; align-items:center; gap:6px;
     background:rgba(245,185,66,0.12);
@@ -791,6 +879,7 @@
       Тюлень Кликер
     </h1>
     <span class="conn-dot" id="connDot" title="Статус подключения к базе данных"></span>
+    <button class="sound-toggle" id="soundToggleBtn" title="Вкл/выкл звук"></button>
   </div>
 
   <!-- ======= AUTH SCREEN ======= -->
@@ -799,15 +888,15 @@
     <div class="auth-card">
       <div class="hero-seal" id="authHeroSeal"></div>
       <h2>Добро пожаловать!</h2>
-      <p class="sub">Введите никнейм, чтобы начать эволюцию тюленя</p>
+      <p class="sub">Введите никнейм и пароль, чтобы начать эволюцию тюленя</p>
       <div id="authError" class="error-msg"></div>
       <div class="field">
         <label for="nicknameInput">Ваш никнейм</label>
         <input type="text" id="nicknameInput" maxlength="20" autocomplete="off" placeholder="Например: SealMaster">
       </div>
-      <div class="field" id="ownerPassField" style="display:none;">
-        <label for="ownerPassInput">Пароль владельца</label>
-        <input type="password" id="ownerPassInput" autocomplete="off" placeholder="Секретный пароль">
+      <div class="field" id="ownerPassField">
+        <label for="ownerPassInput" id="ownerPassLabel">Пароль</label>
+        <input type="password" id="ownerPassInput" autocomplete="off" placeholder="Для нового аккаунта — придумайте свой">
       </div>
       <button class="btn" id="loginBtn">Войти в игру</button>
     </div>
@@ -1042,35 +1131,40 @@
           <option value="passive">Только пассивный доход</option>
           <option value="pearls">Жемчужины за перерождение</option>
           <option value="discount">Скидки в магазине</option>
+          <option value="fishrain">🐟 Дождь рыбок</option>
         </select>
       </div>
 
-      <div class="field" style="margin-bottom:8px;">
-        <label>Множитель</label>
-        <div class="quick-btn-row">
-          <div class="quick-btn active" data-mult="2">×2</div>
-          <div class="quick-btn" data-mult="3">×3</div>
-          <div class="quick-btn" data-mult="4">×4</div>
-          <div class="quick-btn" data-mult="5">×5</div>
-          <div class="quick-btn" data-mult="10">×10</div>
+      <div id="normalEventFields">
+        <div class="field" style="margin-bottom:8px;">
+          <label>Множитель</label>
+          <div class="quick-btn-row">
+            <div class="quick-btn active" data-mult="2">×2</div>
+            <div class="quick-btn" data-mult="3">×3</div>
+            <div class="quick-btn" data-mult="4">×4</div>
+            <div class="quick-btn" data-mult="5">×5</div>
+            <div class="quick-btn" data-mult="10">×10</div>
+          </div>
+        </div>
+
+        <div class="field" style="margin-bottom:8px;">
+          <label>Длительность</label>
+          <div class="quick-btn-row">
+            <div class="quick-btn" data-dur="5">5 мин</div>
+            <div class="quick-btn active" data-dur="15">15 мин</div>
+            <div class="quick-btn" data-dur="30">30 мин</div>
+            <div class="quick-btn" data-dur="60">1 час</div>
+            <div class="quick-btn" data-dur="180">3 часа</div>
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="eventLabelInput">Текст для игроков (необязательно)</label>
+          <input type="text" id="eventLabelInput" placeholder="Например: Двойная охота на рыбу!">
         </div>
       </div>
 
-      <div class="field" style="margin-bottom:8px;">
-        <label>Длительность</label>
-        <div class="quick-btn-row">
-          <div class="quick-btn" data-dur="5">5 мин</div>
-          <div class="quick-btn active" data-dur="15">15 мин</div>
-          <div class="quick-btn" data-dur="30">30 мин</div>
-          <div class="quick-btn" data-dur="60">1 час</div>
-          <div class="quick-btn" data-dur="180">3 часа</div>
-        </div>
-      </div>
-
-      <div class="field">
-        <label for="eventLabelInput">Текст для игроков (необязательно)</label>
-        <input type="text" id="eventLabelInput" placeholder="Например: Двойная охота на рыбу!">
-      </div>
+      <p class="hint" id="fishRainHint" style="display:none;">Запустит на 30 секунд у ВСЕХ игроков падающие с неба рыбки — по клику каждая даёт 50 Рыбок (≈1000 за весь дождь при полном улове).</p>
 
       <div class="row-2">
         <button class="btn gold" id="eventStartBtn">Запустить ивент</button>
@@ -1105,6 +1199,9 @@
 
 <div class="toast" id="toast"></div>
 <div class="event-badge" id="eventBadge"></div>
+<div class="global-banner" id="globalBanner"></div>
+<div class="fish-rain-layer" id="fishRainLayer"></div>
+<div class="rain-banner" id="rainBanner">🐟 ЛОВИ РЫБКИ!</div>
 
 <script>
 /* =========================================================================
@@ -1128,9 +1225,17 @@ const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
 
 const OWNER_NICKNAME = "milk";
 const OWNER_PASSWORD = "sealckik1";
+const SEAL_ACCOUNT_NICKNAME = "тюлень";
+const SEAL_ACCOUNT_PASSWORD = "caxar";
 const ADMIN_PASSWORD = "67seven";
 const PLAYERS_TABLE = "players";
 const AUTOSAVE_MS = 5000;
+
+async function hashPassword(pw){
+  const enc = new TextEncoder().encode(pw);
+  const buf = await crypto.subtle.digest("SHA-256", enc);
+  return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,"0")).join("");
+}
 
 let sb = null;
 let dbOnline = false;
@@ -1291,15 +1396,15 @@ const state = {
   dirty: false
 };
 
-/* ------------------------------- ПЕРЕРОЖДЕНИЕ (ПРЕСТИЖ) ------------------------------- */
 /* ------------------------------- ГЛОБАЛЬНЫЕ ИВЕНТЫ ------------------------------- */
 const GAME_STATE_TABLE = "game_state";
 const EVENT_TARGETS = {
-  click:    { label:"Клик",           applies:t=>t==="click"   || t==="all" },
-  passive:  { label:"Доход",          applies:t=>t==="passive" || t==="all" },
-  all:      { label:"Клик и Доход",   applies:t=>t==="all" },
-  pearls:   { label:"Жемчужины",      applies:t=>t==="pearls" },
+  click:    { label:"Клик",              applies:t=>t==="click"   || t==="all" },
+  passive:  { label:"Доход",             applies:t=>t==="passive" || t==="all" },
+  all:      { label:"Клик и Доход",      applies:t=>t==="all" },
+  pearls:   { label:"Жемчужины",         applies:t=>t==="pearls" },
   discount: { label:"Скидки в магазине", applies:t=>t==="discount" },
+  fishrain: { label:"Дождь рыбок",       applies:t=>false },
 };
 const gameEvent = {
   active: false,
@@ -1310,6 +1415,61 @@ const gameEvent = {
 };
 let eventPollTimer = null;
 let eventTickTimer = null;
+let lastSeenEventKey = null;
+let gameStateChannel = null;
+let playerChannel = null;
+
+function eventKeyOf(data){
+  if (!data) return null;
+  return `${data.event_target}|${data.event_ends_at}|${data.event_label}`;
+}
+
+function applyEventRow(data, announce){
+  if (!data) return;
+  const endsAt = data.event_ends_at ? new Date(data.event_ends_at).getTime() : null;
+  const stillActive = !!data.event_active && endsAt && endsAt > Date.now();
+  const key = eventKeyOf(data);
+  const isNewEvent = stillActive && key !== lastSeenEventKey;
+
+  gameEvent.active = stillActive;
+  gameEvent.label = data.event_label || "";
+  gameEvent.target = data.event_target || "all";
+  gameEvent.multiplier = Number(data.event_multiplier) || 1;
+  gameEvent.endsAt = endsAt;
+
+  if (!stillActive){
+    lastSeenEventKey = null;
+  }
+
+  updateEventBadge();
+
+  if (state.nickname){
+    const leveledUp = recomputeStats();
+    updateHud();
+    renderShop();
+    if (leveledUp) onLevelUp();
+  }
+
+  if (isNewEvent && announce){
+    lastSeenEventKey = key;
+    announceNewEvent(data);
+  }
+}
+
+function announceNewEvent(data){
+  const target = data.event_target || "all";
+  const label = data.event_label || (`×${data.event_multiplier} ${EVENT_TARGETS[target]?.label || ""}`);
+
+  if (target === "fishrain"){
+    showGlobalBanner(`🐟 ${label}`);
+    const endsAt = new Date(data.event_ends_at).getTime();
+    startFishRain(Math.max(0, endsAt - Date.now()), Number(data.event_multiplier) || 50);
+  } else {
+    showGlobalBanner(`🔥 Ивент! ${label}`);
+    showToast(`${ICONS.rebirth("var(--gold)",16)} Начался ивент: ${label}`, true);
+  }
+  sfxEventStart();
+}
 
 async function fetchGlobalEvent(){
   if (!sb) return;
@@ -1319,20 +1479,7 @@ async function fetchGlobalEvent(){
       10000, "event-fetch"
     );
     if (error || !data) return;
-    const endsAt = data.event_ends_at ? new Date(data.event_ends_at).getTime() : null;
-    const stillActive = !!data.event_active && endsAt && endsAt > Date.now();
-    gameEvent.active = stillActive;
-    gameEvent.label = data.event_label || "";
-    gameEvent.target = data.event_target || "all";
-    gameEvent.multiplier = Number(data.event_multiplier) || 1;
-    gameEvent.endsAt = endsAt;
-    updateEventBadge();
-    if (state.nickname){
-      const leveledUp = recomputeStats();
-      updateHud();
-      renderShop();
-      if (leveledUp) onLevelUp();
-    }
+    applyEventRow(data, true);
   } catch(err){
     // тихо игнорируем — глобальный ивент не критичен для игры
   }
@@ -1347,7 +1494,7 @@ function eventAppliesTo(targetKey){
 function updateEventBadge(){
   const badge = document.getElementById("eventBadge");
   if (!badge) return;
-  if (!gameEvent.active || !gameEvent.endsAt || gameEvent.endsAt <= Date.now()){
+  if (!gameEvent.active || !gameEvent.endsAt || gameEvent.endsAt <= Date.now() || gameEvent.target === "fishrain"){
     badge.classList.remove("show");
     return;
   }
@@ -1360,14 +1507,164 @@ function updateEventBadge(){
   badge.classList.add("show");
 }
 
+/* --- Верхний баннер для глобальных объявлений --- */
+function showGlobalBanner(text){
+  const banner = document.getElementById("globalBanner");
+  banner.textContent = text;
+  banner.classList.add("show");
+  clearTimeout(showGlobalBanner._t);
+  showGlobalBanner._t = setTimeout(()=> banner.classList.remove("show"), 6000);
+}
+document.getElementById("globalBanner").addEventListener("click", ()=>{
+  document.getElementById("globalBanner").classList.remove("show");
+});
+
+/* --- Дождь рыбок --- */
+let fishRainTimer = null;
+let fishRainSpawnTimer = null;
+function startFishRain(durationMs, valuePerFish){
+  const layer = document.getElementById("fishRainLayer");
+  const rainBanner = document.getElementById("rainBanner");
+  if (!layer || durationMs <= 0) return;
+
+  layer.classList.add("active");
+  rainBanner.classList.add("show");
+  layer.innerHTML = "";
+
+  clearInterval(fishRainSpawnTimer);
+  clearTimeout(fishRainTimer);
+
+  fishRainSpawnTimer = setInterval(()=> spawnFallingFish(valuePerFish), 900);
+  spawnFallingFish(valuePerFish);
+
+  fishRainTimer = setTimeout(()=>{
+    clearInterval(fishRainSpawnTimer);
+    rainBanner.classList.remove("show");
+    setTimeout(()=>{
+      layer.classList.remove("active");
+      layer.innerHTML = "";
+    }, 4000);
+  }, durationMs);
+}
+
+function spawnFallingFish(value){
+  const layer = document.getElementById("fishRainLayer");
+  if (!layer || !layer.classList.contains("active")) return;
+  const el = document.createElement("div");
+  el.className = "falling-fish";
+  const size = 34 + Math.round(Math.random()*14);
+  const leftPct = 4 + Math.random()*88;
+  const fallDuration = 3.2 + Math.random()*1.8;
+  el.style.left = leftPct + "vw";
+  el.style.width = size + "px";
+  el.style.height = size + "px";
+  el.style.animationDuration = fallDuration + "s";
+  el.innerHTML = `<div class="fish-inner">${ICONS.fish("var(--gold)", size)}</div>`;
+
+  let caught = false;
+  const collect = (e)=>{
+    if (caught) return;
+    if (e && e.isTrusted === false) return;
+    caught = true;
+    el.classList.add("caught");
+    state.coins += value;
+    state.totalEarned += value;
+    state.dirty = true;
+    const leveledUp = recomputeStats();
+    updateHud();
+    if (leveledUp) onLevelUp();
+    sfxCollectFish();
+    setTimeout(()=> el.remove(), 350);
+  };
+  el.addEventListener("click", collect);
+  el.addEventListener("touchstart", collect, { passive:true });
+  el.addEventListener("animationend", ()=>{ if (!caught) el.remove(); });
+
+  layer.appendChild(el);
+}
+
+/* --- Realtime подписки (мгновенные обновления вместо опроса) --- */
+let realtimeStatus = { gameState:"не подключен", player:"не подключен" };
+
+function subscribeGameStateRealtime(){
+  if (!sb || gameStateChannel) return;
+  try{
+    gameStateChannel = sb.channel("game_state_live")
+      .on("postgres_changes", { event:"*", schema:"public", table:GAME_STATE_TABLE, filter:"id=eq.1" }, payload=>{
+        if (payload.new) applyEventRow(payload.new, true);
+      })
+      .subscribe(status=>{
+        realtimeStatus.gameState = status;
+        console.log("[realtime] game_state:", status);
+      });
+  } catch(err){ /* realtime не критичен — опрос всё равно подстрахует */ }
+}
+
+function subscribePlayerRealtime(){
+  if (!sb || !state.nickname || playerChannel) return;
+  try{
+    playerChannel = sb.channel("player_live_" + state.nickname)
+      .on("postgres_changes", { event:"UPDATE", schema:"public", table:PLAYERS_TABLE, filter:`nickname=eq.${state.nickname}` }, payload=>{
+        applyRemotePlayerUpdate(payload.new);
+      })
+      .subscribe(status=>{
+        realtimeStatus.player = status;
+        console.log("[realtime] players:", status);
+      });
+  } catch(err){ /* realtime не критичен — опрос всё равно подстрахует */ }
+}
+
+async function fetchOwnPlayerRow(){
+  if (!sb || !state.nickname) return;
+  try{
+    const { data, error } = await withTimeout(
+      sb.from(PLAYERS_TABLE).select("coins, anticheat_disabled_for_user, clicking_disabled, granted_skins").ilike("nickname", state.nickname).maybeSingle(),
+      10000, "own-row-poll"
+    );
+    if (error || !data) return;
+    applyRemotePlayerUpdate(data);
+  } catch(err){ /* тихо игнорируем, это подстраховка опросом */ }
+}
+
+function applyRemotePlayerUpdate(row){
+  if (!row || !state.nickname) return;
+  let changed = false;
+  if (typeof row.coins === "number" && row.coins !== state.coins){ state.coins = row.coins; changed = true; }
+  if (typeof row.anticheat_disabled_for_user === "boolean" && row.anticheat_disabled_for_user !== state.anticheatDisabled){ state.anticheatDisabled = row.anticheat_disabled_for_user; changed = true; }
+  if (typeof row.clicking_disabled === "boolean" && row.clicking_disabled !== state.clickingDisabled){
+    state.clickingDisabled = row.clicking_disabled;
+    document.getElementById("blockedNotice").classList.toggle("show", state.clickingDisabled);
+    changed = true;
+  }
+  if (Array.isArray(row.granted_skins)){
+    const newOnes = row.granted_skins.filter(id=>!state.grantedSkins.includes(id));
+    if (newOnes.length){
+      state.grantedSkins = row.granted_skins.slice();
+      changed = true;
+      renderSkins();
+      showToast("Вам подарили новый скин тюленя!");
+    }
+  }
+  if (changed){
+    updateHud();
+  }
+}
+
+let playerPollTimer = null;
+
 function startEventLoops(){
   fetchGlobalEvent();
+  subscribeGameStateRealtime();
+  subscribePlayerRealtime();
   clearInterval(eventPollTimer);
   eventPollTimer = setInterval(fetchGlobalEvent, 20000);
+  clearInterval(playerPollTimer);
+  playerPollTimer = setInterval(fetchOwnPlayerRow, 20000);
   clearInterval(eventTickTimer);
   eventTickTimer = setInterval(()=>{
     if (gameEvent.active && gameEvent.endsAt && gameEvent.endsAt <= Date.now()){
       gameEvent.active = false;
+      lastSeenEventKey = null;
       const leveledUp = recomputeStats();
       updateHud();
       renderShop();
@@ -1506,6 +1803,51 @@ function fmt(n){
   return n.toLocaleString("ru-RU");
 }
 
+/* ------------------------------- ЗВУКИ ------------------------------- */
+let audioCtx = null;
+let soundMuted = localStorage.getItem("seal_sound_muted") === "1";
+function getAudioCtx(){
+  if (!audioCtx){
+    try{ audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }catch(e){ return null; }
+  }
+  if (audioCtx.state === "suspended") audioCtx.resume().catch(()=>{});
+  return audioCtx;
+}
+function playTone(freq, duration, type, volume, delay){
+  if (soundMuted) return;
+  try{
+    const ctx = getAudioCtx();
+    if (!ctx) return;
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = type || "sine";
+    osc.frequency.value = freq;
+    gain.gain.value = volume || 0.12;
+    osc.connect(gain); gain.connect(ctx.destination);
+    const t0 = ctx.currentTime + (delay || 0);
+    osc.start(t0);
+    gain.gain.exponentialRampToValueAtTime(0.0001, t0 + duration);
+    osc.stop(t0 + duration + 0.03);
+  } catch(e){}
+}
+function sfxPurchase(){ playTone(660,0.08,"triangle",0.12); playTone(880,0.1,"triangle",0.1,0.05); }
+function sfxLevelUp(){ playTone(523,0.12,"sine",0.15); playTone(659,0.12,"sine",0.15,0.1); playTone(784,0.2,"sine",0.15,0.2); }
+function sfxRebirth(){ playTone(392,0.15,"sawtooth",0.1); playTone(494,0.15,"sawtooth",0.1,0.12); playTone(659,0.2,"sawtooth",0.12,0.24); playTone(880,0.28,"sawtooth",0.13,0.36); }
+function sfxCollectFish(){ playTone(1046,0.06,"square",0.09); }
+function sfxEventStart(){ playTone(587,0.1,"triangle",0.13); playTone(880,0.15,"triangle",0.13,0.1); }
+
+function toggleSound(){
+  soundMuted = !soundMuted;
+  localStorage.setItem("seal_sound_muted", soundMuted ? "1" : "0");
+  updateSoundIcon();
+  if (!soundMuted) playTone(660,0.06,"sine",0.1);
+}
+function updateSoundIcon(){
+  const el = document.getElementById("soundToggleBtn");
+  if (!el) return;
+  el.innerHTML = soundMuted ? ICONS.soundOff("var(--muted)",18) : ICONS.soundOn("var(--blue)",18);
+}
+
 function showToast(msg, gold){
   const t = document.getElementById("toast");
   t.innerHTML = msg;
@@ -1612,6 +1954,16 @@ const ICONS = {
       <path d="M4 10H20V13H4V10Z" fill="${c}" fill-opacity="0.4" stroke="${c}" stroke-width="1.6" stroke-linejoin="round"/>
       <path d="M12 10V20M12 10C10 10 8.5 8.6 8.5 7.2C8.5 6 9.4 5 10.6 5C11.9 5 12 7.5 12 10ZM12 10C14 10 15.5 8.6 15.5 7.2C15.5 6 14.6 5 13.4 5C12.1 5 12 7.5 12 10Z" stroke="${c}" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
     </svg>`,
+  soundOn: (c="var(--blue)", s=18)=>`
+    <svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M4 10V14H8L13 18V6L8 10H4Z" fill="${c}"/>
+      <path d="M16.5 9C17.5 10 17.5 14 16.5 15M19 6.5C21 9 21 15 19 17.5" stroke="${c}" stroke-width="1.7" stroke-linecap="round" fill="none"/>
+    </svg>`,
+  soundOff: (c="var(--muted)", s=18)=>`
+    <svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M4 10V14H8L13 18V6L8 10H4Z" fill="${c}"/>
+      <path d="M16.5 9.5L20.5 14.5M20.5 9.5L16.5 14.5" stroke="${c}" stroke-width="1.8" stroke-linecap="round"/>
+    </svg>`,
 };
 
 function icon(name, mount, color, size){
@@ -1619,6 +1971,8 @@ function icon(name, mount, color, size){
   if (el) el.innerHTML = ICONS[name](color, size);
 }
 icon("sealMark","titleSealIcon","var(--pink)",23);
+updateSoundIcon();
+document.getElementById("soundToggleBtn").addEventListener("click", toggleSound);
 icon("fish","hudFishIcon","var(--blue)",17);
 icon("cart","shopIcon","var(--blue)",21);
 icon("medal","achIconBtn","var(--gold)",21);
@@ -1805,7 +2159,8 @@ document.getElementById("authHeroSeal").innerHTML = `
 
 nicknameInput.addEventListener("input", ()=>{
   const val = nicknameInput.value.trim().toLowerCase();
-  ownerPassField.style.display = (val === OWNER_NICKNAME) ? "block" : "none";
+  const label = document.getElementById("ownerPassLabel");
+  label.textContent = (val === OWNER_NICKNAME) ? "Пароль владельца" : "Пароль";
 });
 
 function showAuthError(msg){
@@ -1824,15 +2179,22 @@ ownerPassInput.addEventListener("keydown", e=>{ if (e.key === "Enter") handleLog
 async function handleLogin(){
   clearAuthError();
   const rawNick = nicknameInput.value.trim();
+  const rawPassword = ownerPassInput.value;
   if (!rawNick){ showAuthError("Введите никнейм!"); return; }
   if (rawNick.length < 2){ showAuthError("Никнейм слишком короткий!"); return; }
+  if (!rawPassword){ showAuthError("Введите пароль!"); return; }
 
-  const isOwnerAttempt = rawNick.toLowerCase() === OWNER_NICKNAME;
-  if (isOwnerAttempt){
-    if (ownerPassInput.value !== OWNER_PASSWORD){
-      showAuthError("Неверный пароль владельца! Доступ запрещён.");
-      return;
-    }
+  const nickLower = rawNick.toLowerCase();
+  const isOwnerAttempt = nickLower === OWNER_NICKNAME;
+  const isSealAccountAttempt = nickLower === SEAL_ACCOUNT_NICKNAME.toLowerCase();
+
+  if (isOwnerAttempt && rawPassword !== OWNER_PASSWORD){
+    showAuthError("Неверный пароль владельца! Доступ запрещён.");
+    return;
+  }
+  if (isSealAccountAttempt && rawPassword !== SEAL_ACCOUNT_PASSWORD){
+    showAuthError("Неверный пароль!");
+    return;
   }
 
   loginBtn.disabled = true;
@@ -1862,18 +2224,24 @@ async function handleLogin(){
     const myToken = getDeviceToken(rawNick);
 
     if (existing){
-      const ownsAccount = isOwnerAttempt || existing.device_id === myToken;
-      if (!ownsAccount){
-        showAuthError("Этот никнейм уже занят!");
-        return;
+      // Обычные аккаунты защищены собственным паролем (хеш сверяется здесь),
+      // владелец и служебный аккаунт "тюлень" уже проверены выше по фиксированным паролям.
+      if (!isOwnerAttempt && !isSealAccountAttempt){
+        const enteredHash = await hashPassword(rawPassword);
+        if (enteredHash !== existing.password_hash){
+          showAuthError("Неверный пароль!");
+          return;
+        }
       }
       await enterGame(existing, myToken);
     } else {
+      const passwordHash = (isOwnerAttempt || isSealAccountAttempt) ? null : await hashPassword(rawPassword);
       const { data: created, error: insErr } = await withTimeout(
         sb.from(PLAYERS_TABLE)
           .insert({
             nickname: rawNick,
             device_id: myToken,
+            password_hash: passwordHash,
             coins: 0,
             click_power: 1,
             passive_income: 0,
@@ -2036,6 +2404,7 @@ function onLevelUp(){
   showToast(`${ICONS.medal("var(--gold)",16)} Новый уровень! Ур. ${state.level} — ${getStage(state.level).name}`, true);
   renderShop();
   renderSkins();
+  sfxLevelUp();
 }
 
 /* ------------------------------- АВТОСОХРАНЕНИЕ ------------------------------- */
@@ -2198,6 +2567,7 @@ document.querySelectorAll("#achOverlay .tab-btn[data-coltab]").forEach(btn=>{
 });
 
 document.getElementById("openShopBtn").addEventListener("click", ()=>{
+  fetchGlobalEvent();
   renderShop();
   openModal("shopOverlay");
 });
@@ -2268,6 +2638,7 @@ async function buyUpgrade(id){
   renderShop();
   await saveProgress(true);
   checkAchievements();
+  sfxPurchase();
   showToast(`Куплено: ${u.name}!`);
 }
 
@@ -2381,10 +2752,12 @@ async function buyPrestigeUpgrade(id){
   updateHud();
   renderPrestige();
   await saveProgress(true);
+  sfxPurchase();
   showToast(`Куплено: ${u.name}!`);
 }
 
 document.getElementById("openPrestigeBtn").addEventListener("click", ()=>{
+  fetchGlobalEvent();
   rebirthConfirming = false;
   renderPrestige();
   openModal("prestigeOverlay");
@@ -2420,6 +2793,7 @@ document.getElementById("rebirthBtn").addEventListener("click", async ()=>{
   renderPrestige();
   checkAchievements();
   await saveProgress(true);
+  sfxRebirth();
   showToast(`${ICONS.rebirth("var(--gold)",16)} Тюлень переродился! +${gained} Жемчужин`, true);
 });
 
@@ -2532,7 +2906,10 @@ async function refreshAdminConnStatus(){
   dot.className = "conn-dot";
   const ok = await testConnection();
   dot.className = "conn-dot " + (ok ? "ok" : "bad");
-  label.textContent = ok ? "База данных на связи" : "Нет соединения с базой данных";
+  const rtGame = realtimeStatus.gameState === "SUBSCRIBED" ? "✓" : `✗ (${realtimeStatus.gameState})`;
+  const rtPlayer = realtimeStatus.player === "SUBSCRIBED" ? "✓" : `✗ (${realtimeStatus.player})`;
+  label.textContent = (ok ? "База данных на связи" : "Нет соединения с базой данных")
+    + ` · Realtime ивентов: ${rtGame} · Realtime баланса: ${rtPlayer}`;
 }
 
 /* --- Точечный античит --- */
@@ -2821,33 +3198,71 @@ document.querySelectorAll('.quick-btn[data-dur]').forEach(btn=>{
 async function refreshEventStatusBox(){
   const box = document.getElementById("eventStatusBox");
   box.textContent = "Проверка активного ивента...";
-  await fetchGlobalEvent();
-  if (gameEvent.active && gameEvent.endsAt > Date.now()){
-    const remaining = Math.max(0, gameEvent.endsAt - Date.now());
-    const mm = Math.floor(remaining/60000), ss = Math.floor((remaining%60000)/1000);
-    box.innerHTML = `Сейчас активен: <b>${escapeHtml(gameEvent.label || (EVENT_TARGETS[gameEvent.target]?.label||""))}</b> ×${gameEvent.multiplier} · осталось ${String(mm).padStart(2,"0")}:${String(ss).padStart(2,"0")}`;
-  } else {
-    box.textContent = "Сейчас никакой ивент не активен.";
+  try{
+    const { data, error } = await withTimeout(
+      sb.from(GAME_STATE_TABLE).select("*").eq("id", 1).maybeSingle(),
+      10000, "event-status"
+    );
+    if (error){
+      box.innerHTML = `Таблица <code>game_state</code> недоступна: ${escapeHtml(error.message)}. Проверьте, что вы выполнили SQL для её создания (см. сообщение с инструкцией).`;
+      return;
+    }
+    if (!data){
+      box.innerHTML = `Строка с id=1 в <code>game_state</code> не найдена. Нажмите «Запустить ивент» — она создастся автоматически.`;
+      return;
+    }
+    const endsAt = data.event_ends_at ? new Date(data.event_ends_at).getTime() : null;
+    const active = !!data.event_active && endsAt && endsAt > Date.now();
+    if (active){
+      const remaining = Math.max(0, endsAt - Date.now());
+      const mm = Math.floor(remaining/60000), ss = Math.floor((remaining%60000)/1000);
+      const detail = data.event_target === "fishrain"
+        ? "Дождь рыбок"
+        : `×${data.event_multiplier} (${escapeHtml(EVENT_TARGETS[data.event_target]?.label || data.event_target)})`;
+      box.innerHTML = `Сейчас активен: <b>${escapeHtml(data.event_label || "")}</b> ${detail} · осталось ${String(mm).padStart(2,"0")}:${String(ss).padStart(2,"0")}`;
+    } else {
+      box.textContent = "Сейчас никакой ивент не активен.";
+    }
+  } catch(err){
+    box.textContent = String(err&&err.message).startsWith("TIMEOUT") ? "База данных не отвечает (тайм-аут)" : "Ошибка проверки ивента.";
   }
+  fetchGlobalEvent();
 }
+
+document.getElementById("eventTargetSelect").addEventListener("change", ()=>{
+  const isFishRain = document.getElementById("eventTargetSelect").value === "fishrain";
+  document.getElementById("normalEventFields").style.display = isFishRain ? "none" : "block";
+  document.getElementById("fishRainHint").style.display = isFishRain ? "block" : "none";
+});
 
 document.getElementById("eventStartBtn").addEventListener("click", async ()=>{
   const msgEl = document.getElementById("eventMsg");
   const target = document.getElementById("eventTargetSelect").value;
-  const customLabel = document.getElementById("eventLabelInput").value.trim();
-  const label = customLabel || `×${chosenMultiplier} ${EVENT_TARGETS[target]?.label || ""}`;
-  const endsAt = new Date(Date.now() + chosenDuration * 60000).toISOString();
+
+  let label, multiplier, durationMin;
+  if (target === "fishrain"){
+    label = "🐟 Дождь рыбок! Лови их кликами!";
+    multiplier = 50; // Рыбок за одну пойманную рыбку
+    durationMin = 0.5; // 30 секунд дождя
+  } else {
+    const customLabel = document.getElementById("eventLabelInput").value.trim();
+    label = customLabel || `×${chosenMultiplier} ${EVENT_TARGETS[target]?.label || ""}`;
+    multiplier = chosenMultiplier;
+    durationMin = chosenDuration;
+  }
+  const endsAt = new Date(Date.now() + durationMin * 60000).toISOString();
 
   try{
     const { error } = await withTimeout(
-      sb.from(GAME_STATE_TABLE).update({
+      sb.from(GAME_STATE_TABLE).upsert({
+        id: 1,
         event_active: true,
         event_label: label,
         event_target: target,
-        event_multiplier: chosenMultiplier,
+        event_multiplier: multiplier,
         event_ends_at: endsAt,
         updated_at: new Date().toISOString()
-      }).eq("id", 1),
+      }, { onConflict: "id" }),
       12000, "event-start"
     );
     if (error){
@@ -2855,10 +3270,11 @@ document.getElementById("eventStartBtn").addEventListener("click", async ()=>{
       msgEl.className = "admin-msg err";
       return;
     }
-    msgEl.textContent = `Ивент запущен на ${chosenDuration} мин: «${label}»`;
+    msgEl.textContent = target === "fishrain"
+      ? `Дождь рыбок запущен на 30 секунд!`
+      : `Ивент запущен на ${durationMin} мин: «${label}» (×${multiplier})`;
     msgEl.className = "admin-msg ok";
     await refreshEventStatusBox();
-    fetchGlobalEvent();
   } catch(err){
     msgEl.textContent = String(err&&err.message).startsWith("TIMEOUT") ? "База данных не отвечает (тайм-аут)" : "Ошибка соединения с базой данных";
     msgEl.className = "admin-msg err";
@@ -2869,7 +3285,7 @@ document.getElementById("eventStopBtn").addEventListener("click", async ()=>{
   const msgEl = document.getElementById("eventMsg");
   try{
     const { error } = await withTimeout(
-      sb.from(GAME_STATE_TABLE).update({ event_active:false }).eq("id", 1),
+      sb.from(GAME_STATE_TABLE).upsert({ id: 1, event_active:false }, { onConflict: "id" }),
       12000, "event-stop"
     );
     if (error){
@@ -2880,7 +3296,6 @@ document.getElementById("eventStopBtn").addEventListener("click", async ()=>{
     msgEl.textContent = "Ивент остановлен.";
     msgEl.className = "admin-msg ok";
     await refreshEventStatusBox();
-    fetchGlobalEvent();
   } catch(err){
     msgEl.textContent = String(err&&err.message).startsWith("TIMEOUT") ? "База данных не отвечает (тайм-аут)" : "Ошибка соединения с базой данных";
     msgEl.className = "admin-msg err";
