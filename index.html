@@ -633,6 +633,65 @@
 
   .footer-hint{ margin-top:auto; padding-top:16px; font-size:11px; color:rgba(148,163,184,0.5); text-align:center; }
 
+  .event-badge{
+    display:none;
+    position:fixed;
+    right:12px;
+    bottom:calc(12px + env(safe-area-inset-bottom));
+    z-index:150;
+    align-items:center;
+    gap:8px;
+    background:linear-gradient(135deg, rgba(245,185,66,0.18), rgba(244,113,197,0.18));
+    border:1px solid rgba(245,185,66,0.45);
+    color:var(--text);
+    padding:9px 14px;
+    border-radius:999px;
+    font-size:12.5px;
+    font-weight:700;
+    box-shadow:0 10px 30px rgba(245,185,66,0.25);
+    backdrop-filter:blur(6px);
+    animation:eventPulse 2s ease-in-out infinite;
+  }
+  .event-badge.show{ display:flex; }
+  .event-badge .event-timer{
+    background:rgba(15,23,42,0.4);
+    padding:2px 7px;
+    border-radius:999px;
+    font-variant-numeric:tabular-nums;
+  }
+  @keyframes eventPulse{
+    0%,100%{ box-shadow:0 10px 30px rgba(245,185,66,0.25); }
+    50%{ box-shadow:0 10px 34px rgba(245,185,66,0.5); }
+  }
+
+  .quick-btn-row{ display:flex; gap:8px; flex-wrap:wrap; margin-top:6px; }
+  .quick-btn{
+    flex:1; min-width:60px;
+    text-align:center;
+    padding:9px 4px;
+    border-radius:10px;
+    background:rgba(148,163,184,0.12);
+    border:1px solid transparent;
+    color:var(--text);
+    font-size:13px;
+    font-weight:700;
+    cursor:pointer;
+  }
+  .quick-btn.active{
+    background:linear-gradient(135deg, var(--gold), var(--pink));
+    color:#1e293b;
+    border-color:transparent;
+  }
+  .event-status{
+    display:flex; align-items:center; justify-content:space-between;
+    background:rgba(245,185,66,0.1);
+    border:1px solid rgba(245,185,66,0.3);
+    border-radius:12px;
+    padding:10px 12px;
+    margin-bottom:14px;
+    font-size:12.5px;
+  }
+
   .pearl-chip{
     display:inline-flex; align-items:center; gap:6px;
     background:rgba(245,185,66,0.12);
@@ -971,6 +1030,56 @@
     </div>
 
     <div class="admin-section">
+      <h4><span class="icon" id="adminEventIcon"></span> Глобальные ивенты</h4>
+      <p class="hint">Запускает временный бонус для ВСЕХ игроков сразу — виден у каждого в углу экрана с таймером.</p>
+      <div class="event-status" id="eventStatusBox">Проверка активного ивента...</div>
+
+      <div class="field" style="margin-bottom:8px;">
+        <label>Что усиливаем</label>
+        <select class="styled-select" id="eventTargetSelect">
+          <option value="all">Клик + Доход</option>
+          <option value="click">Только клик</option>
+          <option value="passive">Только пассивный доход</option>
+          <option value="pearls">Жемчужины за перерождение</option>
+          <option value="discount">Скидки в магазине</option>
+        </select>
+      </div>
+
+      <div class="field" style="margin-bottom:8px;">
+        <label>Множитель</label>
+        <div class="quick-btn-row">
+          <div class="quick-btn active" data-mult="2">×2</div>
+          <div class="quick-btn" data-mult="3">×3</div>
+          <div class="quick-btn" data-mult="4">×4</div>
+          <div class="quick-btn" data-mult="5">×5</div>
+          <div class="quick-btn" data-mult="10">×10</div>
+        </div>
+      </div>
+
+      <div class="field" style="margin-bottom:8px;">
+        <label>Длительность</label>
+        <div class="quick-btn-row">
+          <div class="quick-btn" data-dur="5">5 мин</div>
+          <div class="quick-btn active" data-dur="15">15 мин</div>
+          <div class="quick-btn" data-dur="30">30 мин</div>
+          <div class="quick-btn" data-dur="60">1 час</div>
+          <div class="quick-btn" data-dur="180">3 часа</div>
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="eventLabelInput">Текст для игроков (необязательно)</label>
+        <input type="text" id="eventLabelInput" placeholder="Например: Двойная охота на рыбу!">
+      </div>
+
+      <div class="row-2">
+        <button class="btn gold" id="eventStartBtn">Запустить ивент</button>
+        <button class="btn danger" id="eventStopBtn">Остановить</button>
+      </div>
+      <div class="admin-msg" id="eventMsg"></div>
+    </div>
+
+    <div class="admin-section">
       <h4><span class="icon" id="adminCoinIcon"></span> Управление Рыбками</h4>
       <p class="hint">Мгновенно изменяет баланс любого игрока в базе данных. Если это ник <b>milk</b>, экран обновится сразу же.</p>
       <div class="field">
@@ -995,6 +1104,7 @@
 </div>
 
 <div class="toast" id="toast"></div>
+<div class="event-badge" id="eventBadge"></div>
 
 <script>
 /* =========================================================================
@@ -1100,17 +1210,33 @@ const UPGRADES = [
   { id:"crit", tab:"power", name:"Меткий улов", desc:"+5% шанс поймать втрое больше рыбы", unlock:8, baseCost:600, growth:1.55, type:"crit", value:0.05, max:8 },
   { id:"fin3", tab:"power", name:"Стальные плавники", desc:"+25 к силе клика", unlock:9, baseCost:1200, growth:1.18, type:"clickAdd", value:25 },
   { id:"goldfin", tab:"power", name:"Золотые плавники", desc:"+120 к силе клика", unlock:16, baseCost:8000, growth:1.2, type:"clickAdd", value:120 },
+  { id:"farmClick", tab:"power", name:"Рыбацкий азарт", desc:"+35 к силе клика", unlock:20, baseCost:14000, growth:1.19, type:"clickAdd", value:35 },
+  { id:"fin4", tab:"power", name:"Плавники левиафана", desc:"+300 к силе клика", unlock:24, baseCost:20000, growth:1.2, type:"clickAdd", value:300 },
+  { id:"fur2", tab:"power", name:"Ледяная броня", desc:"+40% к силе клика", unlock:28, baseCost:15000, growth:1.4, type:"clickMult", value:0.4 },
+  { id:"crit2", tab:"power", name:"Орлиный глаз", desc:"+5% шанс критического улова", unlock:30, baseCost:25000, growth:1.6, type:"crit", value:0.05, max:6 },
+  { id:"goldfin2", tab:"power", name:"Алмазные плавники", desc:"+800 к силе клика", unlock:40, baseCost:60000, growth:1.22, type:"clickAdd", value:800 },
+  { id:"finMax", tab:"power", name:"Плавники бога морей", desc:"+90% к силе клика", unlock:52, baseCost:200000, growth:1.5, type:"clickMult", value:0.9 },
 
   { id:"farm1", tab:"passive", name:"Рыбная ферма", desc:"+1 Рыбка в секунду", unlock:1, baseCost:20, growth:1.15, type:"passiveAdd", value:1 },
   { id:"farm2", tab:"passive", name:"Большая ферма", desc:"+8 Рыбок в секунду", unlock:5, baseCost:250, growth:1.16, type:"passiveAdd", value:8 },
   { id:"auto", tab:"passive", name:"Автоматизация", desc:"+50% к пассивному доходу", unlock:10, baseCost:1500, growth:1.4, type:"passiveMult", value:0.5, max:6 },
   { id:"factory", tab:"passive", name:"Рыбный завод", desc:"+45 Рыбок в секунду", unlock:12, baseCost:2200, growth:1.18, type:"passiveAdd", value:45 },
   { id:"oceanarium", tab:"passive", name:"Океанариум", desc:"+180 Рыбок в секунду", unlock:18, baseCost:9000, growth:1.2, type:"passiveAdd", value:180 },
+  { id:"farm3", tab:"passive", name:"Мега-ферма", desc:"+300 Рыбок в секунду", unlock:22, baseCost:18000, growth:1.19, type:"passiveAdd", value:300 },
+  { id:"auto2", tab:"passive", name:"ИИ-управление", desc:"+60% к пассивному доходу", unlock:34, baseCost:30000, growth:1.45, type:"passiveMult", value:0.6, max:5 },
+  { id:"factory2", tab:"passive", name:"Гига-завод", desc:"+900 Рыбок в секунду", unlock:45, baseCost:80000, growth:1.2, type:"passiveAdd", value:900 },
+  { id:"oceanarium2", tab:"passive", name:"Абиссальная база", desc:"+2000 Рыбок в секунду", unlock:55, baseCost:150000, growth:1.22, type:"passiveAdd", value:2000 },
+  { id:"passiveMax", tab:"passive", name:"Океан изобилия", desc:"+100% к пассивному доходу", unlock:58, baseCost:400000, growth:1.5, type:"passiveMult", value:1.0, max:4 },
 ];
 
 function upgradeCost(u, owned){
-  return Math.round(u.baseCost * Math.pow(u.growth, owned));
+  const base = Math.round(u.baseCost * Math.pow(u.growth, owned));
+  if (typeof eventAppliesTo === "function" && eventAppliesTo("discount")){
+    return Math.max(1, Math.round(base / gameEvent.multiplier));
+  }
+  return base;
 }
+
 
 /* ------------------------------ ДОСТИЖЕНИЯ ------------------------------ */
 const ACHIEVEMENTS = [
@@ -1127,6 +1253,16 @@ const ACHIEVEMENTS = [
   { id:"level_20", title:"Морской лев", desc:"Достигните 20 уровня", icon:"trophy", check:s=>s.level>=20 },
   { id:"fin_master", title:"Мастер плавников", desc:"Купите все улучшения силы клика хотя бы 1 раз", icon:"fin", check:s=>["fin1","fin2","fin3","fur","crit","goldfin"].every(id=>(s.upgrades[id]||0)>0) },
   { id:"farm_master", title:"Рыбный барон", desc:"Купите все улучшения фермы хотя бы 1 раз", icon:"farm", check:s=>["farm1","farm2","auto","factory","oceanarium"].every(id=>(s.upgrades[id]||0)>0) },
+  { id:"crit_50", title:"Ловкий добытчик", desc:"Поймайте 50 критических уловов", icon:"medal", check:s=>s.totalCrits>=50 },
+  { id:"crit_500", title:"Криты дождём", desc:"Поймайте 500 критических уловов", icon:"medal", check:s=>s.totalCrits>=500 },
+  { id:"first_rebirth", title:"Новая жизнь", desc:"Переродитесь первый раз", icon:"rebirth", check:s=>s.prestigeCount>=1 },
+  { id:"rebirth_5", title:"Ветеран перерождений", desc:"Переродитесь 5 раз", icon:"rebirth", check:s=>s.prestigeCount>=5 },
+  { id:"rebirth_10", title:"Мастер циклов", desc:"Переродитесь 10 раз", icon:"rebirth", check:s=>s.prestigeCount>=10 },
+  { id:"upgrades_20", title:"Коллекционер улучшений", desc:"Купите 20 улучшений суммарно", icon:"cart", check:s=>Object.values(s.upgrades).reduce((a,b)=>a+b,0)>=20 },
+  { id:"upgrades_50", title:"Одержимый прокачкой", desc:"Купите 50 улучшений суммарно", icon:"cart", check:s=>Object.values(s.upgrades).reduce((a,b)=>a+b,0)>=50 },
+  { id:"wardrobe_full", title:"Полный гардероб", desc:"Соберите все доступные тюленьи наряды", icon:"medal", check:s=>collectibleSkins().every(sk=>isSkinUnlocked(sk)) },
+  { id:"max_level", title:"Предел эволюции", desc:"Достигните 60 уровня", icon:"trophy", check:s=>s.level>=60 },
+  { id:"event_hunter", title:"Ловец момента", desc:"Кликните во время активного глобального ивента", icon:"warn", check:s=>s.eventParticipated===true },
 ];
 
 /* ------------------------------- СОСТОЯНИЕ ------------------------------- */
@@ -1136,6 +1272,8 @@ const state = {
   coins: 0,
   totalEarned: 0,
   totalClicks: 0,
+  totalCrits: 0,
+  eventParticipated: false,
   clickPower: 1,
   passiveIncome: 0,
   critChance: 0,
@@ -1154,6 +1292,91 @@ const state = {
 };
 
 /* ------------------------------- ПЕРЕРОЖДЕНИЕ (ПРЕСТИЖ) ------------------------------- */
+/* ------------------------------- ГЛОБАЛЬНЫЕ ИВЕНТЫ ------------------------------- */
+const GAME_STATE_TABLE = "game_state";
+const EVENT_TARGETS = {
+  click:    { label:"Клик",           applies:t=>t==="click"   || t==="all" },
+  passive:  { label:"Доход",          applies:t=>t==="passive" || t==="all" },
+  all:      { label:"Клик и Доход",   applies:t=>t==="all" },
+  pearls:   { label:"Жемчужины",      applies:t=>t==="pearls" },
+  discount: { label:"Скидки в магазине", applies:t=>t==="discount" },
+};
+const gameEvent = {
+  active: false,
+  label: "",
+  target: "all",
+  multiplier: 1,
+  endsAt: null
+};
+let eventPollTimer = null;
+let eventTickTimer = null;
+
+async function fetchGlobalEvent(){
+  if (!sb) return;
+  try{
+    const { data, error } = await withTimeout(
+      sb.from(GAME_STATE_TABLE).select("*").eq("id", 1).maybeSingle(),
+      10000, "event-fetch"
+    );
+    if (error || !data) return;
+    const endsAt = data.event_ends_at ? new Date(data.event_ends_at).getTime() : null;
+    const stillActive = !!data.event_active && endsAt && endsAt > Date.now();
+    gameEvent.active = stillActive;
+    gameEvent.label = data.event_label || "";
+    gameEvent.target = data.event_target || "all";
+    gameEvent.multiplier = Number(data.event_multiplier) || 1;
+    gameEvent.endsAt = endsAt;
+    updateEventBadge();
+    if (state.nickname){
+      const leveledUp = recomputeStats();
+      updateHud();
+      renderShop();
+      if (leveledUp) onLevelUp();
+    }
+  } catch(err){
+    // тихо игнорируем — глобальный ивент не критичен для игры
+  }
+}
+
+function eventAppliesTo(targetKey){
+  if (!gameEvent.active) return false;
+  const t = EVENT_TARGETS[targetKey];
+  return t ? t.applies(gameEvent.target) : false;
+}
+
+function updateEventBadge(){
+  const badge = document.getElementById("eventBadge");
+  if (!badge) return;
+  if (!gameEvent.active || !gameEvent.endsAt || gameEvent.endsAt <= Date.now()){
+    badge.classList.remove("show");
+    return;
+  }
+  const remaining = Math.max(0, gameEvent.endsAt - Date.now());
+  const mm = Math.floor(remaining / 60000);
+  const ss = Math.floor((remaining % 60000) / 1000);
+  const timeStr = String(mm).padStart(2,"0") + ":" + String(ss).padStart(2,"0");
+  const label = gameEvent.label || (`×${gameEvent.multiplier} ${EVENT_TARGETS[gameEvent.target]?.label || ""}`);
+  badge.innerHTML = `${ICONS.rebirth("var(--gold)",16)} <span>${escapeHtml(label)}</span><span class="event-timer">${timeStr}</span>`;
+  badge.classList.add("show");
+}
+
+function startEventLoops(){
+  fetchGlobalEvent();
+  clearInterval(eventPollTimer);
+  eventPollTimer = setInterval(fetchGlobalEvent, 20000);
+  clearInterval(eventTickTimer);
+  eventTickTimer = setInterval(()=>{
+    if (gameEvent.active && gameEvent.endsAt && gameEvent.endsAt <= Date.now()){
+      gameEvent.active = false;
+      const leveledUp = recomputeStats();
+      updateHud();
+      renderShop();
+      if (leveledUp) onLevelUp();
+    }
+    updateEventBadge();
+  }, 1000);
+}
+
 const PRESTIGE_REQUIREMENT = 50000;
 const PRESTIGE_UPGRADES = [
   { id:"mult", name:"Сила предков", desc:"+5% к силе клика и доходу навсегда", baseCost:5, growth:1.6 },
@@ -1168,26 +1391,37 @@ function prestigeMultiplier(){
   return base * bought;
 }
 function pearlsForRebirth(){
-  return Math.max(1, Math.floor(Math.sqrt(state.totalEarned / 5000)));
+  const base = Math.max(1, Math.floor(Math.sqrt(state.totalEarned / 5000)));
+  return eventAppliesTo("pearls") ? Math.round(base * gameEvent.multiplier) : base;
 }
 
 /* ------------------------------- СКИНЫ ТЮЛЕНЯ ------------------------------- */
 const SKINS = [
-  { id:"default",  name:"Обычный",       bodyA:"#e8edf3", bodyB:"#aebdd1", unlock:{type:"default"} },
-  { id:"blue",      name:"Голубой",       bodyA:"#dbe9f7", bodyB:"#5ea3d8", unlock:{type:"level", value:2} },
-  { id:"pink",      name:"Розовый",       bodyA:"#fbdce8", bodyB:"#e585ac", unlock:{type:"level", value:3} },
-  { id:"violet",    name:"Сиреневый",     bodyA:"#e9defa", bodyB:"#a284dd", unlock:{type:"level", value:4} },
-  { id:"snow",      name:"Снежный",       bodyA:"#ffffff", bodyB:"#dbe6f0", unlock:{type:"level", value:5} },
-  { id:"mint",      name:"Мятный",        bodyA:"#d9f5ea", bodyB:"#65c298", unlock:{type:"level", value:6} },
-  { id:"sunset",    name:"Закатный",      bodyA:"#ffe3cf", bodyB:"#ea8a56", unlock:{type:"level", value:8} },
-  { id:"panda",     name:"Панда",         bodyA:"#ffffff", bodyB:"#33363f", unlock:{type:"level", value:10} },
-  { id:"tiger",     name:"Тигровый",      bodyA:"#ffd9a0", bodyB:"#d9691f", unlock:{type:"level", value:12} },
-  { id:"galaxy",    name:"Космический",   bodyA:"#8b7fe0", bodyB:"#242866", unlock:{type:"level", value:16} },
-  { id:"gold",      name:"Золотой",       bodyA:"#fff3c4", bodyB:"#d99a1f", unlock:{type:"level", value:20} },
-  { id:"rainbow",   name:"Радужный",      bodyA:"#ff8fa3", bodyB:"#8fd6ff", unlock:{type:"prestige", value:1}, rainbow:true },
-  { id:"shadow",    name:"Теневой",       bodyA:"#565c6e", bodyB:"#191b24", unlock:{type:"prestige", value:3} },
-  { id:"event",     name:"Праздничный",   bodyA:"#ffd7d7", bodyB:"#d64545", unlock:{type:"admin"}, hat:true },
+  { id:"default",   name:"Обычный",       bodyA:"#e8edf3", bodyB:"#aebdd1", unlock:{type:"default"} },
+  { id:"blue",       name:"Голубой",       bodyA:"#dbe9f7", bodyB:"#5ea3d8", unlock:{type:"level", value:2} },
+  { id:"pink",       name:"Розовый",       bodyA:"#fbdce8", bodyB:"#e585ac", unlock:{type:"level", value:3} },
+  { id:"pirate",     name:"Пират",         bodyA:"#e8edf3", bodyB:"#aebdd1", unlock:{type:"level", value:6},  costume:"pirate" },
+  { id:"ninja",      name:"Ниндзя",        bodyA:"#cbd2db", bodyB:"#6b7280", unlock:{type:"level", value:8},  costume:"ninja" },
+  { id:"snow",       name:"Снежный",       bodyA:"#ffffff", bodyB:"#dbe6f0", unlock:{type:"level", value:9} },
+  { id:"astronaut",  name:"Космонавт",     bodyA:"#f1f5fb", bodyB:"#c4cedb", unlock:{type:"level", value:11}, costume:"astronaut" },
+  { id:"chef",       name:"Повар",         bodyA:"#ffffff", bodyB:"#e7ecf2", unlock:{type:"level", value:13}, costume:"chef" },
+  { id:"wizard",     name:"Волшебник",     bodyA:"#e9defa", bodyB:"#a284dd", unlock:{type:"level", value:15}, costume:"wizard" },
+  { id:"hero",       name:"Супергерой",    bodyA:"#dbe9f7", bodyB:"#5ea3d8", unlock:{type:"level", value:18}, costume:"hero" },
+  { id:"punk",       name:"Панк",          bodyA:"#d7dbe2", bodyB:"#878e9c", unlock:{type:"level", value:21}, costume:"punk" },
+  { id:"king",       name:"Король",        bodyA:"#fff3c4", bodyB:"#d99a1f", unlock:{type:"level", value:25}, costume:"king" },
+  { id:"robot",      name:"Робот",         bodyA:"#cfe0ee", bodyB:"#5c7891", unlock:{type:"level", value:29}, costume:"robot" },
+  { id:"galaxy",     name:"Космический",   bodyA:"#8b7fe0", bodyB:"#242866", unlock:{type:"level", value:34} },
+  { id:"dragon",     name:"Дракон",        bodyA:"#bdeccb", bodyB:"#2f9e57", unlock:{type:"level", value:40}, costume:"dragon" },
+  { id:"gold",       name:"Золотой",       bodyA:"#fff3c4", bodyB:"#d99a1f", unlock:{type:"level", value:50} },
+  { id:"angel",      name:"Ангел",         bodyA:"#ffffff", bodyB:"#f3e6b8", unlock:{type:"prestige", value:1}, costume:"angel" },
+  { id:"rainbow",    name:"Радужный",      bodyA:"#ff8fa3", bodyB:"#8fd6ff", unlock:{type:"prestige", value:2}, rainbow:true },
+  { id:"demon",      name:"Демон",         bodyA:"#7a3b3b", bodyB:"#241010", unlock:{type:"prestige", value:4}, costume:"demon" },
+  { id:"shadow",     name:"Теневой",       bodyA:"#565c6e", bodyB:"#191b24", unlock:{type:"prestige", value:6} },
+  { id:"event",      name:"Дед Мороз",     bodyA:"#ffd7d7", bodyB:"#d64545", unlock:{type:"admin"}, costume:"festive" },
 ];
+function collectibleSkins(){
+  return SKINS.filter(s=>s.unlock.type !== "admin");
+}
 function isSkinUnlocked(skin){
   if (state.grantedSkins.includes(skin.id)) return true;
   if (skin.unlock.type === "default") return true;
@@ -1200,6 +1434,54 @@ function skinRequirementLabel(skin){
   if (skin.unlock.type === "level") return "Открывается на уровне " + skin.unlock.value;
   if (skin.unlock.type === "prestige") return "Нужно перерождений: " + skin.unlock.value;
   return "Только по подарку администратора";
+}
+
+/* ------------------------------- КОСТЮМЫ ТЮЛЕНЯ (SVG) ------------------------------- */
+function costumeBehind(costume){
+  switch(costume){
+    case "hero":
+      return `<path d="M84 100C60 130 60 172 84 192L110 176L136 192C160 172 160 130 136 100Z" fill="#38bdf8" fill-opacity="0.5"/>`;
+    case "king":
+      return `<path d="M84 100C64 132 64 176 90 196L110 179L130 196C156 176 156 132 136 100Z" fill="#f5b942" fill-opacity="0.45"/>`;
+    case "dragon":
+      return `<path d="M50 112C28 100 16 132 32 152C44 146 55 130 59 118Z" fill="#2f9e57" fill-opacity="0.6"/><path d="M170 112C192 100 204 132 188 152C176 146 165 130 161 118Z" fill="#2f9e57" fill-opacity="0.6"/>`;
+    case "angel":
+      return `<path d="M52 110C30 98 18 120 30 142C42 138 54 122 58 114Z" fill="#ffffff" fill-opacity="0.9"/><path d="M168 110C190 98 202 120 190 142C178 138 166 122 162 114Z" fill="#ffffff" fill-opacity="0.9"/>`;
+    case "demon":
+      return `<path d="M100 190C96 202 84 206 78 200C86 198 92 194 96 186Z" fill="#7a1f1f"/><path d="M120 190C124 202 136 206 142 200C134 198 128 194 124 186Z" fill="#7a1f1f"/>`;
+    default: return "";
+  }
+}
+function costumeFront(costume){
+  switch(costume){
+    case "pirate":
+      return `<path d="M58 58C78 30 142 30 162 58C142 46 78 46 58 58Z" fill="#2b2f38"/><circle cx="58" cy="56" r="5" fill="#2b2f38"/><circle cx="162" cy="56" r="5" fill="#2b2f38"/><path d="M118 76L143 69L143 93L118 88Z" fill="#181a20"/>`;
+    case "ninja":
+      return `<path d="M56 78C56 70 164 70 164 78L164 91C164 82 56 82 56 91Z" fill="#20232b"/><path d="M56 83L34 79M56 87L32 94M164 83L186 79M164 87L188 94" stroke="#20232b" stroke-width="3" stroke-linecap="round"/>`;
+    case "astronaut":
+      return `<circle cx="110" cy="90" r="63" fill="#dceeff" fill-opacity="0.15" stroke="#bcd6ea" stroke-width="3"/><path d="M90 32C100 26 120 26 130 32" stroke="#bcd6ea" stroke-width="3" stroke-linecap="round" fill="none"/><circle cx="152" cy="44" r="4" fill="#f87171"/>`;
+    case "chef":
+      return `<path d="M74 56C66 28 154 28 146 56C154 38 66 38 74 56Z" fill="#ffffff" stroke="#dbe3ee" stroke-width="1.5"/><rect x="74" y="52" width="72" height="13" rx="5" fill="#ffffff" stroke="#dbe3ee" stroke-width="1.5"/>`;
+    case "wizard":
+      return `<path d="M110 16L148 74L72 74Z" fill="#8b5cf6"/><circle cx="120" cy="38" r="3" fill="#fff"/><circle cx="100" cy="50" r="2.2" fill="#fff"/><circle cx="128" cy="56" r="2" fill="#fff"/><path d="M72 74C72 81 148 81 148 74" fill="#8b5cf6"/>`;
+    case "hero":
+      return `<path d="M58 78C58 68 78 64 92 78C78 83 66 85 58 78Z" fill="#38bdf8"/><path d="M162 78C162 68 142 64 128 78C142 83 154 85 162 78Z" fill="#38bdf8"/>`;
+    case "punk":
+      return `<path d="M94 30L104 56L112 24L120 56L126 30L122 60H98Z" fill="#f472b6"/><rect x="78" y="79" width="64" height="11" rx="4" fill="#181a20"/>`;
+    case "king":
+      return `<path d="M84 46L92 62L110 40L128 62L136 46L132 66H88Z" fill="#f5b942"/>`;
+    case "robot":
+      return `<rect x="76" y="75" width="68" height="17" rx="6" fill="#5c7891" fill-opacity="0.9"/><rect x="76" y="79" width="68" height="4" fill="#8fd6ff" fill-opacity="0.8"/><rect x="108" y="24" width="4" height="14" fill="#8a94a3"/><circle cx="110" cy="22" r="4" fill="#5c7891"/>`;
+    case "dragon":
+      return `<path d="M82 46L92 64L100 40Z" fill="#2f9e57"/><path d="M138 46L128 64L120 40Z" fill="#2f9e57"/>`;
+    case "angel":
+      return `<ellipse cx="110" cy="32" rx="25" ry="8" fill="none" stroke="#f3e6b8" stroke-width="3.5"/>`;
+    case "demon":
+      return `<path d="M82 48L94 66L91 38Z" fill="#7a1f1f"/><path d="M138 48L126 66L129 38Z" fill="#7a1f1f"/>`;
+    case "festive":
+      return `<path d="M76 52C88 24 132 24 144 52C132 44 88 44 76 52Z" fill="#d64545"/><circle cx="142" cy="28" r="8" fill="#fff"/><rect x="74" y="48" width="70" height="10" rx="4" fill="#fff"/>`;
+    default: return "";
+  }
 }
 
 const clickTimestamps = [];
@@ -1357,6 +1639,7 @@ icon("pearl","pearlIcon","var(--gold)",16);
 icon("warn","blockedIcon","var(--muted)",20);
 icon("ban","adminBanIcon","var(--danger)",17);
 icon("gift","adminGiftIcon","var(--gold)",17);
+icon("rebirth","adminEventIcon","var(--gold)",17);
 
 /* ------------------------------- АВАТАРКА ------------------------------- */
 function hashNick(nick){
@@ -1421,7 +1704,10 @@ function renderSeal(){
       </radialGradient>
     </defs>
 
-    ${st.name === "Морской лев" ? `<circle cx="110" cy="105" r="98" fill="${st.accent}" fill-opacity="0.10"/>` : ""}
+    ${st.name === "Морской лев" && !skin.costume ? `<circle cx="110" cy="105" r="98" fill="${st.accent}" fill-opacity="0.10"/>` : ""}
+
+    <!-- костюм: элементы позади тела (плащи, крылья) -->
+    ${costumeBehind(skin.costume)}
 
     <!-- задние ласты (позади тела) -->
     <path d="M56 176C42 172 34 186 44 197C51 204 62 200 66 189" fill="url(#bodyGrad)"/>
@@ -1437,14 +1723,11 @@ function renderSeal(){
     <!-- голова -->
     <ellipse cx="110" cy="92" rx="56" ry="52" fill="url(#bodyGrad)"/>
 
-    <!-- бандана (подросток+) -->
-    ${st.minLevel >= 5 ? `<path d="M64 84C64 76 150 76 156 84C150 92 64 92 64 84Z" fill="${st.accent}" fill-opacity="0.75"/><path d="M64 84L52 96M156 84L168 96" stroke="${st.accent}" stroke-width="4" stroke-linecap="round" fill="none"/>` : ""}
-
-    <!-- корона (морской лев) -->
-    ${st.name === "Морской лев" ? `<path d="M84 46L92 62L110 40L128 62L136 46L132 66H88Z" fill="${st.accent}"/>` : ""}
-
-    <!-- праздничная шапка (событийный скин) -->
-    ${skin.hat ? `<path d="M78 52C90 26 130 26 142 52C130 44 90 44 78 52Z" fill="#d64545"/><circle cx="140" cy="30" r="8" fill="#fff"/><rect x="76" y="48" width="68" height="9" rx="4" fill="#fff"/>` : ""}
+    <!-- костюм: элементы поверх головы (шляпы, маски, каски) -->
+    ${skin.costume ? costumeFront(skin.costume) : `
+      ${st.minLevel >= 5 ? `<path d="M64 84C64 76 150 76 156 84C150 92 64 92 64 84Z" fill="${st.accent}" fill-opacity="0.75"/><path d="M64 84L52 96M156 84L168 96" stroke="${st.accent}" stroke-width="4" stroke-linecap="round" fill="none"/>` : ""}
+      ${st.name === "Морской лев" ? `<path d="M84 46L92 62L110 40L128 62L136 46L132 66H88Z" fill="${st.accent}"/>` : ""}
+    `}
 
     <!-- усы -->
     <path d="M62 98C48 95 38 95 28 97M62 102C48 103 38 105 28 109" stroke="#94a3b8" stroke-width="1.6" stroke-linecap="round" fill="none"/>
@@ -1596,6 +1879,8 @@ async function handleLogin(){
             passive_income: 0,
             total_earned: 0,
             total_clicks: 0,
+            total_crits: 0,
+            event_participated: false,
             upgrades: {},
             achievements: [],
             last_seen: new Date().toISOString(),
@@ -1639,6 +1924,8 @@ async function enterGame(row, myToken){
   state.isOwner = row.nickname.toLowerCase() === OWNER_NICKNAME;
   state.totalEarned = row.total_earned || 0;
   state.totalClicks = row.total_clicks || 0;
+  state.totalCrits = row.total_crits || 0;
+  state.eventParticipated = !!row.event_participated;
   state.upgrades = row.upgrades && typeof row.upgrades === "object" ? row.upgrades : {};
   state.achievements = Array.isArray(row.achievements) ? row.achievements : [];
   state.anticheatDisabled = !!row.anticheat_disabled_for_user;
@@ -1679,6 +1966,7 @@ async function enterGame(row, myToken){
 
   startPassiveIncomeLoop();
   startAutosave();
+  startEventLoops();
   checkAchievements();
   saveProgress(true);
 }
@@ -1696,8 +1984,10 @@ function recomputeStats(){
     if (u.type === "crit") crit += u.value * owned;
   });
   const pMult = prestigeMultiplier();
-  state.clickPower = Math.max(1, Math.round((1 + clickAdd) * (1 + clickMult) * pMult));
-  state.passiveIncome = Math.round(passiveAdd * (1 + passiveMult) * pMult);
+  const clickEventMult = eventAppliesTo("click") ? gameEvent.multiplier : 1;
+  const passiveEventMult = eventAppliesTo("passive") ? gameEvent.multiplier : 1;
+  state.clickPower = Math.max(1, Math.round((1 + clickAdd) * (1 + clickMult) * pMult * clickEventMult));
+  state.passiveIncome = Math.round(passiveAdd * (1 + passiveMult) * pMult * passiveEventMult);
   state.critChance = Math.min(0.5, crit);
   const newLevel = levelFromTotal(state.totalEarned);
   const leveledUp = newLevel > state.level;
@@ -1762,6 +2052,8 @@ async function saveProgress(silent){
       passive_income: state.passiveIncome,
       total_earned: Math.floor(state.totalEarned),
       total_clicks: state.totalClicks,
+      total_crits: state.totalCrits,
+      event_participated: state.eventParticipated,
       upgrades: state.upgrades,
       achievements: state.achievements,
       equipped_skin: state.equippedSkin,
@@ -1806,6 +2098,8 @@ function handleSealClick(e){
   state.coins += gain;
   state.totalEarned += gain;
   state.totalClicks += 1;
+  if (isCrit) state.totalCrits += 1;
+  if (eventAppliesTo("click") || eventAppliesTo("all")) state.eventParticipated = true;
   state.dirty = true;
 
   const leveledUp = recomputeStats();
@@ -2223,6 +2517,7 @@ function tryAdminLogin(){
     document.getElementById("giftMsg").textContent = "";
     populateGiftSkinSelect();
     refreshAdminConnStatus();
+    refreshEventStatusBox();
     openModal("adminPanelOverlay");
   } else {
     errEl.textContent = "Неверный код доступа!";
@@ -2498,6 +2793,94 @@ document.getElementById("giftSaveBtn").addEventListener("click", async ()=>{
       if (!state.grantedSkins.includes(skinId)) state.grantedSkins.push(skinId);
       renderSkins();
     }
+  } catch(err){
+    msgEl.textContent = String(err&&err.message).startsWith("TIMEOUT") ? "База данных не отвечает (тайм-аут)" : "Ошибка соединения с базой данных";
+    msgEl.className = "admin-msg err";
+  }
+});
+
+/* --- Глобальные ивенты (админ) --- */
+let chosenMultiplier = 2;
+let chosenDuration = 15;
+
+document.querySelectorAll('.quick-btn[data-mult]').forEach(btn=>{
+  btn.addEventListener("click", ()=>{
+    document.querySelectorAll('.quick-btn[data-mult]').forEach(b=>b.classList.remove("active"));
+    btn.classList.add("active");
+    chosenMultiplier = Number(btn.dataset.mult);
+  });
+});
+document.querySelectorAll('.quick-btn[data-dur]').forEach(btn=>{
+  btn.addEventListener("click", ()=>{
+    document.querySelectorAll('.quick-btn[data-dur]').forEach(b=>b.classList.remove("active"));
+    btn.classList.add("active");
+    chosenDuration = Number(btn.dataset.dur);
+  });
+});
+
+async function refreshEventStatusBox(){
+  const box = document.getElementById("eventStatusBox");
+  box.textContent = "Проверка активного ивента...";
+  await fetchGlobalEvent();
+  if (gameEvent.active && gameEvent.endsAt > Date.now()){
+    const remaining = Math.max(0, gameEvent.endsAt - Date.now());
+    const mm = Math.floor(remaining/60000), ss = Math.floor((remaining%60000)/1000);
+    box.innerHTML = `Сейчас активен: <b>${escapeHtml(gameEvent.label || (EVENT_TARGETS[gameEvent.target]?.label||""))}</b> ×${gameEvent.multiplier} · осталось ${String(mm).padStart(2,"0")}:${String(ss).padStart(2,"0")}`;
+  } else {
+    box.textContent = "Сейчас никакой ивент не активен.";
+  }
+}
+
+document.getElementById("eventStartBtn").addEventListener("click", async ()=>{
+  const msgEl = document.getElementById("eventMsg");
+  const target = document.getElementById("eventTargetSelect").value;
+  const customLabel = document.getElementById("eventLabelInput").value.trim();
+  const label = customLabel || `×${chosenMultiplier} ${EVENT_TARGETS[target]?.label || ""}`;
+  const endsAt = new Date(Date.now() + chosenDuration * 60000).toISOString();
+
+  try{
+    const { error } = await withTimeout(
+      sb.from(GAME_STATE_TABLE).update({
+        event_active: true,
+        event_label: label,
+        event_target: target,
+        event_multiplier: chosenMultiplier,
+        event_ends_at: endsAt,
+        updated_at: new Date().toISOString()
+      }).eq("id", 1),
+      12000, "event-start"
+    );
+    if (error){
+      msgEl.textContent = "Ошибка запуска: " + error.message;
+      msgEl.className = "admin-msg err";
+      return;
+    }
+    msgEl.textContent = `Ивент запущен на ${chosenDuration} мин: «${label}»`;
+    msgEl.className = "admin-msg ok";
+    await refreshEventStatusBox();
+    fetchGlobalEvent();
+  } catch(err){
+    msgEl.textContent = String(err&&err.message).startsWith("TIMEOUT") ? "База данных не отвечает (тайм-аут)" : "Ошибка соединения с базой данных";
+    msgEl.className = "admin-msg err";
+  }
+});
+
+document.getElementById("eventStopBtn").addEventListener("click", async ()=>{
+  const msgEl = document.getElementById("eventMsg");
+  try{
+    const { error } = await withTimeout(
+      sb.from(GAME_STATE_TABLE).update({ event_active:false }).eq("id", 1),
+      12000, "event-stop"
+    );
+    if (error){
+      msgEl.textContent = "Ошибка остановки: " + error.message;
+      msgEl.className = "admin-msg err";
+      return;
+    }
+    msgEl.textContent = "Ивент остановлен.";
+    msgEl.className = "admin-msg ok";
+    await refreshEventStatusBox();
+    fetchGlobalEvent();
   } catch(err){
     msgEl.textContent = String(err&&err.message).startsWith("TIMEOUT") ? "База данных не отвечает (тайм-аут)" : "Ошибка соединения с базой данных";
     msgEl.className = "admin-msg err";
