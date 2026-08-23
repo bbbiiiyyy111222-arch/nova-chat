@@ -547,6 +547,40 @@
   }
   .offline-modal p.desc{ text-align:center; color:var(--muted); font-size:13px; margin:0 0 20px 0; }
 
+  .story-modal{ text-align:center; }
+  .story-seal-icon{ display:flex; justify-content:center; margin-bottom:12px; }
+  .story-title{ font-size:17px; margin:0 0 10px 0; }
+  .story-title span{ color:var(--gold); }
+  .story-text{ font-size:14px; line-height:1.6; color:var(--text); margin:0 0 20px 0; }
+
+  .volume-slider{
+    width:100%;
+    -webkit-appearance:none;
+    appearance:none;
+    height:6px;
+    border-radius:999px;
+    background:rgba(148,163,184,0.25);
+    outline:none;
+    cursor:pointer;
+  }
+  .volume-slider::-webkit-slider-thumb{
+    -webkit-appearance:none;
+    appearance:none;
+    width:20px; height:20px;
+    border-radius:50%;
+    background:linear-gradient(135deg, var(--blue), var(--violet));
+    cursor:pointer;
+    box-shadow:0 2px 8px rgba(0,0,0,0.3);
+  }
+  .volume-slider::-moz-range-thumb{
+    width:20px; height:20px;
+    border-radius:50%;
+    border:none;
+    background:linear-gradient(135deg, var(--blue), var(--violet));
+    cursor:pointer;
+    box-shadow:0 2px 8px rgba(0,0,0,0.3);
+  }
+
   .ach-grid{ display:grid; grid-template-columns:1fr; gap:10px; }
   .ach-card{
     display:flex; align-items:center; gap:12px;
@@ -993,12 +1027,16 @@
     <div class="tabs">
       <div class="tab-btn active" data-coltab="ach">Достижения</div>
       <div class="tab-btn" data-coltab="skins">Тюлени</div>
+      <div class="tab-btn" data-coltab="bgs">Фоны</div>
     </div>
     <div class="tab-panel active" id="tabAch">
       <div class="ach-grid" id="achGrid"></div>
     </div>
     <div class="tab-panel" id="tabSkins">
       <div class="skin-grid" id="skinGrid"></div>
+    </div>
+    <div class="tab-panel" id="tabBgs">
+      <div class="skin-grid" id="bgGrid"></div>
     </div>
   </div>
 </div>
@@ -1019,6 +1057,41 @@
       <button class="btn rebirth-btn" id="rebirthBtn">Переродиться</button>
     </div>
     <div id="prestigeShop"></div>
+  </div>
+</div>
+
+<!-- ======= STORY MODAL (эволюция) ======= -->
+<div class="modal-overlay" id="storyOverlay">
+  <div class="modal story-modal">
+    <div class="story-seal-icon" id="storySealIcon"></div>
+    <h3 class="story-title">Новая глава! <span id="storyStageName"></span></h3>
+    <p class="story-text" id="storyText"></p>
+    <button class="btn gold" id="storyCloseBtn">Продолжить</button>
+  </div>
+</div>
+
+<!-- ======= SOUND SETTINGS MODAL ======= -->
+<div class="modal-overlay" id="soundSettingsOverlay">
+  <div class="modal">
+    <div class="modal-head">
+      <h3><span class="icon" id="soundSettingsIcon"></span> Звук и музыка</h3>
+      <button class="close-btn" data-close="soundSettingsOverlay">✕</button>
+    </div>
+
+    <div class="field">
+      <label for="sfxVolumeSlider">Громкость звуков (клики, покупки, уровни)</label>
+      <input type="range" id="sfxVolumeSlider" min="0" max="100" step="5" class="volume-slider">
+    </div>
+
+    <div class="field">
+      <label for="musicVolumeSlider">Громкость фоновой музыки</label>
+      <input type="range" id="musicVolumeSlider" min="0" max="100" step="5" class="volume-slider">
+    </div>
+
+    <div class="switch-row" style="margin-top:4px;">
+      <span style="font-size:13px; color:var(--muted);">Фоновая музыка включена</span>
+      <div class="switch" id="musicOnSwitch"></div>
+    </div>
   </div>
 </div>
 
@@ -1379,6 +1452,7 @@ const state = {
   totalClicks: 0,
   totalCrits: 0,
   eventParticipated: false,
+  lastStageName: null,
   clickPower: 1,
   passiveIncome: 0,
   critChance: 0,
@@ -1389,6 +1463,8 @@ const state = {
   clickingDisabled: false,
   equippedSkin: "default",
   grantedSkins: [],
+  equippedBackground: "default",
+  grantedBackgrounds: [],
   prestigeCount: 0,
   pearls: 0,
   prestigeUpgrades: {},
@@ -1437,6 +1513,11 @@ function applyEventRow(data, announce){
   gameEvent.multiplier = Number(data.event_multiplier) || 1;
   gameEvent.endsAt = endsAt;
 
+  console.log("[event] applyEventRow:", {
+    raw: data, stillActive, target: gameEvent.target, multiplier: gameEvent.multiplier,
+    endsAt: endsAt ? new Date(endsAt).toISOString() : null, isNewEvent
+  });
+
   if (!stillActive){
     lastSeenEventKey = null;
   }
@@ -1445,6 +1526,7 @@ function applyEventRow(data, announce){
 
   if (state.nickname){
     const leveledUp = recomputeStats();
+    console.log("[event] после recomputeStats:", { clickPower: state.clickPower, passiveIncome: state.passiveIncome, clickBoost: eventAppliesTo("click"), passiveBoost: eventAppliesTo("passive") });
     updateHud();
     renderShop();
     if (leveledUp) onLevelUp();
@@ -1733,6 +1815,33 @@ function skinRequirementLabel(skin){
   return "Только по подарку администратора";
 }
 
+/* ------------------------------- ФОНЫ ИГРОВОГО ЭКРАНА ------------------------------- */
+const BACKGROUNDS = [
+  { id:"default", name:"Обычный",         css:"radial-gradient(circle at 15% 8%, rgba(139,92,246,0.16), transparent 42%), radial-gradient(circle at 85% 92%, rgba(56,189,248,0.16), transparent 42%), var(--bg)", unlock:{type:"default"} },
+  { id:"reef",    name:"Коралловый риф",  css:"radial-gradient(circle at 20% 15%, rgba(244,113,197,0.28), transparent 50%), radial-gradient(circle at 80% 85%, rgba(245,185,66,0.22), transparent 50%), #0f2437", unlock:{type:"level", value:7} },
+  { id:"ice",     name:"Ледяная пещера",  css:"radial-gradient(circle at 25% 20%, rgba(186,230,253,0.25), transparent 50%), radial-gradient(circle at 75% 80%, rgba(56,189,248,0.25), transparent 55%), #0a1e2e", unlock:{type:"level", value:14} },
+  { id:"sunset",  name:"Закат в океане",  css:"radial-gradient(circle at 30% 20%, rgba(245,185,66,0.3), transparent 50%), radial-gradient(circle at 75% 85%, rgba(244,113,197,0.25), transparent 50%), #1a1428", unlock:{type:"level", value:22} },
+  { id:"space",   name:"Космос",          css:"radial-gradient(circle at 20% 20%, rgba(139,92,246,0.35), transparent 45%), radial-gradient(circle at 80% 30%, rgba(56,189,248,0.2), transparent 45%), radial-gradient(circle at 50% 80%, rgba(244,113,197,0.15), transparent 45%), #05050f", unlock:{type:"level", value:32} },
+  { id:"abyss",   name:"Глубины",         css:"radial-gradient(circle at 50% 10%, rgba(56,189,248,0.15), transparent 60%), #010208", unlock:{type:"prestige", value:1} },
+];
+function isBackgroundUnlocked(bg){
+  if (state.grantedBackgrounds.includes(bg.id)) return true;
+  if (bg.unlock.type === "default") return true;
+  if (bg.unlock.type === "level") return state.level >= bg.unlock.value;
+  if (bg.unlock.type === "prestige") return state.prestigeCount >= bg.unlock.value;
+  return false;
+}
+function backgroundRequirementLabel(bg){
+  if (bg.unlock.type === "default") return "Открыт с самого начала";
+  if (bg.unlock.type === "level") return "Открывается на уровне " + bg.unlock.value;
+  if (bg.unlock.type === "prestige") return "Нужно перерождений: " + bg.unlock.value;
+  return "Недоступен";
+}
+function applyBackground(){
+  const bg = BACKGROUNDS.find(b=>b.id === state.equippedBackground) || BACKGROUNDS[0];
+  document.getElementById("gameScreen").style.background = bg.css;
+}
+
 /* ------------------------------- КОСТЮМЫ ТЮЛЕНЯ (SVG) ------------------------------- */
 function costumeBehind(costume){
   switch(costume){
@@ -1803,9 +1912,13 @@ function fmt(n){
   return n.toLocaleString("ru-RU");
 }
 
-/* ------------------------------- ЗВУКИ ------------------------------- */
+/* ------------------------------- ЗВУКИ И МУЗЫКА ------------------------------- */
 let audioCtx = null;
-let soundMuted = localStorage.getItem("seal_sound_muted") === "1";
+const soundSettings = {
+  sfxVolume: Number(localStorage.getItem("seal_sfx_volume") ?? 70),
+  musicVolume: Number(localStorage.getItem("seal_music_volume") ?? 35),
+  musicOn: localStorage.getItem("seal_music_on") !== "0",
+};
 function getAudioCtx(){
   if (!audioCtx){
     try{ audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }catch(e){ return null; }
@@ -1814,7 +1927,7 @@ function getAudioCtx(){
   return audioCtx;
 }
 function playTone(freq, duration, type, volume, delay){
-  if (soundMuted) return;
+  if (soundSettings.sfxVolume <= 0) return;
   try{
     const ctx = getAudioCtx();
     if (!ctx) return;
@@ -1822,7 +1935,7 @@ function playTone(freq, duration, type, volume, delay){
     const gain = ctx.createGain();
     osc.type = type || "sine";
     osc.frequency.value = freq;
-    gain.gain.value = volume || 0.12;
+    gain.gain.value = (volume || 0.12) * (soundSettings.sfxVolume / 100);
     osc.connect(gain); gain.connect(ctx.destination);
     const t0 = ctx.currentTime + (delay || 0);
     osc.start(t0);
@@ -1836,16 +1949,58 @@ function sfxRebirth(){ playTone(392,0.15,"sawtooth",0.1); playTone(494,0.15,"saw
 function sfxCollectFish(){ playTone(1046,0.06,"square",0.09); }
 function sfxEventStart(){ playTone(587,0.1,"triangle",0.13); playTone(880,0.15,"triangle",0.13,0.1); }
 
-function toggleSound(){
-  soundMuted = !soundMuted;
-  localStorage.setItem("seal_sound_muted", soundMuted ? "1" : "0");
-  updateSoundIcon();
-  if (!soundMuted) playTone(660,0.06,"sine",0.1);
+/* --- Весёлая фоновая музыка (короткий цикл-арпеджио) --- */
+const MUSIC_PATTERN = [523.25, 659.25, 783.99, 1046.5, 783.99, 659.25, 493.88, 587.33];
+let musicTimer = null;
+let musicStep = 0;
+function playMusicStep(){
+  if (!soundSettings.musicOn || soundSettings.musicVolume <= 0) return;
+  try{
+    const ctx = getAudioCtx();
+    if (!ctx) return;
+    const freq = MUSIC_PATTERN[musicStep % MUSIC_PATTERN.length];
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = "triangle";
+    osc.frequency.value = freq;
+    const vol = 0.05 * (soundSettings.musicVolume / 100);
+    gain.gain.value = vol;
+    osc.connect(gain); gain.connect(ctx.destination);
+    const t0 = ctx.currentTime;
+    osc.start(t0);
+    gain.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.35);
+    osc.stop(t0 + 0.4);
+  } catch(e){}
+  musicStep++;
 }
+function startMusic(){
+  clearInterval(musicTimer);
+  musicTimer = setInterval(playMusicStep, 420);
+}
+function stopMusic(){
+  clearInterval(musicTimer);
+  musicTimer = null;
+}
+
 function updateSoundIcon(){
   const el = document.getElementById("soundToggleBtn");
   if (!el) return;
-  el.innerHTML = soundMuted ? ICONS.soundOff("var(--muted)",18) : ICONS.soundOn("var(--blue)",18);
+  const muted = soundSettings.sfxVolume <= 0 && !soundSettings.musicOn;
+  el.innerHTML = muted ? ICONS.soundOff("var(--muted)",18) : ICONS.soundOn("var(--blue)",18);
+}
+
+function saveSoundSettings(){
+  localStorage.setItem("seal_sfx_volume", String(soundSettings.sfxVolume));
+  localStorage.setItem("seal_music_volume", String(soundSettings.musicVolume));
+  localStorage.setItem("seal_music_on", soundSettings.musicOn ? "1" : "0");
+  updateSoundIcon();
+}
+
+function openSoundSettings(){
+  document.getElementById("sfxVolumeSlider").value = soundSettings.sfxVolume;
+  document.getElementById("musicVolumeSlider").value = soundSettings.musicVolume;
+  document.getElementById("musicOnSwitch").classList.toggle("on", soundSettings.musicOn);
+  openModal("soundSettingsOverlay");
 }
 
 function showToast(msg, gold){
@@ -1971,8 +2126,29 @@ function icon(name, mount, color, size){
   if (el) el.innerHTML = ICONS[name](color, size);
 }
 icon("sealMark","titleSealIcon","var(--pink)",23);
+icon("sealMark","storySealIcon","var(--gold)",44);
+icon("soundOn","soundSettingsIcon","var(--blue)",19);
+
+document.getElementById("sfxVolumeSlider").addEventListener("input", e=>{
+  soundSettings.sfxVolume = Number(e.target.value);
+  saveSoundSettings();
+});
+document.getElementById("sfxVolumeSlider").addEventListener("change", ()=>{
+  playTone(660,0.06,"sine",0.1);
+});
+document.getElementById("musicVolumeSlider").addEventListener("input", e=>{
+  soundSettings.musicVolume = Number(e.target.value);
+  saveSoundSettings();
+});
+document.getElementById("musicOnSwitch").addEventListener("click", ()=>{
+  soundSettings.musicOn = !soundSettings.musicOn;
+  document.getElementById("musicOnSwitch").classList.toggle("on", soundSettings.musicOn);
+  saveSoundSettings();
+  if (soundSettings.musicOn) startMusic(); else stopMusic();
+});
+document.getElementById("storyCloseBtn").addEventListener("click", ()=> closeModal("storyOverlay"));
 updateSoundIcon();
-document.getElementById("soundToggleBtn").addEventListener("click", toggleSound);
+document.getElementById("soundToggleBtn").addEventListener("click", openSoundSettings);
 icon("fish","hudFishIcon","var(--blue)",17);
 icon("cart","shopIcon","var(--blue)",21);
 icon("medal","achIconBtn","var(--gold)",21);
@@ -2028,6 +2204,11 @@ const STAGES = [
   { name:"Тюлень",      minLevel:10, accent:"var(--violet)" },
   { name:"Морской лев", minLevel:18, accent:"var(--gold)" },
 ];
+const STORY_TEXTS = {
+  "Подросток": "Тюлень окреп и научился плавать кругами так быстро, что рыба вокруг сама теряется и попадает прямо в ласты!",
+  "Тюлень": "На дне обнаружился старый затонувший корабль. Тюлень обустроил в его трюме уютный тайник для улова.",
+  "Морской лев": "Слухи о новом короле волн разлетелись по всему океану — ваш тюлень стал настоящим морским львом!",
+};
 function getStage(level){
   let st = STAGES[0];
   for (const s of STAGES){ if (level >= s.minLevel) st = s; }
@@ -2300,15 +2481,21 @@ async function enterGame(row, myToken){
   state.clickingDisabled = !!row.clicking_disabled;
   state.grantedSkins = Array.isArray(row.granted_skins) ? row.granted_skins : [];
   state.equippedSkin = row.equipped_skin || "default";
+  state.equippedBackground = row.equipped_background || "default";
+  state.grantedBackgrounds = Array.isArray(row.granted_backgrounds) ? row.granted_backgrounds : [];
   state.prestigeCount = row.prestige_count || 0;
   state.pearls = row.pearls || 0;
   state.prestigeUpgrades = row.prestige_upgrades && typeof row.prestige_upgrades === "object" ? row.prestige_upgrades : {};
   state.deviceId = myToken;
 
   recomputeStats();
+  state.lastStageName = getStage(state.level).name;
 
   const equippedOk = SKINS.find(s=>s.id===state.equippedSkin && isSkinUnlocked(s));
   if (!equippedOk) state.equippedSkin = "default";
+  const equippedBgOk = BACKGROUNDS.find(b=>b.id===state.equippedBackground && isBackgroundUnlocked(b));
+  if (!equippedBgOk) state.equippedBackground = "default";
+  applyBackground();
 
   document.getElementById("blockedNotice").classList.toggle("show", state.clickingDisabled);
 
@@ -2330,11 +2517,13 @@ async function enterGame(row, myToken){
   renderShop();
   renderAchievements();
   renderSkins();
+  renderBackgrounds();
   renderPrestige();
 
   startPassiveIncomeLoop();
   startAutosave();
   startEventLoops();
+  if (soundSettings.musicOn) startMusic();
   checkAchievements();
   saveProgress(true);
 }
@@ -2404,7 +2593,22 @@ function onLevelUp(){
   showToast(`${ICONS.medal("var(--gold)",16)} Новый уровень! Ур. ${state.level} — ${getStage(state.level).name}`, true);
   renderShop();
   renderSkins();
+  renderBackgrounds();
   sfxLevelUp();
+
+  const newStageName = getStage(state.level).name;
+  if (newStageName !== state.lastStageName && STORY_TEXTS[newStageName]){
+    state.lastStageName = newStageName;
+    showStoryModal(newStageName, STORY_TEXTS[newStageName]);
+  } else {
+    state.lastStageName = newStageName;
+  }
+}
+
+function showStoryModal(stageName, text){
+  document.getElementById("storyStageName").textContent = stageName;
+  document.getElementById("storyText").textContent = text;
+  openModal("storyOverlay");
 }
 
 /* ------------------------------- АВТОСОХРАНЕНИЕ ------------------------------- */
@@ -2426,6 +2630,7 @@ async function saveProgress(silent){
       upgrades: state.upgrades,
       achievements: state.achievements,
       equipped_skin: state.equippedSkin,
+      equipped_background: state.equippedBackground,
       prestige_count: state.prestigeCount,
       pearls: Math.floor(state.pearls),
       prestige_upgrades: state.prestigeUpgrades,
@@ -2562,7 +2767,8 @@ document.querySelectorAll("#achOverlay .tab-btn[data-coltab]").forEach(btn=>{
     document.querySelectorAll("#achOverlay .tab-btn").forEach(b=>b.classList.remove("active"));
     document.querySelectorAll("#achOverlay .tab-panel").forEach(p=>p.classList.remove("active"));
     btn.classList.add("active");
-    document.getElementById(btn.dataset.coltab === "ach" ? "tabAch" : "tabSkins").classList.add("active");
+    const map = { ach:"tabAch", skins:"tabSkins", bgs:"tabBgs" };
+    document.getElementById(map[btn.dataset.coltab] || "tabAch").classList.add("active");
   });
 });
 
@@ -2661,6 +2867,7 @@ function renderAchievements(){
 document.getElementById("openAchBtn").addEventListener("click", ()=>{
   renderAchievements();
   renderSkins();
+  renderBackgrounds();
   openModal("achOverlay");
 });
 
@@ -2695,6 +2902,37 @@ function renderSkins(){
       renderSkins();
       saveProgress(true);
       showToast("Тюлень переодет!");
+    });
+  });
+}
+
+function renderBackgrounds(){
+  const grid = document.getElementById("bgGrid");
+  if (!grid) return;
+  grid.innerHTML = BACKGROUNDS.map(bg=>{
+    const unlocked = isBackgroundUnlocked(bg);
+    const equipped = state.equippedBackground === bg.id;
+    return `
+      <div class="skin-card ${equipped ? "equipped" : ""}">
+        <div class="skin-swatch" style="background:${bg.css.split(",").slice(0,2).join(",")};"></div>
+        <div class="skin-name">${bg.name}</div>
+        ${unlocked
+          ? `<div class="skin-req">${equipped ? "Надет" : "Открыт"}</div>
+             <button class="skin-btn ${equipped ? "" : "equip"}" data-equipbg="${bg.id}" ${equipped ? "disabled" : ""}>${equipped ? "Надето" : "Надеть"}</button>`
+          : `<div class="skin-req">${backgroundRequirementLabel(bg)}</div>
+             <button class="skin-btn" disabled>${ICONS.lock("var(--muted)",12)}</button>`
+        }
+      </div>`;
+  }).join("");
+
+  grid.querySelectorAll("[data-equipbg]").forEach(btn=>{
+    btn.addEventListener("click", ()=>{
+      state.equippedBackground = btn.dataset.equipbg;
+      state.dirty = true;
+      applyBackground();
+      renderBackgrounds();
+      saveProgress(true);
+      showToast("Фон применён!");
     });
   });
 }
@@ -2790,6 +3028,7 @@ document.getElementById("rebirthBtn").addEventListener("click", async ()=>{
   renderSeal();
   renderShop();
   renderSkins();
+  renderBackgrounds();
   renderPrestige();
   checkAchievements();
   await saveProgress(true);
@@ -3274,6 +3513,15 @@ document.getElementById("eventStartBtn").addEventListener("click", async ()=>{
       ? `Дождь рыбок запущен на 30 секунд!`
       : `Ивент запущен на ${durationMin} мин: «${label}» (×${multiplier})`;
     msgEl.className = "admin-msg ok";
+    // Применяем немедленно к текущей сессии, не дожидаясь ответа базы —
+    // так видно результат сразу, даже если realtime/опрос ещё не подтянули.
+    applyEventRow({
+      event_active: true,
+      event_label: label,
+      event_target: target,
+      event_multiplier: multiplier,
+      event_ends_at: endsAt
+    }, true);
     await refreshEventStatusBox();
   } catch(err){
     msgEl.textContent = String(err&&err.message).startsWith("TIMEOUT") ? "База данных не отвечает (тайм-аут)" : "Ошибка соединения с базой данных";
