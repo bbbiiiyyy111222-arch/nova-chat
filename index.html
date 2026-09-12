@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>allWATCH — Твой Телеканал</title>
   
-  <!-- Чистый плеер Plyr -->
+  <!-- Плеер Plyr -->
   <link rel="stylesheet" href="https://cdn.plyr.io/3.7.8/plyr.css" />
   
   <style>
@@ -50,14 +50,8 @@
       box-shadow: 0 10px 30px rgba(0,0,0,0.5);
     }
 
-    .video-info {
-      padding: 15px 20px;
-    }
-    .video-title {
-      font-size: 1.2rem;
-      font-weight: 600;
-    }
-
+    .video-info { padding: 15px 20px; }
+    .video-title { font-size: 1.2rem; font-weight: 600; }
     :root { --plyr-color-main: #ff3b30; }
   </style>
 </head>
@@ -74,24 +68,21 @@
     </div>
   </div>
 
-  <!-- JS SDK Supabase и Plyr -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdn.plyr.io/3.7.8/plyr.polyfilled.js"></script>
 
   <script>
-    // 1. Инициализация твоей базы Supabase
-    const SUPABASE_URL = 'https://ejixneybidxnzmiztlgf.supabase.co';
-    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVqaXhuZXliaWR4bnptaXp0bGdmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODkyMjgyNDQsImV4cCI6MjEwNDgwNDI0NH0.u6nRo-W4h0NSToPVfb2sCJKMC6ifRWcRI2Owfr_VHGw';
+    // Подключение к твоему новому проекту Supabase
+    const SUPABASE_URL = 'https://ipzafxhymzaguthbmaki.supabase.co';
+    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlwemFmeGh5bXphZ3V0aGJtYWtpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODkyMjk0ODYsImV4cCI6MjEwNDgwNTQ4Nn0.zeWHC0Mu3YYPzMIWEwS4Ca8EMqK-QrnQPLP_nfVwu0E';
     
     const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-    // 2. Инициализация чистого плеера
     const player = new Plyr('#player', {
       controls: ['play-large', 'play', 'progress', 'current-time', 'mute', 'volume', 'fullscreen'],
       autoplay: true
     });
 
-    // 3. Функция загрузки текущего видео из базы
     async function fetchCurrentVideo() {
       const { data, error } = await supabaseClient
         .from('videos')
@@ -101,20 +92,17 @@
 
       if (error) {
         console.error('Ошибка Supabase:', error);
-        document.getElementById('title').innerText = 'Ошибка загрузки видео';
+        document.getElementById('title').innerText = 'Ошибка загрузки';
         return;
       }
 
       if (data && data.length > 0) {
         const currentVideo = data[0];
         
-        // Обновляем плеер ссылкой и постером
         player.source = {
           type: 'video',
           title: currentVideo.title,
-          sources: [
-            { src: currentVideo.direct_url, type: 'video/mp4' }
-          ],
+          sources: [{ src: currentVideo.direct_url, type: 'video/mp4' }],
           poster: currentVideo.poster_url || ''
         };
 
@@ -128,4 +116,4 @@
   </script>
 
 </body>
-                                                               </html>
+</html>
