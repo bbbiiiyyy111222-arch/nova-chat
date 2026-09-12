@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>allWATCH — Твой Телеканал</title>
+  
+  <!-- Чистый плеер Plyr -->
+  <link rel="stylesheet" href="https://cdn.plyr.io/3.7.8/plyr.css" />
+  
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background-color: #0d0d11;
+      color: #ffffff;
+      font-family: 'Segoe UI', Roboto, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    header {
+      margin-bottom: 20px;
+      text-align: center;
+    }
+    .logo {
+      font-size: 2.5rem;
+      font-weight: 900;
+      letter-spacing: 1px;
+    }
+    .logo span { color: #ff3b30; }
+    .live-badge {
+      background: #ff3b30;
+      font-size: 0.75rem;
+      padding: 3px 8px;
+      border-radius: 4px;
+      vertical-align: middle;
+      margin-left: 8px;
+      font-weight: bold;
+    }
+
+    .main-container {
+      width: 100%;
+      max-width: 960px;
+      background: #16161e;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    }
+
+    .video-info {
+      padding: 15px 20px;
+    }
+    .video-title {
+      font-size: 1.2rem;
+      font-weight: 600;
+    }
+
+    :root { --plyr-color-main: #ff3b30; }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="logo">all<span>WATCH</span><span class="live-badge">LIVE</span></div>
+  </header>
+
+  <div class="main-container">
+    <video id="player" controls playsinline></video>
+    <div class="video-info">
+      <div id="title" class="video-title">Загрузка эфира...</div>
+    </div>
+  </div>
+
+  <!-- JS SDK Supabase и Plyr -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.plyr.io/3.7.8/plyr.polyfilled.js"></script>
+
+  <script>
+    // 1. Инициализация твоей базы Supabase
+    const SUPABASE_URL = 'https://ejixneybidxnzmiztlgf.supabase.co';
+    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVqaXhuZXliaWR4bnptaXp0bGdmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODkyMjgyNDQsImV4cCI6MjEwNDgwNDI0NH0.u6nRo-W4h0NSToPVfb2sCJKMC6ifRWcRI2Owfr_VHGw';
+    
+    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    // 2. Инициализация чистого плеера
+    const player = new Plyr('#player', {
+      controls: ['play-large', 'play', 'progress', 'current-time', 'mute', 'volume', 'fullscreen'],
+      autoplay: true
+    });
+
+    // 3. Функция загрузки текущего видео из базы
+    async function fetchCurrentVideo() {
+      const { data, error } = await supabaseClient
+        .from('videos')
+        .select('*')
+        .order('id', { ascending: false })
+        .limit(1);
+
+      if (error) {
+        console.error('Ошибка Supabase:', error);
+        document.getElementById('title').innerText = 'Ошибка загрузки видео';
+        return;
+      }
+
+      if (data && data.length > 0) {
+        const currentVideo = data[0];
+        
+        // Обновляем плеер ссылкой и постером
+        player.source = {
+          type: 'video',
+          title: currentVideo.title,
+          sources: [
+            { src: currentVideo.direct_url, type: 'video/mp4' }
+          ],
+          poster: currentVideo.poster_url || ''
+        };
+
+        document.getElementById('title').innerText = currentVideo.title;
+      } else {
+        document.getElementById('title').innerText = 'В базе пока нет записей';
+      }
+    }
+
+    fetchCurrentVideo();
+  </script>
+
+</body>
+                                                               </html>
