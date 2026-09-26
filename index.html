@@ -45,7 +45,7 @@
 <script>
 const API_KEY = "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";
 const MODEL   = "meta-llama/llama-3.1-8b-instruct:free";
-const API_URL = "https://openrouter.ai/api/v1/chat/completions";
+const API_URL = "/api/chat";   // вместо openrouter.ai
 
 const log   = document.getElementById("log");
 const input = document.getElementById("msg");
@@ -81,15 +81,10 @@ async function send() {
 
   try {
     const res = await fetch(API_URL, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": "Bearer " + API_KEY,
-        "HTTP-Referer": location.origin,
-        "X-Title": "My AI"
-      },
-      body: JSON.stringify({ model: MODEL, messages })
-    });
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({ model: MODEL, messages })
+});
 
     const data = await res.json();
 
