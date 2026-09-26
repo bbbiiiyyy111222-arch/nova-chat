@@ -1,46 +1,127 @@
-export default function Home() {
-  const createRoom = () => {
-    const roomName = Math.random().toString(36).substring(2, 10)
-    window.location.href = `/room/${roomName}`
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>Мой ИИ</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    font-family: system-ui, sans-serif;
+    background: #0f1115; color: #e6e6e6;
+    max-width: 760px; margin: 0 auto; padding: 24px;
+    height: 100vh; display: flex; flex-direction: column;
   }
+  h1 { font-size: 18px; margin: 0 0 12px; color: #9ad; }
+  #log {
+    flex: 1; overflow-y: auto;
+    border: 1px solid #2a2f3a; border-radius: 10px;
+    padding: 16px; background: #151922;
+  }
+  .msg { margin-bottom: 14px; line-height: 1.5; white-space: pre-wrap; }
+  .user b { color: #6cf; }
+  .ai b { color: #7d7; }
+  .err { color: #f77; }
+  #row { display: flex; gap: 8px; margin-top: 12px; }
+  #msg {
+    flex: 1; padding: 12px; border-radius: 8px;
+    border: 1px solid #2a2f3a; background: #151922;
+    color: #e6e6e6; font-size: 15px;
+  }
+  button {
+    padding: 12px 20px; border-radius: 8px; border: none;
+    background: #2b6cb0; color: white; font-size: 15px; cursor: pointer;
+  }
+  button:disabled { opacity: .5; cursor: default; }
+</style>
+</head>
+<body>
+  <h1>Мой ИИ (Llama 3.1 8B через OpenRouter)</h1>
+  <div id="log"></div>
+  <div id="row">
+    <input id="msg" placeholder="Напиши сообщение..." autocomplete="off" />
+    <button id="send">Отправить</button>
+  </div>
 
-  return (
-    <div style={styles.container}>
-      <div style={styles.card}>
-        <h1 style={styles.title}>📞 Telephone</h1>
-        <button style={styles.button} onClick={createRoom}>
-          Создать новую комнату
-        </button>
-      </div>
-    </div>
-  )
+<script>
+const API_KEY = "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";
+const MODEL   = "meta-llama/llama-3.1-8b-instruct:free";
+const API_URL = "https://openrouter.ai/api/v1/chat/completions";
+
+const log   = document.getElementById("log");
+const input = document.getElementById("msg");
+const btn   = document.getElementById("send");
+
+const messages = [
+  { role: "system", content: "Ты полезный ассистент. Отвечай на русском." }
+];
+
+function add(role, text, cls) {
+  const div = document.createElement("div");
+  div.className = "msg " + (cls || "");
+  div.innerHTML = `<b>${role}:</b> `;
+  div.appendChild(document.createTextNode(text));
+  log.appendChild(div);
+  log.scrollTop = log.scrollHeight;
 }
 
-const styles = {
-  container: {
-    minHeight: '100vh',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-  },
-  card: {
-    background: 'white',
-    padding: '40px',
-    borderRadius: '10px',
-    textAlign: 'center',
-  },
-  title: {
-    fontSize: '48px',
-    marginBottom: '20px',
-  },
-  button: {
-    padding: '15px 30px',
-    fontSize: '18px',
-    background: '#667eea',
-    color: 'white',
-    border: 'none',
-    borderRadius: '5px',
-    cursor: 'pointer',
+async function send() {
+  const text = input.value.trim();
+  if (!text || btn.disabled) return;
+  input.value = "";
+  btn.disabled = true;
+
+  add("Ты", text, "user");
+  messages.push({ role: "user", content: text });
+
+  const thinking = document.createElement("div");
+  thinking.className = "msg ai";
+  thinking.innerHTML = "<b>ИИ:</b> ...";
+  log.appendChild(thinking);
+  log.scrollTop = log.scrollHeight;
+
+  try {
+    const res = await fetch(API_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer " + API_KEY,
+        "HTTP-Referer": location.origin,
+        "X-Title": "My AI"
+      },
+      body: JSON.stringify({ model: MODEL, messages })
+    });
+
+    const data = await res.json();
+
+    if (!res.ok || data.error) {
+      const errMsg = data.error?.message || ("HTTP " + res.status);
+      thinking.className = "msg err";
+      thinking.innerHTML = "<b>Ошибка:</b> ";
+      thinking.appendChild(document.createTextNode(errMsg));
+      messages.pop();
+    } else {
+      const reply = data.choices[0].message.content;
+      thinking.className = "msg ai";
+      thinking.innerHTML = "<b>ИИ:</b> ";
+      thinking.appendChild(document.createTextNode(reply));
+      messages.push({ role: "assistant", content: reply });
+    }
+  } catch (e) {
+    thinking.className = "msg err";
+    thinking.textContent = "Ошибка сети: " + e.message;
+    messages.pop();
+  } finally {
+    btn.disabled = false;
+    input.focus();
+    log.scrollTop = log.scrollHeight;
   }
 }
+
+btn.addEventListener("click", send);
+input.addEventListener("keydown", e => {
+  if (e.key === "Enter") send();
+});
+input.focus();
+</script>
+</body>
+</html>
