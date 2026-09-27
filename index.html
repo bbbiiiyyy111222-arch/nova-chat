@@ -46,18 +46,18 @@ const { useState, useMemo } = React;
    Данные — редактируются вручную прямо здесь
 --------------------------------------------------------- */
 const pilotsData = [
-  { nickname: "J.Moreau", flightsAttended: 47 },
-  { nickname: "A.Dubois", flightsAttended: 39 },
-  { nickname: "T.Laurent", flightsAttended: 33 },
-  { nickname: "S.Bernard", flightsAttended: 28 },
-  { nickname: "M.Girard", flightsAttended: 24 },
-  { nickname: "P.Rousseau", flightsAttended: 21 },
-  { nickname: "C.Lefevre", flightsAttended: 18 },
-  { nickname: "N.Fontaine", flightsAttended: 15 },
-  { nickname: "R.Petit", flightsAttended: 11 },
-  { nickname: "E.Marchand", flightsAttended: 9 },
-  { nickname: "L.Simon", flightsAttended: 6 },
-  { nickname: "D.Roche", flightsAttended: 3 },
+  { nickname: "@", flightsAttended: 0 },
+  { nickname: "@", flightsAttended: 0 },
+  { nickname: "@", flightsAttended: 0 },
+  { nickname: "@", flightsAttended: 0 },
+  { nickname: "@", flightsAttended: 0 },
+  { nickname: "@", flightsAttended: 0 },
+  { nickname: "@", flightsAttended: 0 },
+  { nickname: "@", flightsAttended: 0 },
+  { nickname: "@", flightsAttended: 0 },
+  { nickname: "@", flightsAttended: 0 },
+  { nickname: "@", flightsAttended: 0 },
+  { nickname: "@", flightsAttended: 0 },
 ];
 
 /* ---------------------------------------------------------
@@ -83,9 +83,9 @@ function TelegramIcon({ className }) {
 function Header() {
   return React.createElement("header", { className: "sticky top-0 z-30 bg-[var(--navy)]" },
     React.createElement("div", { className: "h-[3px] bg-[var(--red)]" }),
-    React.createElement("div", { className: "max-w-2xl mx-auto px-6 sm:px-10 h-12 flex items-center justify-center gap-2" },
-      React.createElement(PlaneMark, { className: "w-4 h-4 text-white -rotate-12" }),
-      React.createElement("span", { className: "font-voice text-white text-[15px] tracking-tight" }, "Air France")
+    React.createElement("div", { className: "max-w-3xl mx-auto px-6 sm:px-10 h-14 flex items-center justify-center gap-2.5" },
+      React.createElement(PlaneMark, { className: "w-5 h-5 text-white -rotate-12" }),
+      React.createElement("span", { className: "font-voice text-white text-base tracking-tight" }, "Air France")
     )
   );
 }
@@ -116,11 +116,11 @@ function Hero() {
       className: "fly absolute w-6 h-6 text-[var(--red)]/70",
       style: { offsetPath: "path('M40 60 C 250 10, 550 130, 760 40')", offsetRotate: "auto" }
     }),
-    React.createElement("div", { className: "relative max-w-2xl mx-auto px-6 sm:px-10 py-16 sm:py-20 text-center" },
-      React.createElement("div", { className: "inline-flex items-center justify-center w-11 h-11 rounded-full border border-[var(--red)]/40 mb-6" },
-        React.createElement(PlaneMark, { className: "w-5 h-5 text-[var(--red)] -rotate-12" })
+    React.createElement("div", { className: "relative max-w-3xl mx-auto px-6 sm:px-10 py-16 sm:py-24 text-center" },
+      React.createElement("div", { className: "inline-flex items-center justify-center w-16 h-16 rounded-full border border-[var(--red)]/40 mb-6" },
+        React.createElement(PlaneMark, { className: "w-8 h-8 text-[var(--red)] -rotate-12" })
       ),
-      React.createElement("h1", { className: "font-voice text-white text-[26px] sm:text-[34px] leading-[1.25] font-medium" },
+      React.createElement("h1", { className: "font-voice text-white text-[26px] sm:text-[38px] leading-[1.25] font-medium" },
         "Таблица посещаемости рейсов авиакомпании Air France"
       ),
       React.createElement("div", { className: "w-10 h-[2px] bg-[var(--red)] mx-auto mt-6" })
@@ -139,15 +139,15 @@ function PilotTable({ data }) {
 
   const max = Math.max(...data.map(p => p.flightsAttended));
 
-  return React.createElement("section", { className: "max-w-2xl mx-auto px-4 sm:px-10 -mt-8 relative pb-14 sm:pb-16" },
+  return React.createElement("section", { className: "max-w-3xl mx-auto px-4 sm:px-10 -mt-8 relative pb-14 sm:pb-20" },
     React.createElement("div", { className: "bg-white border border-[var(--navy)]/10 rounded-sm shadow-[0_12px_32px_-14px_rgba(10,34,64,0.3)] overflow-hidden" },
       React.createElement("div", { className: "h-[2px] bg-[var(--red)]" }),
       React.createElement("table", { className: "w-full text-left border-collapse" },
         React.createElement("thead", null,
           React.createElement("tr", { className: "border-b border-[var(--navy)]/10" },
-            React.createElement("th", { className: "py-3 px-4 sm:px-6 text-[12px] font-medium text-[var(--slate)] tracking-wide" }, "Никнейм"),
+            React.createElement("th", { className: "py-3.5 px-4 sm:px-8 text-[12px] font-medium text-[var(--slate)] tracking-wide" }, "Никнейм"),
             React.createElement("th", {
-              className: "py-3 px-4 sm:px-6 text-[12px] font-medium text-[var(--slate)] text-right cursor-pointer select-none hover:text-[var(--navy)] transition-colors",
+              className: "py-3.5 px-4 sm:px-8 text-[12px] font-medium text-[var(--slate)] text-right cursor-pointer select-none hover:text-[var(--navy)] transition-colors",
               onClick: () => setSortDesc(!sortDesc)
             }, "Посещено рейсов " + (sortDesc ? "↓" : "↑"))
           )
@@ -158,19 +158,11 @@ function PilotTable({ data }) {
               key: p.nickname,
               className: "border-b border-[var(--navy)]/[0.06] last:border-0 hover:bg-[var(--paper)] transition-colors"
             },
-              React.createElement("td", { className: "py-3 px-4 sm:px-6" },
+              React.createElement("td", { className: "py-3 px-4 sm:px-8" },
                 React.createElement("span", { className: "text-[14px] text-[var(--navy)] font-medium" }, p.nickname)
               ),
-              React.createElement("td", { className: "py-3 px-4 sm:px-6" },
-                React.createElement("div", { className: "flex items-center justify-end gap-2 sm:gap-3" },
-                  React.createElement("div", { className: "hidden xs:block sm:block w-12 sm:w-20 h-[3px] bg-[var(--navy)]/[0.08] rounded-full overflow-hidden" },
-                    React.createElement("div", {
-                      className: "h-full bg-[var(--red)] rounded-full",
-                      style: { width: (p.flightsAttended / max * 100) + "%" }
-                    })
-                  ),
-                  React.createElement("span", { className: "text-[14px] tabular-nums text-[var(--navy)] font-medium w-6 text-right" }, p.flightsAttended)
-                )
+              React.createElement("td", { className: "py-3 px-4 sm:px-8 text-right" },
+                React.createElement("span", { className: "text-[14px] tabular-nums text-[var(--navy)] font-medium" }, p.flightsAttended)
               )
             )
           ))
@@ -180,18 +172,47 @@ function PilotTable({ data }) {
   );
 }
 
+function DownloadButton() {
+  const [status, setStatus] = useState("idle");
+
+  const handleDownload = async () => {
+    setStatus("saving");
+    try {
+      const downloads = await claude.use("downloads");
+      if (!downloads) { setStatus("unavailable"); return; }
+      const html = "<!DOCTYPE html>\n" + document.documentElement.outerHTML;
+      await downloads.save({ filename: "air-france-attendance.html", data: html });
+      setStatus("idle");
+    } catch (e) {
+      setStatus(e && e.code === "declined" ? "idle" : "error");
+    }
+  };
+
+  return React.createElement("div", { className: "flex flex-col items-center gap-1.5" },
+    React.createElement("button", {
+      onClick: handleDownload,
+      className: "inline-flex items-center gap-2 border border-[var(--navy)]/20 text-[var(--navy)] text-[13px] font-medium px-5 py-2.5 rounded-full hover:bg-[var(--navy)] hover:text-white transition-colors"
+    }, status === "saving" ? "Сохранение…" : "Скачать HTML"),
+    status === "unavailable" && React.createElement("span", { className: "text-[11px] text-[var(--slate)]" }, "Скачивание недоступно в этом окне"),
+    status === "error" && React.createElement("span", { className: "text-[11px] text-[var(--slate)]" }, "Не удалось сохранить файл, попробуйте ещё раз")
+  );
+}
+
 function Footer() {
   const [open, setOpen] = useState(false);
   return React.createElement("footer", { className: "border-t border-[var(--navy)]/10 py-10" },
-    React.createElement("div", { className: "max-w-2xl mx-auto px-6 sm:px-10 flex flex-col items-center gap-5" },
-      React.createElement("a", {
-        href: "https://t.me/",
-        target: "_blank",
-        rel: "noopener noreferrer",
-        className: "inline-flex items-center gap-2 bg-[#229ED9] text-white text-[13px] font-medium px-5 py-2.5 rounded-full hover:opacity-90 transition-opacity"
-      },
-        React.createElement(TelegramIcon, { className: "w-4 h-4" }),
-        "Наш Telegram"
+    React.createElement("div", { className: "max-w-3xl mx-auto px-6 sm:px-10 flex flex-col items-center gap-5" },
+      React.createElement("div", { className: "flex flex-wrap items-center justify-center gap-3" },
+        React.createElement("a", {
+          href: "https://t.me/",
+          target: "_blank",
+          rel: "noopener noreferrer",
+          className: "inline-flex items-center gap-2 bg-[#229ED9] text-white text-[13px] font-medium px-5 py-2.5 rounded-full hover:opacity-90 transition-opacity"
+        },
+          React.createElement(TelegramIcon, { className: "w-4 h-4" }),
+          "Наш Telegram"
+        ),
+        React.createElement(DownloadButton, null)
       ),
       React.createElement("button", {
         onClick: () => setOpen(!open),
@@ -217,4 +238,4 @@ function App() {
 ReactDOM.createRoot(document.getElementById("root")).render(React.createElement(App));
 </script>
 </body>
- </html>
+  </html>
