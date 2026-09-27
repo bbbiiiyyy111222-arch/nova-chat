@@ -42,9 +42,6 @@
 <script type="text/javascript">
 const { useState, useMemo } = React;
 
-/* ---------------------------------------------------------
-   Данные — редактируются вручную прямо здесь
---------------------------------------------------------- */
 const pilotsData = [
   { nickname: "@", flightsAttended: 0 },
   { nickname: "@", flightsAttended: 0 },
@@ -60,9 +57,6 @@ const pilotsData = [
   { nickname: "@", flightsAttended: 0 },
 ];
 
-/* ---------------------------------------------------------
-   Иконка самолёта
---------------------------------------------------------- */
 function PlaneMark({ className, style }) {
   return (
     React.createElement("svg", { viewBox: "0 0 64 64", className, style, fill: "none", xmlns: "http://www.w3.org/2000/svg" },
@@ -137,8 +131,6 @@ function PilotTable({ data }) {
     return copy;
   }, [data, sortDesc]);
 
-  const max = Math.max(...data.map(p => p.flightsAttended));
-
   return React.createElement("section", { className: "max-w-3xl mx-auto px-4 sm:px-10 -mt-8 relative pb-14 sm:pb-20" },
     React.createElement("div", { className: "bg-white border border-[var(--navy)]/10 rounded-sm shadow-[0_12px_32px_-14px_rgba(10,34,64,0.3)] overflow-hidden" },
       React.createElement("div", { className: "h-[2px] bg-[var(--red)]" }),
@@ -172,47 +164,18 @@ function PilotTable({ data }) {
   );
 }
 
-function DownloadButton() {
-  const [status, setStatus] = useState("idle");
-
-  const handleDownload = async () => {
-    setStatus("saving");
-    try {
-      const downloads = await claude.use("downloads");
-      if (!downloads) { setStatus("unavailable"); return; }
-      const html = "<!DOCTYPE html>\n" + document.documentElement.outerHTML;
-      await downloads.save({ filename: "air-france-attendance.html", data: html });
-      setStatus("idle");
-    } catch (e) {
-      setStatus(e && e.code === "declined" ? "idle" : "error");
-    }
-  };
-
-  return React.createElement("div", { className: "flex flex-col items-center gap-1.5" },
-    React.createElement("button", {
-      onClick: handleDownload,
-      className: "inline-flex items-center gap-2 border border-[var(--navy)]/20 text-[var(--navy)] text-[13px] font-medium px-5 py-2.5 rounded-full hover:bg-[var(--navy)] hover:text-white transition-colors"
-    }, status === "saving" ? "Сохранение…" : "Скачать HTML"),
-    status === "unavailable" && React.createElement("span", { className: "text-[11px] text-[var(--slate)]" }, "Скачивание недоступно в этом окне"),
-    status === "error" && React.createElement("span", { className: "text-[11px] text-[var(--slate)]" }, "Не удалось сохранить файл, попробуйте ещё раз")
-  );
-}
-
 function Footer() {
   const [open, setOpen] = useState(false);
   return React.createElement("footer", { className: "border-t border-[var(--navy)]/10 py-10" },
     React.createElement("div", { className: "max-w-3xl mx-auto px-6 sm:px-10 flex flex-col items-center gap-5" },
-      React.createElement("div", { className: "flex flex-wrap items-center justify-center gap-3" },
-        React.createElement("a", {
-          href: "https://t.me/",
-          target: "_blank",
-          rel: "noopener noreferrer",
-          className: "inline-flex items-center gap-2 bg-[#229ED9] text-white text-[13px] font-medium px-5 py-2.5 rounded-full hover:opacity-90 transition-opacity"
-        },
-          React.createElement(TelegramIcon, { className: "w-4 h-4" }),
-          "Наш Telegram"
-        ),
-        React.createElement(DownloadButton, null)
+      React.createElement("a", {
+        href: "https://t.me/",
+        target: "_blank",
+        rel: "noopener noreferrer",
+        className: "inline-flex items-center gap-2 bg-[#229ED9] text-white text-[13px] font-medium px-5 py-2.5 rounded-full hover:opacity-90 transition-opacity"
+      },
+        React.createElement(TelegramIcon, { className: "w-4 h-4" }),
+        "Наш Telegram"
       ),
       React.createElement("button", {
         onClick: () => setOpen(!open),
@@ -238,4 +201,4 @@ function App() {
 ReactDOM.createRoot(document.getElementById("root")).render(React.createElement(App));
 </script>
 </body>
-  </html>
+</html>
