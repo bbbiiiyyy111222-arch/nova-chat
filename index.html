@@ -2,121 +2,219 @@
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
-<title>Мой ИИ</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Air France — Учёт посещаемости</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://cdn.tailwindcss.com"></script>
 <style>
-  * { box-sizing: border-box; }
+  :root {
+    --navy: #0A2240;
+    --navy-deep: #051530;
+    --red: #C8102E;
+    --paper: #F6F5F2;
+    --slate: #4A5568;
+  }
+  html { scroll-padding-top: env(safe-area-inset-top, 0px); }
   body {
-    font-family: system-ui, sans-serif;
-    background: #0f1115; color: #e6e6e6;
-    max-width: 760px; margin: 0 auto; padding: 24px;
-    height: 100vh; display: flex; flex-direction: column;
+    margin: 0;
+    font-family: 'Inter', sans-serif;
+    background: var(--paper);
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
   }
-  h1 { font-size: 18px; margin: 0 0 12px; color: #9ad; }
-  #log {
-    flex: 1; overflow-y: auto;
-    border: 1px solid #2a2f3a; border-radius: 10px;
-    padding: 16px; background: #151922;
+  .font-voice { font-family: 'Fraunces', serif; }
+  ::selection { background: var(--red); color: #fff; }
+  @media (prefers-reduced-motion: no-preference) {
+    .fly { animation: fly 16s linear infinite; }
   }
-  .msg { margin-bottom: 14px; line-height: 1.5; white-space: pre-wrap; }
-  .user b { color: #6cf; }
-  .ai b { color: #7d7; }
-  .err { color: #f77; }
-  #row { display: flex; gap: 8px; margin-top: 12px; }
-  #msg {
-    flex: 1; padding: 12px; border-radius: 8px;
-    border: 1px solid #2a2f3a; background: #151922;
-    color: #e6e6e6; font-size: 15px;
+  @keyframes fly {
+    0%   { offset-distance: 0%; }
+    100% { offset-distance: 100%; }
   }
-  button {
-    padding: 12px 20px; border-radius: 8px; border: none;
-    background: #2b6cb0; color: white; font-size: 15px; cursor: pointer;
-  }
-  button:disabled { opacity: .5; cursor: default; }
 </style>
 </head>
 <body>
-  <h1>Мой ИИ (Llama 3.1 8B через OpenRouter)</h1>
-  <div id="log"></div>
-  <div id="row">
-    <input id="msg" placeholder="Напиши сообщение..." autocomplete="off" />
-    <button id="send">Отправить</button>
-  </div>
+<div id="root"></div>
+<script type="text/javascript">
+const { useState, useMemo } = React;
 
-<script>
-const API_KEY = "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";
-const MODEL   = "meta-llama/llama-3.1-8b-instruct:free";
-const API_URL = "/api/chat";   // вместо openrouter.ai
-
-const log   = document.getElementById("log");
-const input = document.getElementById("msg");
-const btn   = document.getElementById("send");
-
-const messages = [
-  { role: "system", content: "Ты полезный ассистент. Отвечай на русском." }
+/* ---------------------------------------------------------
+   Данные — редактируются вручную прямо здесь
+--------------------------------------------------------- */
+const pilotsData = [
+  { nickname: "J.Moreau", flightsAttended: 47 },
+  { nickname: "A.Dubois", flightsAttended: 39 },
+  { nickname: "T.Laurent", flightsAttended: 33 },
+  { nickname: "S.Bernard", flightsAttended: 28 },
+  { nickname: "M.Girard", flightsAttended: 24 },
+  { nickname: "P.Rousseau", flightsAttended: 21 },
+  { nickname: "C.Lefevre", flightsAttended: 18 },
+  { nickname: "N.Fontaine", flightsAttended: 15 },
+  { nickname: "R.Petit", flightsAttended: 11 },
+  { nickname: "E.Marchand", flightsAttended: 9 },
+  { nickname: "L.Simon", flightsAttended: 6 },
+  { nickname: "D.Roche", flightsAttended: 3 },
 ];
 
-function add(role, text, cls) {
-  const div = document.createElement("div");
-  div.className = "msg " + (cls || "");
-  div.innerHTML = `<b>${role}:</b> `;
-  div.appendChild(document.createTextNode(text));
-  log.appendChild(div);
-  log.scrollTop = log.scrollHeight;
+/* ---------------------------------------------------------
+   Иконка самолёта
+--------------------------------------------------------- */
+function PlaneMark({ className, style }) {
+  return (
+    React.createElement("svg", { viewBox: "0 0 64 64", className, style, fill: "none", xmlns: "http://www.w3.org/2000/svg" },
+      React.createElement("path", {
+        d: "M8 40 L52 24 L58 26 L56 30 L36 34 L30 48 L26 47 L28 34 L14 36 L10 42 Z",
+        fill: "currentColor"
+      })
+    )
+  );
 }
 
-async function send() {
-  const text = input.value.trim();
-  if (!text || btn.disabled) return;
-  input.value = "";
-  btn.disabled = true;
-
-  add("Ты", text, "user");
-  messages.push({ role: "user", content: text });
-
-  const thinking = document.createElement("div");
-  thinking.className = "msg ai";
-  thinking.innerHTML = "<b>ИИ:</b> ...";
-  log.appendChild(thinking);
-  log.scrollTop = log.scrollHeight;
-
-  try {
-    const res = await fetch(API_URL, {
-  method: "POST",
-  headers: { "Content-Type": "application/json" },
-  body: JSON.stringify({ model: MODEL, messages })
-});
-
-    const data = await res.json();
-
-    if (!res.ok || data.error) {
-      const errMsg = data.error?.message || ("HTTP " + res.status);
-      thinking.className = "msg err";
-      thinking.innerHTML = "<b>Ошибка:</b> ";
-      thinking.appendChild(document.createTextNode(errMsg));
-      messages.pop();
-    } else {
-      const reply = data.choices[0].message.content;
-      thinking.className = "msg ai";
-      thinking.innerHTML = "<b>ИИ:</b> ";
-      thinking.appendChild(document.createTextNode(reply));
-      messages.push({ role: "assistant", content: reply });
-    }
-  } catch (e) {
-    thinking.className = "msg err";
-    thinking.textContent = "Ошибка сети: " + e.message;
-    messages.pop();
-  } finally {
-    btn.disabled = false;
-    input.focus();
-    log.scrollTop = log.scrollHeight;
-  }
+function TelegramIcon({ className }) {
+  return React.createElement("svg", { viewBox: "0 0 24 24", className: className, fill: "currentColor", xmlns: "http://www.w3.org/2000/svg" },
+    React.createElement("path", { d: "M21.5 3.5 2.7 11c-1 .4-1 1 .1 1.3l4.8 1.5 1.8 5.6c.2.7.4 1 .9 1 .4 0 .6-.2.9-.5l2.3-2.2 4.7 3.5c.9.5 1.5.2 1.7-.8l3.1-14.5c.3-1.2-.3-1.7-1.5-1.4Z" })
+  );
 }
 
-btn.addEventListener("click", send);
-input.addEventListener("keydown", e => {
-  if (e.key === "Enter") send();
-});
-input.focus();
+function Header() {
+  return React.createElement("header", { className: "sticky top-0 z-30 bg-[var(--navy)]" },
+    React.createElement("div", { className: "h-[3px] bg-[var(--red)]" }),
+    React.createElement("div", { className: "max-w-2xl mx-auto px-6 sm:px-10 h-12 flex items-center justify-center gap-2" },
+      React.createElement(PlaneMark, { className: "w-4 h-4 text-white -rotate-12" }),
+      React.createElement("span", { className: "font-voice text-white text-[15px] tracking-tight" }, "Air France")
+    )
+  );
+}
+
+function Hero() {
+  return React.createElement("section", { className: "relative overflow-hidden bg-gradient-to-b from-[var(--navy)] to-[var(--navy-deep)]" },
+    React.createElement("div", {
+      className: "absolute inset-0",
+      style: { background: "radial-gradient(ellipse 60% 50% at 50% 0%, rgba(200,16,46,0.14), transparent)" }
+    }),
+    React.createElement("svg", {
+      className: "absolute inset-0 w-full h-full opacity-[0.10]",
+      viewBox: "0 0 800 300", preserveAspectRatio: "xMidYMid slice", xmlns: "http://www.w3.org/2000/svg"
+    },
+      React.createElement("path", { d: "M0 220 L800 110", stroke: "#fff", strokeWidth: "1" }),
+      React.createElement("path", { d: "M0 260 L800 250", stroke: "#fff", strokeWidth: "1" })
+    ),
+    React.createElement("svg", {
+      className: "absolute inset-0 w-full h-full",
+      viewBox: "0 0 800 300", preserveAspectRatio: "xMidYMid slice", xmlns: "http://www.w3.org/2000/svg"
+    },
+      React.createElement("path", {
+        id: "flightline", d: "M40 60 C 250 10, 550 130, 760 40",
+        stroke: "rgba(255,255,255,0.18)", strokeWidth: "1.5", strokeDasharray: "2 8", fill: "none"
+      })
+    ),
+    React.createElement(PlaneMark, {
+      className: "fly absolute w-6 h-6 text-[var(--red)]/70",
+      style: { offsetPath: "path('M40 60 C 250 10, 550 130, 760 40')", offsetRotate: "auto" }
+    }),
+    React.createElement("div", { className: "relative max-w-2xl mx-auto px-6 sm:px-10 py-16 sm:py-20 text-center" },
+      React.createElement("div", { className: "inline-flex items-center justify-center w-11 h-11 rounded-full border border-[var(--red)]/40 mb-6" },
+        React.createElement(PlaneMark, { className: "w-5 h-5 text-[var(--red)] -rotate-12" })
+      ),
+      React.createElement("h1", { className: "font-voice text-white text-[26px] sm:text-[34px] leading-[1.25] font-medium" },
+        "Таблица посещаемости рейсов авиакомпании Air France"
+      ),
+      React.createElement("div", { className: "w-10 h-[2px] bg-[var(--red)] mx-auto mt-6" })
+    )
+  );
+}
+
+function PilotTable({ data }) {
+  const [sortDesc, setSortDesc] = useState(true);
+
+  const sorted = useMemo(() => {
+    const copy = [...data];
+    copy.sort((a, b) => sortDesc ? b.flightsAttended - a.flightsAttended : a.flightsAttended - b.flightsAttended);
+    return copy;
+  }, [data, sortDesc]);
+
+  const max = Math.max(...data.map(p => p.flightsAttended));
+
+  return React.createElement("section", { className: "max-w-2xl mx-auto px-4 sm:px-10 -mt-8 relative pb-14 sm:pb-16" },
+    React.createElement("div", { className: "bg-white border border-[var(--navy)]/10 rounded-sm shadow-[0_12px_32px_-14px_rgba(10,34,64,0.3)] overflow-hidden" },
+      React.createElement("div", { className: "h-[2px] bg-[var(--red)]" }),
+      React.createElement("table", { className: "w-full text-left border-collapse" },
+        React.createElement("thead", null,
+          React.createElement("tr", { className: "border-b border-[var(--navy)]/10" },
+            React.createElement("th", { className: "py-3 px-4 sm:px-6 text-[12px] font-medium text-[var(--slate)] tracking-wide" }, "Никнейм"),
+            React.createElement("th", {
+              className: "py-3 px-4 sm:px-6 text-[12px] font-medium text-[var(--slate)] text-right cursor-pointer select-none hover:text-[var(--navy)] transition-colors",
+              onClick: () => setSortDesc(!sortDesc)
+            }, "Посещено рейсов " + (sortDesc ? "↓" : "↑"))
+          )
+        ),
+        React.createElement("tbody", null,
+          sorted.map((p, i) => (
+            React.createElement("tr", {
+              key: p.nickname,
+              className: "border-b border-[var(--navy)]/[0.06] last:border-0 hover:bg-[var(--paper)] transition-colors"
+            },
+              React.createElement("td", { className: "py-3 px-4 sm:px-6" },
+                React.createElement("span", { className: "text-[14px] text-[var(--navy)] font-medium" }, p.nickname)
+              ),
+              React.createElement("td", { className: "py-3 px-4 sm:px-6" },
+                React.createElement("div", { className: "flex items-center justify-end gap-2 sm:gap-3" },
+                  React.createElement("div", { className: "hidden xs:block sm:block w-12 sm:w-20 h-[3px] bg-[var(--navy)]/[0.08] rounded-full overflow-hidden" },
+                    React.createElement("div", {
+                      className: "h-full bg-[var(--red)] rounded-full",
+                      style: { width: (p.flightsAttended / max * 100) + "%" }
+                    })
+                  ),
+                  React.createElement("span", { className: "text-[14px] tabular-nums text-[var(--navy)] font-medium w-6 text-right" }, p.flightsAttended)
+                )
+              )
+            )
+          ))
+        )
+      )
+    )
+  );
+}
+
+function Footer() {
+  const [open, setOpen] = useState(false);
+  return React.createElement("footer", { className: "border-t border-[var(--navy)]/10 py-10" },
+    React.createElement("div", { className: "max-w-2xl mx-auto px-6 sm:px-10 flex flex-col items-center gap-5" },
+      React.createElement("a", {
+        href: "https://t.me/",
+        target: "_blank",
+        rel: "noopener noreferrer",
+        className: "inline-flex items-center gap-2 bg-[#229ED9] text-white text-[13px] font-medium px-5 py-2.5 rounded-full hover:opacity-90 transition-opacity"
+      },
+        React.createElement(TelegramIcon, { className: "w-4 h-4" }),
+        "Наш Telegram"
+      ),
+      React.createElement("button", {
+        onClick: () => setOpen(!open),
+        className: "text-[12px] text-[var(--slate)] underline underline-offset-2 hover:text-[var(--navy)] transition-colors"
+      }, open ? "Скрыть" : "Подробнее"),
+      open && React.createElement("p", { className: "text-[12px] text-[var(--slate)] text-center max-w-sm leading-relaxed" },
+        "Это не настоящая авиакомпания. Все рейсы проходят в лётном симуляторе PTFS (Pilot Training Flight Simulator) и не имеют отношения к реальным перевозкам Air France."
+      ),
+      React.createElement(PlaneMark, { className: "w-4 h-4 text-[var(--red)]/60 -rotate-12 mt-1" })
+    )
+  );
+}
+
+function App() {
+  return React.createElement("div", null,
+    React.createElement(Header, null),
+    React.createElement(Hero, null),
+    React.createElement(PilotTable, { data: pilotsData }),
+    React.createElement(Footer, null)
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(React.createElement(App));
 </script>
 </body>
-</html>
+ </html>
