@@ -3,202 +3,355 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Air France — Учёт посещаемости</title>
+<meta name="theme-color" content="#00112e">
+<meta name="description" content="Таблица посещаемости рейсов авиакомпании Air France">
+<title>Air France — Таблица посещаемости рейсов</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
-<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  /* Шрифт подключается без блокировки отрисовки: страница видна сразу, шрифт подхватывается позже */
+  document.documentElement.className += ' js';
+  (function () {
+    var l = document.createElement('link');
+    l.rel = 'stylesheet';
+    l.href = 'https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;1,500&display=swap';
+    document.head.appendChild(l);
+  })();
+</script>
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;1,500&display=swap"></noscript>
 <style>
-  :root {
-    --navy: #0A2240;
-    --navy-deep: #051530;
-    --red: #C8102E;
-    --paper: #F6F5F2;
-    --slate: #4A5568;
+  /* ---------- Основа ---------- */
+  :root { --navy:#002157; --deep:#00112e; --red:#C8102E; --paper:#F4F3EF; --ink:#1B2A47; --mute:#6B7690; --ease:cubic-bezier(.2,.7,.2,1); }
+  *,*::before,*::after { box-sizing:border-box; }
+  html { background:var(--deep); -webkit-text-size-adjust:100%; }
+  body { margin:0; font:400 16px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+         background:var(--paper); color:var(--ink); overflow-x:clip; -webkit-font-smoothing:antialiased; }
+  h1,p { margin:0; }
+  button { font:inherit; color:inherit; background:none; border:0; padding:0; cursor:pointer; }
+  a { color:inherit; text-decoration:none; }
+  svg { display:block; }
+  ::selection { background:var(--red); color:#fff; }
+  .serif { font-family:'Playfair Display',Georgia,'Times New Roman',serif; font-weight:500; }
+  .digits { font-variant-numeric:lining-nums tabular-nums; }
+
+  /* ---------- Шапка ---------- */
+  .top { position:sticky; top:0; z-index:30; background:var(--deep); padding-top:env(safe-area-inset-top,0px); }
+  .bar { height:3px; background:var(--red); }
+  .brand { max-width:1024px; margin:0 auto; height:56px; display:flex; align-items:center; justify-content:center; gap:12px; }
+  .brand span { color:#fff; font-size:18px; letter-spacing:.03em; white-space:nowrap; }
+  .brand svg { width:20px; height:20px; color:#fff; }
+  .prog-track { height:2px; background:rgba(255,255,255,.1); overflow:hidden; }
+  .prog { height:100%; background:var(--red); transform-origin:left; transform:scaleX(0); }
+
+  /* ---------- Баннер ---------- */
+  .sky { position:relative; overflow:hidden; contain:layout paint style; background:
+      radial-gradient(ellipse 50% 60% at 78% 0%, rgba(200,16,46,.24), transparent 70%),
+      radial-gradient(ellipse 70% 50% at 10% 100%, rgba(90,140,220,.28), transparent 70%),
+      linear-gradient(180deg,#002157,#00112e); }
+  .fill { position:absolute; inset:0; pointer-events:none; }
+  .cloud { position:absolute; border-radius:50%; pointer-events:none; background:radial-gradient(closest-side, rgba(255,255,255,.13), transparent); }
+  .cloud-a { width:460px; height:200px; left:-10%; top:50%; animation:driftA 38s ease-in-out infinite alternate; }
+  .cloud-b { width:520px; height:220px; right:-12%; top:4%; animation:driftB 46s ease-in-out infinite alternate; }
+  .stars { background-repeat:no-repeat; opacity:.15; }
+  .stars-a { animation:twinkle 5s ease-in-out infinite; }
+  .stars-b { animation:twinkle 5s 2.5s ease-in-out infinite; }
+  .rings { position:absolute; left:50%; top:50%; width:min(820px,130vw); transform:translate(-50%,-50%); pointer-events:none; }
+  .rings svg { width:100%; }
+  .rings .r2 { position:absolute; inset:0; }
+  .r1 { animation:spin 90s linear infinite; }
+  .r2 { animation:spin 140s linear infinite reverse; }
+  .contrail { stroke-dasharray:900; stroke-dashoffset:900; animation:draw 3s .4s ease-out forwards; }
+  .hero-plane { position:absolute; width:64px; height:64px; right:6%; top:8%; color:#fff; animation:hover 7s ease-in-out infinite; }
+  .cross-lane { position:absolute; left:0; top:70%; }
+  .cross { width:16px; height:16px; color:rgba(255,255,255,.25); animation:cross 26s linear infinite; }
+  .hero-body { position:relative; max-width:1024px; margin:0 auto; padding:80px 24px 160px; text-align:center; }
+  .kicker { display:inline-flex; align-items:center; gap:12px; margin-bottom:28px; }
+  .kicker i { width:32px; height:1px; background:var(--red); }
+  .kicker span { font-size:11px; letter-spacing:.35em; text-transform:uppercase; color:rgba(255,255,255,.7); }
+  h1 { max-width:780px; margin:0 auto; color:#fff; font-size:clamp(30px,5.2vw + 8px,62px); line-height:1.15; text-wrap:balance; }
+  .word { display:inline-block; animation:rise .8s var(--ease) both; animation-delay:calc(.15s + var(--i,0) * .12s); }
+  .nb { white-space:nowrap; font-style:italic; }
+  .accent { width:56px; height:3px; margin:32px auto 0; background:var(--red); }
+  .sky.off *,.sky.off *::before,.sky.off *::after { animation-play-state:paused !important; } /* баннер вне экрана — анимации на паузе */
+
+  /* ---------- Таблица ---------- */
+  .board { position:relative; z-index:10; max-width:896px; margin:-112px auto 0; padding:0 16px 64px; animation:rise .8s .4s var(--ease) both; }
+  .card { background:#fff; border-radius:6px; overflow:hidden; box-shadow:0 30px 60px -24px rgba(0,17,46,.45),0 0 0 1px rgba(0,33,87,.1); }
+  .card-head { background:var(--navy); padding:16px 20px; display:flex; align-items:center; justify-content:space-between; }
+  .card-head div { display:flex; align-items:center; gap:12px; }
+  .card-head svg { width:20px; height:20px; color:#fff; }
+  .card-head .serif { color:#fff; font-size:17px; }
+  .card-head small { font-size:10px; letter-spacing:.3em; text-transform:uppercase; color:rgba(255,255,255,.6); }
+  .cols { display:grid; grid-template-columns:1fr auto; padding:14px 20px; font-size:11px; letter-spacing:.18em; text-transform:uppercase; color:var(--mute); border-bottom:1px solid rgba(0,33,87,.1); }
+  .cols button { text-transform:uppercase; letter-spacing:.18em; transition:color .2s; }
+  .row { position:relative; display:grid; grid-template-columns:auto 1fr auto; align-items:center; gap:16px; padding:16px 20px;
+         border-bottom:1px solid rgba(0,33,87,.06); animation:rise .7s var(--ease) both; transition:background-color .25s; }
+  .row:last-child { border-bottom:0; }
+  .row::before { content:""; position:absolute; left:0; top:0; bottom:0; width:3px; background:var(--red); transform:scaleY(0); transition:transform .25s; }
+  .sorted .row { animation:none; } /* при сортировке строки не проигрывают появление заново */
+  .num { display:inline-block; width:24px; font-size:12px; color:var(--mute); transition:transform .25s, color .25s; }
+  .nick { font-size:15px; font-weight:500; color:var(--navy); overflow-wrap:anywhere; }
+  .count { font-size:22px; color:var(--navy); }
+
+  /* ---------- Подвал ---------- */
+  .foot { background:var(--deep); color:#fff; padding-bottom:env(safe-area-inset-bottom,0px); }
+  .foot-in { max-width:768px; margin:0 auto; padding:48px 24px; display:flex; flex-direction:column; align-items:center; gap:20px; text-align:center; }
+  .tg { position:relative; isolation:isolate; display:inline-flex; align-items:center; gap:10px; background:#229ED9; color:#fff; font-size:14px; font-weight:500; padding:12px 28px; border-radius:999px; transition:transform .2s; }
+  .tg svg { width:18px; height:18px; }
+  .tg::before { content:""; position:absolute; inset:0; border-radius:999px; background:#229ED9; z-index:-1; animation:pulse 2.6s ease-out infinite; }
+  .tg:active { transform:scale(.97); }
+  .more { font-size:13px; color:rgba(255,255,255,.6); text-decoration:underline; text-underline-offset:4px; transition:color .2s; }
+  .note { max-width:448px; font-size:13px; line-height:1.6; color:rgba(255,255,255,.7); border-top:1px solid rgba(255,255,255,.1); padding-top:20px; animation:rise .6s var(--ease) both; }
+  .foot-plane { width:20px; height:20px; margin-top:8px; color:var(--red); animation:hover 7s ease-in-out infinite; }
+
+  /* ---------- Общие эффекты ---------- */
+  .shine { position:relative; overflow:hidden; }
+  .shine::after { content:""; position:absolute; inset:0; width:40%; background:linear-gradient(90deg,transparent,rgba(255,255,255,.7),transparent);
+                  transform:translate3d(-120%,0,0); animation:shine 4.5s ease-in-out infinite; }
+  .bob { animation:bob 3.5s ease-in-out infinite; }
+  .rise { animation:rise .8s var(--ease) both; }
+  .js .reveal { opacity:0; transform:translate3d(0,14px,0); transition:opacity .6s ease, transform .6s var(--ease); } /* скрываем только если JS работает */
+  .js .reveal.in { opacity:1; transform:none; }
+
+  @keyframes rise { from { opacity:0; transform:translate3d(0,18px,0); } to { opacity:1; transform:none; } }
+  @keyframes draw { to { stroke-dashoffset:0; } }
+  @keyframes spin { to { transform:rotate(360deg); } }
+  @keyframes twinkle { 50% { opacity:.85; } }
+  @keyframes driftA { to { transform:translate3d(60px,10px,0); } }
+  @keyframes driftB { to { transform:translate3d(-70px,-8px,0); } }
+  @keyframes hover { 0%,100% { transform:translate3d(0,0,0) rotate(-14deg); } 50% { transform:translate3d(0,-10px,0) rotate(-11deg); } }
+  @keyframes bob { 0%,100% { transform:translate3d(0,0,0) rotate(-12deg); } 50% { transform:translate3d(2px,-3px,0) rotate(-8deg); } }
+  @keyframes cross { from { transform:translate3d(-12vw,0,0) rotate(-8deg); } to { transform:translate3d(112vw,-40px,0) rotate(-8deg); } }
+  @keyframes shine { 0% { transform:translate3d(-120%,0,0); } 55%,100% { transform:translate3d(320%,0,0); } }
+  @keyframes pulse { from { transform:scale(1); opacity:.5; } to { transform:scale(1.3); opacity:0; } }
+  @keyframes grow { from { transform:scaleX(0); } to { transform:scaleX(1); } }
+
+  /* Полоса прокрутки без JS — где браузер это умеет (иначе включается запасной вариант в скрипте) */
+  @supports (animation-timeline: scroll()) {
+    .prog { animation:grow linear both; animation-timeline:scroll(root); }
   }
-  html { scroll-padding-top: env(safe-area-inset-top, 0px); }
-  body {
-    margin: 0;
-    font-family: 'Inter', sans-serif;
-    background: var(--paper);
-    padding-top: env(safe-area-inset-top, 0px);
-    padding-bottom: env(safe-area-inset-bottom, 0px);
+
+  /* Наведение — только на устройствах с мышью (на телефоне не «залипает») */
+  @media (hover:hover) {
+    .row:hover { background:var(--paper); }
+    .row:hover::before { transform:scaleY(1); }
+    .row:hover .num { transform:translate3d(4px,0,0); color:var(--red); }
+    .cols button:hover { color:var(--navy); }
+    .more:hover { color:#fff; }
+    .tg:hover { transform:translate3d(0,-2px,0); }
   }
-  .font-voice { font-family: 'Fraunces', serif; }
-  ::selection { background: var(--red); color: #fff; }
-  @media (prefers-reduced-motion: no-preference) {
-    .fly { animation: fly 16s linear infinite; }
+
+  /* ---------- Телефон: меньше тяжёлых слоёв ---------- */
+  @media (max-width:639px) { .r1 { display:none; } }
+
+  /* ---------- Компьютер ---------- */
+  @media (min-width:640px) {
+    .hero-body { padding:112px 32px 192px; }
+    .hero-plane { width:112px; height:112px; right:12%; top:14%; }
+    .board { margin-top:-128px; padding:0 32px 96px; }
+    .card-head { padding:20px 40px; } .card-head .serif { font-size:20px; }
+    .cols { padding:14px 40px; }
+    .row { padding:20px 40px; gap:24px; }
+    .nick { font-size:16px; } .count { font-size:26px; }
+    .foot-in { padding:64px 24px; }
   }
-  @keyframes fly {
-    0%   { offset-distance: 0%; }
-    100% { offset-distance: 100%; }
+
+  /* ---------- Авто-режим для слабых устройств (включается скриптом) ---------- */
+  .lite .cloud,.lite .stars,.lite .rings,.lite .cross-lane { display:none; }
+
+  @media (prefers-reduced-motion:reduce) {
+    .cloud,.stars,.r1,.r2,.cross,.hero-plane { animation:none; }
+    .contrail { animation:none; stroke-dashoffset:0; }
   }
 </style>
 </head>
 <body>
-<div id="root"></div>
-<script type="text/javascript">
-const { useState, useMemo } = React;
 
-const pilotsData = [
-  { nickname: "@", flightsAttended: 0 },
-  { nickname: "@", flightsAttended: 0 },
-  { nickname: "@", flightsAttended: 0 },
-  { nickname: "@", flightsAttended: 0 },
-  { nickname: "@", flightsAttended: 0 },
-  { nickname: "@", flightsAttended: 0 },
-  { nickname: "@", flightsAttended: 0 },
-  { nickname: "@", flightsAttended: 0 },
-  { nickname: "@", flightsAttended: 0 },
-  { nickname: "@", flightsAttended: 0 },
-  { nickname: "@", flightsAttended: 0 },
-  { nickname: "@", flightsAttended: 0 },
-];
+<header class="top">
+  <div class="bar shine"></div>
+  <div class="brand">
+    <svg class="bob" viewBox="0 0 64 64" fill="currentColor"><path d="M8 40 L52 24 L58 26 L56 30 L36 34 L30 48 L26 47 L28 34 L14 36 L10 42 Z"/></svg>
+    <span class="serif">Air France</span>
+  </div>
+  <div class="prog-track"><div class="prog" id="prog"></div></div>
+</header>
 
-function PlaneMark({ className, style }) {
-  return (
-    React.createElement("svg", { viewBox: "0 0 64 64", className, style, fill: "none", xmlns: "http://www.w3.org/2000/svg" },
-      React.createElement("path", {
-        d: "M8 40 L52 24 L58 26 L56 30 L36 34 L30 48 L26 47 L28 34 L14 36 L10 42 Z",
-        fill: "currentColor"
-      })
-    )
-  );
-}
+<section class="sky" id="hero">
+  <div class="cloud cloud-a"></div>
+  <div class="cloud cloud-b"></div>
+  <div class="fill stars stars-a" id="starsA"></div>
+  <div class="fill stars stars-b" id="starsB"></div>
+  <div class="rings">
+    <svg class="r1" viewBox="0 0 200 200" fill="none" stroke="rgba(255,255,255,.10)" stroke-width=".4"><circle cx="100" cy="100" r="98" stroke-dasharray="1 3"/><circle cx="100" cy="100" r="72"/></svg>
+    <svg class="r2" viewBox="0 0 200 200" fill="none" stroke="rgba(200,16,46,.28)" stroke-width=".5"><circle cx="100" cy="100" r="85" stroke-dasharray="6 10"/></svg>
+  </div>
+  <svg class="fill" width="100%" height="100%" viewBox="0 0 900 400" preserveAspectRatio="xMidYMid slice" fill="none">
+    <path class="contrail" d="M-20 340 C 220 300, 480 220, 760 90" stroke="rgba(255,255,255,.35)" stroke-width="1.5" stroke-linecap="round"/>
+    <path class="contrail" d="M-20 352 C 220 312, 480 232, 760 102" stroke="rgba(255,255,255,.14)" stroke-width="1" stroke-linecap="round"/>
+  </svg>
+  <div class="cross-lane"><svg class="cross" viewBox="0 0 64 64" fill="currentColor"><path d="M8 40 L52 24 L58 26 L56 30 L36 34 L30 48 L26 47 L28 34 L14 36 L10 42 Z"/></svg></div>
+  <svg class="hero-plane" viewBox="0 0 64 64" fill="currentColor"><path d="M8 40 L52 24 L58 26 L56 30 L36 34 L30 48 L26 47 L28 34 L14 36 L10 42 Z"/></svg>
+  <div class="hero-body">
+    <div class="kicker rise"><i></i><span>Air France</span><i></i></div>
+    <h1 class="serif">
+      <span class="word" style="--i:0">Таблица</span>
+      <span class="word" style="--i:1">посещаемости</span>
+      <span class="word" style="--i:2">рейсов</span>
+      <span class="word" style="--i:3">авиакомпании</span>
+      <span class="word nb" style="--i:4">Air France</span>
+    </h1>
+    <div class="accent rise shine" style="animation-delay:.8s"></div>
+  </div>
+</section>
 
-function TelegramIcon({ className }) {
-  return React.createElement("svg", { viewBox: "0 0 24 24", className: className, fill: "currentColor", xmlns: "http://www.w3.org/2000/svg" },
-    React.createElement("path", { d: "M21.5 3.5 2.7 11c-1 .4-1 1 .1 1.3l4.8 1.5 1.8 5.6c.2.7.4 1 .9 1 .4 0 .6-.2.9-.5l2.3-2.2 4.7 3.5c.9.5 1.5.2 1.7-.8l3.1-14.5c.3-1.2-.3-1.7-1.5-1.4Z" })
-  );
-}
+<section class="board" id="board">
+  <div class="card">
+    <div class="card-head">
+      <div>
+        <svg class="bob" viewBox="0 0 64 64" fill="currentColor"><path d="M8 40 L52 24 L58 26 L56 30 L36 34 L30 48 L26 47 L28 34 L14 36 L10 42 Z"/></svg>
+        <span class="serif">Посещаемость</span>
+      </div>
+      <small>Air France</small>
+    </div>
+    <div class="bar shine"></div>
+    <div class="cols"><span>Никнейм</span><button type="button" id="sort"></button></div>
+    <div id="rows"></div>
+  </div>
+</section>
 
-function Header() {
-  return React.createElement("header", { className: "sticky top-0 z-30 bg-[var(--navy)]" },
-    React.createElement("div", { className: "h-[3px] bg-[var(--red)]" }),
-    React.createElement("div", { className: "max-w-3xl mx-auto px-6 sm:px-10 h-14 flex items-center justify-center gap-2.5" },
-      React.createElement(PlaneMark, { className: "w-5 h-5 text-white -rotate-12" }),
-      React.createElement("span", { className: "font-voice text-white text-base tracking-tight" }, "Air France")
-    )
-  );
-}
+<footer class="foot">
+  <div class="bar"></div>
+  <div class="foot-in">
+    <div class="reveal">
+      <a class="tg" href="https://t.me/" target="_blank" rel="noopener noreferrer">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M21.5 3.5 2.7 11c-1 .4-1 1 .1 1.3l4.8 1.5 1.8 5.6c.2.7.4 1 .9 1 .4 0 .6-.2.9-.5l2.3-2.2 4.7 3.5c.9.5 1.5.2 1.7-.8l3.1-14.5c.3-1.2-.3-1.7-1.5-1.4Z"/></svg>
+        Наш Telegram
+      </a>
+    </div>
+    <div class="reveal" style="transition-delay:.12s"><button type="button" class="more" id="more" aria-expanded="false">Подробнее</button></div>
+    <p class="note" id="note" hidden>Это не настоящая авиакомпания. Все рейсы проходят в лётном симуляторе PTFS (Pilot Training Flight Simulator) и не имеют отношения к реальным перевозкам Air France.</p>
+    <svg class="foot-plane" viewBox="0 0 64 64" fill="currentColor"><path d="M8 40 L52 24 L58 26 L56 30 L36 34 L30 48 L26 47 L28 34 L14 36 L10 42 Z"/></svg>
+  </div>
+</footer>
 
-function Hero() {
-  return React.createElement("section", { className: "relative overflow-hidden bg-gradient-to-b from-[var(--navy)] to-[var(--navy-deep)]" },
-    React.createElement("div", {
-      className: "absolute inset-0",
-      style: { background: "radial-gradient(ellipse 60% 50% at 50% 0%, rgba(200,16,46,0.14), transparent)" }
-    }),
-    React.createElement("svg", {
-      className: "absolute inset-0 w-full h-full opacity-[0.10]",
-      viewBox: "0 0 800 300", preserveAspectRatio: "xMidYMid slice", xmlns: "http://www.w3.org/2000/svg"
-    },
-      React.createElement("path", { d: "M0 220 L800 110", stroke: "#fff", strokeWidth: "1" }),
-      React.createElement("path", { d: "M0 260 L800 250", stroke: "#fff", strokeWidth: "1" })
-    ),
-    React.createElement("svg", {
-      className: "absolute inset-0 w-full h-full",
-      viewBox: "0 0 800 300", preserveAspectRatio: "xMidYMid slice", xmlns: "http://www.w3.org/2000/svg"
-    },
-      React.createElement("path", {
-        id: "flightline", d: "M40 60 C 250 10, 550 130, 760 40",
-        stroke: "rgba(255,255,255,0.18)", strokeWidth: "1.5", strokeDasharray: "2 8", fill: "none"
-      })
-    ),
-    React.createElement(PlaneMark, {
-      className: "fly absolute w-6 h-6 text-[var(--red)]/70",
-      style: { offsetPath: "path('M40 60 C 250 10, 550 130, 760 40')", offsetRotate: "auto" }
-    }),
-    React.createElement("div", { className: "relative max-w-3xl mx-auto px-6 sm:px-10 py-16 sm:py-24 text-center" },
-      React.createElement("div", { className: "inline-flex items-center justify-center w-16 h-16 rounded-full border border-[var(--red)]/40 mb-6" },
-        React.createElement(PlaneMark, { className: "w-8 h-8 text-[var(--red)] -rotate-12" })
-      ),
-      React.createElement("h1", { className: "font-voice text-white text-[26px] sm:text-[38px] leading-[1.25] font-medium" },
-        "Таблица посещаемости рейсов авиакомпании Air France"
-      ),
-      React.createElement("div", { className: "w-10 h-[2px] bg-[var(--red)] mx-auto mt-6" })
-    )
-  );
-}
+<script>
+(function () {
+  'use strict';
 
-function PilotTable({ data }) {
-  const [sortDesc, setSortDesc] = useState(true);
+  /* ===== ДАННЫЕ: меняйте ники и числа прямо здесь ===== */
+  var pilotsData = [
+    { nickname: '@', flightsAttended: 0 },
+    { nickname: '@', flightsAttended: 0 },
+    { nickname: '@', flightsAttended: 0 },
+    { nickname: '@', flightsAttended: 0 },
+    { nickname: '@', flightsAttended: 0 },
+    { nickname: '@', flightsAttended: 0 },
+    { nickname: '@', flightsAttended: 0 },
+    { nickname: '@', flightsAttended: 0 },
+    { nickname: '@', flightsAttended: 0 },
+    { nickname: '@', flightsAttended: 0 }
+  ];
 
-  const sorted = useMemo(() => {
-    const copy = [...data];
-    copy.sort((a, b) => sortDesc ? b.flightsAttended - a.flightsAttended : a.flightsAttended - b.flightsAttended);
-    return copy;
-  }, [data, sortDesc]);
+  var root = document.documentElement;
+  var $ = function (id) { return document.getElementById(id); };
+  var hasIO = 'IntersectionObserver' in window;
 
-  return React.createElement("section", { className: "max-w-3xl mx-auto px-4 sm:px-10 -mt-8 relative pb-14 sm:pb-20" },
-    React.createElement("div", { className: "bg-white border border-[var(--navy)]/10 rounded-sm shadow-[0_12px_32px_-14px_rgba(10,34,64,0.3)] overflow-hidden" },
-      React.createElement("div", { className: "h-[2px] bg-[var(--red)]" }),
-      React.createElement("table", { className: "w-full text-left border-collapse" },
-        React.createElement("thead", null,
-          React.createElement("tr", { className: "border-b border-[var(--navy)]/10" },
-            React.createElement("th", { className: "py-3.5 px-4 sm:px-8 text-[12px] font-medium text-[var(--slate)] tracking-wide" }, "Никнейм"),
-            React.createElement("th", {
-              className: "py-3.5 px-4 sm:px-8 text-[12px] font-medium text-[var(--slate)] text-right cursor-pointer select-none hover:text-[var(--navy)] transition-colors",
-              onClick: () => setSortDesc(!sortDesc)
-            }, "Посещено рейсов " + (sortDesc ? "↓" : "↑"))
-          )
-        ),
-        React.createElement("tbody", null,
-          sorted.map((p, i) => (
-            React.createElement("tr", {
-              key: p.nickname,
-              className: "border-b border-[var(--navy)]/[0.06] last:border-0 hover:bg-[var(--paper)] transition-colors"
-            },
-              React.createElement("td", { className: "py-3 px-4 sm:px-8" },
-                React.createElement("span", { className: "text-[14px] text-[var(--navy)] font-medium" }, p.nickname)
-              ),
-              React.createElement("td", { className: "py-3 px-4 sm:px-8 text-right" },
-                React.createElement("span", { className: "text-[14px] tabular-nums text-[var(--navy)] font-medium" }, p.flightsAttended)
-              )
-            )
-          ))
-        )
-      )
-    )
-  );
-}
+  /* ---- Таблица (строки создаются через DOM: ники безопасно выводятся как текст) ---- */
+  var rowsEl = $('rows'), sortBtn = $('sort'), board = $('board'), desc = true;
 
-function Footer() {
-  const [open, setOpen] = useState(false);
-  return React.createElement("footer", { className: "border-t border-[var(--navy)]/10 py-10" },
-    React.createElement("div", { className: "max-w-3xl mx-auto px-6 sm:px-10 flex flex-col items-center gap-5" },
-      React.createElement("a", {
-        href: "https://t.me/",
-        target: "_blank",
-        rel: "noopener noreferrer",
-        className: "inline-flex items-center gap-2 bg-[#229ED9] text-white text-[13px] font-medium px-5 py-2.5 rounded-full hover:opacity-90 transition-opacity"
-      },
-        React.createElement(TelegramIcon, { className: "w-4 h-4" }),
-        "Наш Telegram"
-      ),
-      React.createElement("button", {
-        onClick: () => setOpen(!open),
-        className: "text-[12px] text-[var(--slate)] underline underline-offset-2 hover:text-[var(--navy)] transition-colors"
-      }, open ? "Скрыть" : "Подробнее"),
-      open && React.createElement("p", { className: "text-[12px] text-[var(--slate)] text-center max-w-sm leading-relaxed" },
-        "Это не настоящая авиакомпания. Все рейсы проходят в лётном симуляторе PTFS (Pilot Training Flight Simulator) и не имеют отношения к реальным перевозкам Air France."
-      ),
-      React.createElement(PlaneMark, { className: "w-4 h-4 text-[var(--red)]/60 -rotate-12 mt-1" })
-    )
-  );
-}
+  function cell(tag, cls, text) {
+    var el = document.createElement(tag);
+    el.className = cls;
+    el.textContent = text;
+    return el;
+  }
+  function render() {
+    var data = pilotsData.slice().sort(function (a, b) {
+      return desc ? b.flightsAttended - a.flightsAttended : a.flightsAttended - b.flightsAttended;
+    });
+    var frag = document.createDocumentFragment();
+    data.forEach(function (p, i) {
+      var row = document.createElement('div');
+      row.className = 'row';
+      row.style.animationDelay = (0.6 + Math.min(i, 9) * 0.05) + 's';
+      row.appendChild(cell('span', 'num digits', (i < 9 ? '0' : '') + (i + 1)));
+      row.appendChild(cell('span', 'nick', p.nickname));
+      row.appendChild(cell('span', 'count serif digits', p.flightsAttended));
+      frag.appendChild(row);
+    });
+    rowsEl.textContent = '';
+    rowsEl.appendChild(frag);
+    sortBtn.textContent = 'Посещено рейсов ' + (desc ? '↓' : '↑');
+  }
+  sortBtn.addEventListener('click', function () {
+    desc = !desc;
+    board.classList.add('sorted');
+    render();
+  });
+  render();
 
-function App() {
-  return React.createElement("div", null,
-    React.createElement(Header, null),
-    React.createElement(Hero, null),
-    React.createElement(PilotTable, { data: pilotsData }),
-    React.createElement(Footer, null)
-  );
-}
+  /* ---- Звёзды: точки градиентов рисуются один раз, мерцает только opacity двух слоёв ---- */
+  function dots(pts) {
+    return pts.map(function (p) {
+      return 'radial-gradient(circle at ' + p[0] + '% ' + p[1] + '%, #fff 0 1px, transparent 1.6px)';
+    }).join(',');
+  }
+  $('starsA').style.backgroundImage = dots([[8,18],[24,30],[42,14],[60,26],[76,40],[92,58],[47,84]]);
+  $('starsB').style.backgroundImage = dots([[16,62],[33,78],[51,52],[68,70],[85,20],[12,44],[95,80]]);
 
-ReactDOM.createRoot(document.getElementById("root")).render(React.createElement(App));
+  /* ---- Подвал: «Подробнее» ---- */
+  var more = $('more'), note = $('note');
+  more.addEventListener('click', function () {
+    var show = note.hidden;
+    note.hidden = !show;
+    more.textContent = show ? 'Скрыть' : 'Подробнее';
+    more.setAttribute('aria-expanded', String(show));
+  });
+
+  /* ---- Один общий наблюдатель: появление при прокрутке + пауза баннера вне экрана ---- */
+  var reveals = document.querySelectorAll('.reveal');
+  if (hasIO) {
+    var revealIO = new IntersectionObserver(function (entries) {
+      entries.forEach(function (e) {
+        if (e.isIntersecting) { e.target.classList.add('in'); revealIO.unobserve(e.target); }
+      });
+    }, { threshold: 0.15 });
+    Array.prototype.forEach.call(reveals, function (el) { revealIO.observe(el); });
+
+    var hero = $('hero');
+    new IntersectionObserver(function (entries) {
+      hero.classList.toggle('off', !entries[0].isIntersecting);
+    }).observe(hero);
+  } else {
+    Array.prototype.forEach.call(reveals, function (el) { el.classList.add('in'); });
+  }
+
+  /* ---- Полоса прокрутки: запасной вариант, если браузер не умеет scroll-driven анимации ---- */
+  if (!(window.CSS && CSS.supports && CSS.supports('animation-timeline', 'scroll()'))) {
+    var prog = $('prog'), raf = 0;
+    var update = function () {
+      raf = 0;
+      var max = root.scrollHeight - root.clientHeight;
+      prog.style.transform = 'scaleX(' + (max > 0 ? Math.min(1, root.scrollTop / max) : 0) + ')';
+    };
+    window.addEventListener('scroll', function () { if (!raf) raf = requestAnimationFrame(update); }, { passive: true });
+    update();
+  }
+
+  /* ---- Авто-оптимизация: если устройство слабое, отключаем тяжёлый фон ---- */
+  if (navigator.deviceMemory && navigator.deviceMemory <= 2) root.classList.add('lite');
+  window.addEventListener('load', function () {
+    setTimeout(function () {
+      var frames = 0, sum = 0, last = 0;
+      (function tick(t) {
+        if (last) { sum += Math.min(t - last, 100); frames++; }
+        last = t;
+        if (frames < 50) requestAnimationFrame(tick);
+        else if (!document.hidden && sum / frames > 30) root.classList.add('lite'); /* меньше ~33 кадров/с */
+      })(performance.now());
+    }, 1200);
+  });
+})();
 </script>
 </body>
-</html>
+  </html>
