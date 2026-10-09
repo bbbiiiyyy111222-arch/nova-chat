@@ -1,284 +1,259 @@
-achievements: { ach1: false, ach2: false, ach3: false, ach4: false }
-};
-// Загрузка сохранения
-if(localStorage.getItem('megaClickerSave')) {
-game = JSON.parse(localStorage.getItem('megaClickerSave'));
-}
-// Элементы интерфейса
-const scoreDisplay = document.getElementById('score-display');
-const cpsDisplay = document.getElementById('cps-display');
-const clickBtn = document.getElementById('click-btn');
-const goldenBonus = document.getElementById('golden-bonus');
-// Обновление интерфейса магазина
-function updateUI() {
-scoreDisplay.textContent = Math.floor(game.score);
-cpsDisplay.textContent = Доход в сек: ${getBonusPerSecond()};
-document.getElementById('click-lvl').textContent = game.clickLvl;
-document.getElementById('click-cost').textContent = game.clickCost;
-document.getElementById('auto1-count').textContent = game.auto1;
-document.getElementById('auto1-cost').textContent = game.auto1Cost;
-document.getElementById('auto2-count').textContent = game.auto2;
-document.getElementById('auto2-cost').textContent = game.auto2Cost;
-document.getElementById('auto3-count').textContent = game.auto3;
-document.getElementById('auto3-cost').textContent = game.auto3Cost;
-// Блокировка кнопок, если не хватает средств
-document.getElementById('upg-click').disabled = game.score < game.clickCost;
-document.getElementById('upg-auto1').disabled = game.score < game.auto1Cost;
-document.getElementById('upg-auto2').disabled = game.score < game.auto2Cost;
-document.getElementById('upg-auto3').disabled = game.score < game.auto3Cost;
-// Обновление ачивок
-if(game.achievements.ach1) document.getElementById('ach-1').classList.add('unlocked');
-if(game.achievements.ach2) document.getElementById('ach-2').classList.add('unlocked');
-if(game.achievements.ach3) document.getElementById('ach-3').classList.add('unlocked');
-if(game.achievements.ach4) document.getElementById('ach-4').classList.add('unlocked');
-}
-function getBonusPerSecond() {
-return (game.auto1 * 1) + (game.auto2 * 10) + (game.auto3 * 80);
-}
-// Клик по главной кнопке
-clickBtn.addEventListener('click', (e) => {
-game.score += game.clickValue;
-game.totalEarned += game.clickValue;
-createFloatingText(e.clientX, e.clientY, +${game.clickValue});
-checkAchievements();
-updateUI();
-});
-// Создание вылетающего текста
-function createFloatingText(x, y, text) {
-const el = document.createElement('div');
-el.className = 'floating-text';
-el.style.left = ${x}px;
-el.style.top = ${y}px;
-el.textContent = text;
-document.body.appendChild(el);
-setTimeout(() => el.remove(), 800);
-}
-// Покупка улучшений
-document.getElementById('upg-click').addEventListener('click', () => {
-if(game.score >= game.clickCost) {
-game.score -= game.clickCost;
-game.clickLvl++;
-game.clickValue += 1;
-game.clickCost = Math.round(game.clickCost * 1.5);
-updateUI();
-}
-});
-function setupAutoUpgrade(btnId, type, perSecCostKey, perSecCountKey, incomeValue) {
-document.getElementById(btnId).addEventListener('click', () => {
-if(game.score >= game[perSecCostKey]) {
-game.score -= game[perSecCostKey];
-game[perSecCountKey]++;
-game[perSecCostKey] = Math.round(game[perSecCostKey] * 1.3);
-updateUI();
-}
-});
-}
-setupAutoUpgrade('upg-auto1', 'auto1', 'auto1Cost', 'auto1', 1);
-setupAutoUpgrade('upg-auto2', 'auto2', 'auto2Cost', 'auto2', 10);
-setupAutoUpgrade('upg-auto3', 'auto3', 'auto3Cost', 'auto3', 80);
-// Проверка ачивок
-function checkAchievements() {
-if (game.totalEarned >= 10 && !game.achievements.ach1) game.achievements.ach1 = true;
-if (game.totalEarned >= 1000 && !game.achievements.ach2) game.achievements.ach2 = true;
-if (game.totalEarned >= 10000 && !game.achievements.ach3) game.achievements.ach3 = true;
-}
-// Пассивный доход (раз в секунду)
-setInterval(() => {
-let income = getBonusPerSecond();
-game.score += income;
-game.totalEarned += income;
-checkAchievements();
-updateUI();
-}, 1000);
-// Случайное появление золотого бонуса
-function spawnGoldenBonus() {
-const x = Math.random() * (window.innerWidth - 60);
-const y = Math.random() * (window.innerHeight - 60);
-goldenBonus.style.left = ${x}px;
-goldenBonus.style.top = ${y}px;
-goldenBonus.style.display = 'block';
-// Исчезнет через 6 секунд, если не кликнуть
-setTimeout(() => { goldenBonus.style.display = 'none'; }, 6000);
-}
-setInterval(() => {
-if(Math.random() < 0.3 && goldenBonus.style.display !== 'block') { spawnGoldenBonus(); }
-}, 15000); // Проверка каждые 15 сек
-goldenBonus.addEventListener('click', (e) => {
-let bonusAmount = Math.max(50, Math.round(game.totalEarned * 0.1));
-game.score += bonusAmount;
-game.achievements.ach4 = true;
-createFloatingText(e.clientX, e.clientY, БОНУС! +${bonusAmount});
-goldenBonus.style.display = 'none';
-updateUI();
-});
-// Автосохранение каждые 5 секунд
-setInterval(() => {
-localStorage.setItem('megaClickerSave', JSON.stringify(game));
-}, 5000);
-// Сброс прогресса
-document.getElementById('reset-btn').addEventListener('click', () => {
-if(confirm('Вы уверены, что хотите обнулить весь прогресс?')) {
-localStorage.removeItem('megaClickerSave');
-location.reload();
-}
-});
-// Первая инициализация
-updateUI();
-// Состояние игры
-let game = {
-    score: 0,
-    totalEarned: 0,
-    clickValue: 1,
-    clickLvl: 1,
-    clickCost: 15,
-    
-    auto1: 0, auto1Cost: 50,
-    auto2: 0, auto2Cost: 400,
-    auto3: 0, auto3Cost: 3000,
-    
-    achievements: { ach1: false, ach2: false, ach3: false, ach4: false }
-};
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Кристальная шахта — кликер</title>
+<style>
+:root{--bg:#e9edf8;--panel:#f8f9fe;--ink:#1c2340;--muted:#5b6485;--line:#cfd6ee;--acc:#7c5cf0;
+--a1:#b9a4ff;--a2:#7c5cf0;--b1:#f7a8da;--b2:#ec6ab8;--dk:#6a49de;--top:#d9ccff;--gold:#e8a700;--ok:#1f9d6b;--bad:#d7344f}
+[data-theme=night]{--bg:#121733;--panel:#1b2246;--ink:#e9ecff;--muted:#9aa4d6;--line:#2d376b;--acc:#5ec8ff;
+--a1:#9be3ff;--a2:#3aa8e8;--b1:#ffb3e0;--b2:#ec6ab8;--dk:#2b7fc0;--top:#cdeeff;--gold:#ffc83d}
+[data-theme=ruby]{--bg:#f8ece9;--panel:#fff8f6;--ink:#3b1620;--muted:#85565f;--line:#ecccc6;--acc:#d7344f;
+--a1:#ff9aa8;--a2:#d7344f;--b1:#ffc58a;--b2:#f08a3c;--dk:#a8213a;--top:#ffd2d8}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Trebuchet MS","Segoe UI",system-ui,sans-serif;
+line-height:1.45;transition:background .4s,color .4s;-webkit-tap-highlight-color:transparent}
+button{font:inherit;color:inherit;cursor:pointer}
+button:focus-visible,input:focus-visible,textarea:focus-visible{outline:3px solid var(--acc);outline-offset:2px}
+.wrap{max-width:1020px;margin:0 auto;padding:20px 16px 40px;display:grid;gap:18px;grid-template-columns:1fr 1fr;align-items:start}
+header{grid-column:1/-1;display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap}
+h1{margin:0;font-size:1.6rem;letter-spacing:-.01em}h2{margin:0 0 8px;font-size:1.1rem}
+.sub{color:var(--muted);font-size:.95rem}
+.box{background:var(--panel);border:1px solid var(--line);border-radius:20px;padding:18px;transition:background .4s}
+.mine{text-align:center;position:relative;overflow:hidden;user-select:none;padding:22px 14px}
+.count{font-size:2.6rem;font-weight:700;margin:0;font-variant-numeric:tabular-nums}
+.rate{color:var(--muted);margin:0 0 10px}
+#crystal{width:min(250px,68vw);aspect-ratio:1;border:0;background:none;padding:0;touch-action:manipulation;transition:transform .08s}
+#crystal:active{transform:scale(.94) rotate(-2deg)}
+#crystal svg{width:100%;height:100%;display:block;filter:drop-shadow(0 14px 18px color-mix(in srgb,var(--acc) 40%,transparent))}
+.pc{margin:10px 0 0;color:var(--muted);font-size:.95rem}
+#fr{display:none;margin:0 auto 8px;padding:4px 12px;border-radius:999px;background:var(--gold);color:#2b2000;font-weight:700;width:max-content;max-width:100%}
+.float{position:absolute;pointer-events:none;font-weight:700;font-size:1.25rem;color:var(--acc);animation:up .9s ease-out forwards;white-space:nowrap}
+@keyframes up{to{opacity:0;transform:translateY(-70px)}}
+.shop{display:grid;gap:9px}
+.item{display:grid;grid-template-columns:1fr auto;gap:1px 12px;text-align:left;width:100%;background:var(--panel);
+border:1px solid var(--line);border-radius:14px;padding:11px 14px}
+.item:hover:not(:disabled){border-color:var(--acc)}.item:disabled{opacity:.55;cursor:not-allowed}
+.item .n{font-weight:700}.item .d,.item .o{color:var(--muted);font-size:.86rem}
+.item .c{grid-row:1;grid-column:2;font-weight:700;color:var(--gold);font-variant-numeric:tabular-nums}
+.item .o{grid-row:2;grid-column:2;text-align:right}.item.can .c{color:var(--ok)}
+.ach{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px}
+.a{border:1px solid var(--line);border-radius:12px;padding:8px 10px;font-size:.85rem;opacity:.5}
+.a b{display:block}.a span{color:var(--muted)}
+.a.on{opacity:1;border-color:var(--gold);background:color-mix(in srgb,var(--gold) 14%,transparent)}
+.bar{grid-column:1/-1;display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;color:var(--muted);font-size:.9rem}
+.row{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.sm{background:none;border:1px solid var(--line);border-radius:10px;padding:6px 11px;color:var(--ink)}
+.sm:hover{border-color:var(--acc)}.sm.on{border-color:var(--acc);background:color-mix(in srgb,var(--acc) 16%,transparent)}
+.gold{position:fixed;z-index:20;width:74px;height:74px;border:0;background:none;padding:0;animation:pulse 1s ease-in-out infinite alternate}
+@keyframes pulse{to{transform:scale(1.15) rotate(6deg)}}
+#toasts{position:fixed;left:50%;bottom:16px;transform:translateX(-50%);display:grid;gap:8px;z-index:40;width:min(92vw,380px)}
+.toast{background:var(--ink);color:var(--bg);padding:10px 14px;border-radius:12px;font-size:.92rem;box-shadow:0 6px 20px rgba(0,0,0,.25)}
+.ov{position:fixed;inset:0;background:rgba(10,12,30,.55);display:none;align-items:center;justify-content:center;z-index:50;padding:12px}
+.ov.on{display:flex}
+.adm{width:min(580px,100%);max-height:88vh;overflow:auto;background:var(--panel);border:1px solid var(--line);border-radius:20px;padding:18px}
+.tabs{display:flex;gap:6px;flex-wrap:wrap;margin:10px 0 14px}
+.ctl{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:8px 0}
+input,textarea{font:inherit;background:var(--bg);color:var(--ink);border:1px solid var(--line);border-radius:10px;padding:7px 10px;max-width:100%}
+textarea{width:100%;height:110px;font-size:.8rem}
+.ur{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid var(--line)}
+.stat{display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--line)}
+.hint{color:var(--muted);font-size:.85rem}
+@media (max-width:760px){.wrap{grid-template-columns:1fr}.count{font-size:2.2rem}}
+@media (prefers-reduced-motion:reduce){.float{animation:none;opacity:0}.gold{animation:none}#crystal{transition:none}}
+</style>
+</head>
+<body>
+<main class="wrap">
+<header><h1>Кристальная шахта</h1><span class="sub">Добывай, улучшай, лови золото и собирай достижения</span></header>
 
-// Загрузка сохранения
-if(localStorage.getItem('megaClickerSave')) {
-    game = JSON.parse(localStorage.getItem('megaClickerSave'));
-}
+<section class="box mine" id="mine">
+  <div id="fr"></div>
+  <p class="count" id="count">0</p>
+  <p class="rate">кристаллов · <span id="cps">0</span> в секунду</p>
+  <button id="crystal" aria-label="Добыть кристалл">
+    <svg viewBox="0 0 200 200" aria-hidden="true"><defs>
+      <linearGradient id="g1" x1="0" y1="0" x2="1" y2="1"><stop offset="0" style="stop-color:var(--a1)"/><stop offset="1" style="stop-color:var(--a2)"/></linearGradient>
+      <linearGradient id="g2" x1="0" y1="0" x2="1" y2="1"><stop offset="0" style="stop-color:var(--b1)"/><stop offset="1" style="stop-color:var(--b2)"/></linearGradient></defs>
+      <polygon points="100,12 150,62 150,142 100,188 50,142 50,62" fill="url(#g1)"/>
+      <polygon points="100,12 150,62 100,92 50,62" style="fill:var(--top)"/>
+      <polygon points="100,92 150,62 150,142 100,188" fill="url(#g2)"/>
+      <polygon points="100,92 50,62 50,142 100,188" style="fill:var(--dk)"/>
+      <polygon points="70,48 92,36 84,56" fill="#fff" opacity=".7"/></svg>
+  </button>
+  <p class="pc">За клик: <b id="pc">1</b> · бонус достижений: <b id="ab">+0%</b></p>
+</section>
 
-// Элементы интерфейса
-const scoreDisplay = document.getElementById('score-display');
-const cpsDisplay = document.getElementById('cps-display');
-const clickBtn = document.getElementById('click-btn');
-const goldenBonus = document.getElementById('golden-bonus');
+<section><h2>Улучшения</h2><div class="shop" id="shop"></div></section>
 
-// Обновление интерфейса магазина
-function updateUI() {
-    scoreDisplay.textContent = Math.floor(game.score);
-    cpsDisplay.textContent = `Доход в сек: ${getBonusPerSecond()}`;
-    
-    document.getElementById('click-lvl').textContent = game.clickLvl;
-    document.getElementById('click-cost').textContent = game.clickCost;
-    document.getElementById('auto1-count').textContent = game.auto1;
-    document.getElementById('auto1-cost').textContent = game.auto1Cost;
-    document.getElementById('auto2-count').textContent = game.auto2;
-    document.getElementById('auto2-cost').textContent = game.auto2Cost;
-    document.getElementById('auto3-count').textContent = game.auto3;
-    document.getElementById('auto3-cost').textContent = game.auto3Cost;
+<section class="box" style="grid-column:1/-1"><h2>Достижения: <span id="ac">0</span> из <span id="an">0</span> <span class="hint">(каждое даёт +2% к добыче)</span></h2><div class="ach" id="ach"></div></section>
 
-    // Блокировка кнопок, если не хватает средств
-    document.getElementById('upg-click').disabled = game.score < game.clickCost;
-    document.getElementById('upg-auto1').disabled = game.score < game.auto1Cost;
-    document.getElementById('upg-auto2').disabled = game.score < game.auto2Cost;
-    document.getElementById('upg-auto3').disabled = game.score < game.auto3Cost;
+<div class="bar">
+  <span>Всего добыто: <b id="total">0</b></span>
+  <div class="row"><span>Тема:</span>
+    <button class="sm" data-th="amethyst">Аметист</button><button class="sm" data-th="night">Ночь</button><button class="sm" data-th="ruby">Рубин</button>
+    <button class="sm" id="snd"></button><button class="sm" id="admb">Админка</button></div>
+</div>
+</main>
 
-    // Обновление ачивок
-    if(game.achievements.ach1) document.getElementById('ach-1').classList.add('unlocked');
-    if(game.achievements.ach2) document.getElementById('ach-2').classList.add('unlocked');
-    if(game.achievements.ach3) document.getElementById('ach-3').classList.add('unlocked');
-    if(game.achievements.ach4) document.getElementById('ach-4').classList.add('unlocked');
-}
+<div id="toasts" aria-live="polite"></div>
+<div class="ov" id="ov" role="dialog" aria-modal="true" aria-label="Админка"><div class="adm" id="adm"></div></div>
 
-function getBonusPerSecond() {
-    return (game.auto1 * 1) + (game.auto2 * 10) + (game.auto3 * 80);
-}
+<script>
+(function(){
+var KEY="crystal-clicker-v2";
+var UP=[
+{id:"pick",n:"Кирка",d:"+1 кристалл за клик",b:15,g:1.35,click:1},
+{id:"gnome",n:"Гном-шахтёр",d:"+1 кристалл в секунду",b:30,g:1.15,auto:1},
+{id:"cart",n:"Вагонетка",d:"+6 кристаллов в секунду",b:250,g:1.15,auto:6},
+{id:"drill",n:"Бур",d:"+35 кристаллов в секунду",b:1800,g:1.15,auto:35},
+{id:"lab",n:"Лаборатория",d:"+200 кристаллов в секунду",b:12000,g:1.15,auto:200},
+{id:"portal",n:"Портал в недра",d:"+1200 кристаллов в секунду",b:90000,g:1.15,auto:1200}];
+var ACH=[
+{id:"c1",n:"Первый удар",d:"Сделай первый клик",t:function(){return S.clicks>=1}},
+{id:"c100",n:"Сотня ударов",d:"100 кликов",t:function(){return S.clicks>=100}},
+{id:"c1k",n:"Тысяча ударов",d:"1 000 кликов",t:function(){return S.clicks>=1000}},
+{id:"t1k",n:"Тысячник",d:"Добудь 1 000 кристаллов",t:function(){return S.total>=1e3}},
+{id:"t1e5",n:"Богач",d:"Добудь 100 000 кристаллов",t:function(){return S.total>=1e5}},
+{id:"t1e7",n:"Магнат",d:"Добудь 10 млн кристаллов",t:function(){return S.total>=1e7}},
+{id:"s10",n:"Автоматизация",d:"10 кристаллов в секунду",t:function(){return perSec()>=10}},
+{id:"s1k",n:"Конвейер",d:"1 000 кристаллов в секунду",t:function(){return perSec()>=1e3}},
+{id:"g1",n:"Золотая находка",d:"Поймай золотой кристалл",t:function(){return S.golden>=1}},
+{id:"g10",n:"Охотник за золотом",d:"Поймай 10 золотых",t:function(){return S.golden>=10}},
+{id:"b25",n:"Большая бригада",d:"Купи 25 улучшений",t:function(){return cnt()>=25}},
+{id:"all",n:"Коллекционер",d:"Купи каждое улучшение",t:function(){return UP.every(function(u){return own(u)>0})}}];
+function def(){return{crystals:0,total:0,clicks:0,golden:0,time:0,own:{},ach:{},theme:"amethyst",sound:true,mult:1,speed:1,autoGold:true,pw:"admin",seen:0}}
+var S=def(),frenzy=0,nextGold=Date.now()+60000,adminOk=false,tab="res";
+var $=function(i){return document.getElementById(i)};
+var nf=new Intl.NumberFormat("ru-RU",{maximumFractionDigits:0}),nf1=new Intl.NumberFormat("ru-RU",{maximumFractionDigits:1});
+function sh(n){n=Math.floor(n);var s=[[1e12,"трлн"],[1e9,"млрд"],[1e6,"млн"]];
+for(var i=0;i<s.length;i++)if(n>=s[i][0])return nf1.format(n/s[i][0])+" "+s[i][1];return nf.format(n)}
+function load(){try{var r=localStorage.getItem(KEY);if(r){var d=JSON.parse(r);for(var k in d)S[k]=d[k]}}catch(e){}
+S.own=S.own||{};S.ach=S.ach||{}}
+function save(){S.seen=Date.now();try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
+function own(u){return S.own[u.id]||0}
+function cnt(){return UP.reduce(function(a,u){return a+own(u)},0)}
+function cost(u){return Math.ceil(u.b*Math.pow(u.g,own(u)))}
+function gm(){return S.mult*(1+.02*Object.keys(S.ach).length)*(frenzy>Date.now()?7:1)}
+function perClick(){var v=1;UP.forEach(function(u){if(u.click)v+=u.click*own(u)});return v*gm()}
+function perSec(){var v=0;UP.forEach(function(u){if(u.auto)v+=u.auto*own(u)});return v*gm()}
 
-// Клик по главной кнопке
-clickBtn.addEventListener('click', (e) => {
-    game.score += game.clickValue;
-    game.totalEarned += game.clickValue;
-    createFloatingText(e.clientX, e.clientY, `+${game.clickValue}`);
-    checkAchievements();
-    updateUI();
-});
+/* звук */
+var actx=null;
+function tone(f,d,ty,v,dl){if(!S.sound)return;try{actx=actx||new(window.AudioContext||window.webkitAudioContext)();
+var o=actx.createOscillator(),g=actx.createGain(),t=actx.currentTime+(dl||0);o.type=ty||"sine";o.frequency.value=f;
+g.gain.setValueAtTime(v||.06,t);g.gain.exponentialRampToValueAtTime(.0001,t+d);o.connect(g);g.connect(actx.destination);o.start(t);o.stop(t+d)}catch(e){}}
+function toast(t){var e=document.createElement("div");e.className="toast";e.textContent=t;$("toasts").appendChild(e);
+setTimeout(function(){if(e.parentNode)e.parentNode.removeChild(e)},3800)}
 
-// Создание вылетающего текста
-function createFloatingText(x, y, text) {
-    const el = document.createElement('div');
-    el.className = 'floating-text';
-    el.style.left = `${x}px`;
-    el.style.top = `${y}px`;
-    el.textContent = text;
-    document.body.appendChild(el);
-    setTimeout(() => el.remove(), 800);
-}
+/* магазин и достижения */
+var shop=$("shop"),btns={};
+UP.forEach(function(u){var b=document.createElement("button");b.className="item";
+b.innerHTML='<span class="n"></span><span class="c"></span><span class="d"></span><span class="o"></span>';
+b.onclick=function(){var c=cost(u);if(S.crystals<c)return;S.crystals-=c;S.own[u.id]=own(u)+1;tone(520,.1,"square",.04);tone(780,.14,"square",.04,.08);save();render()};
+shop.appendChild(b);btns[u.id]=b});
+var achEl={};
+ACH.forEach(function(a){var e=document.createElement("div");e.className="a";e.innerHTML="<b>"+a.n+"</b><span>"+a.d+"</span>";$("ach").appendChild(e);achEl[a.id]=e});
+$("an").textContent=ACH.length;
+function checkAch(){ACH.forEach(function(a){if(!S.ach[a.id]&&a.t()){S.ach[a.id]=1;toast("Достижение: "+a.n);
+[660,830,990].forEach(function(f,i){tone(f,.25,"triangle",.06,i*.1)})}})}
 
-// Покупка улучшений
-document.getElementById('upg-click').addEventListener('click', () => {
-    if(game.score >= game.clickCost) {
-        game.score -= game.clickCost;
-        game.clickLvl++;
-        game.clickValue += 1;
-        game.clickCost = Math.round(game.clickCost * 1.5);
-        updateUI();
-    }
-});
+function render(){
+$("count").textContent=sh(S.crystals);$("total").textContent=sh(S.total);$("cps").textContent=sh(perSec());
+$("pc").textContent=sh(perClick());$("ab").textContent="+"+Math.round(2*Object.keys(S.ach).length)+"%";
+UP.forEach(function(u){var b=btns[u.id],c=cost(u),can=S.crystals>=c;
+b.querySelector(".n").textContent=u.n;b.querySelector(".c").textContent=sh(c);b.querySelector(".d").textContent=u.d;
+b.querySelector(".o").textContent="Куплено: "+own(u);b.disabled=!can;b.classList.toggle("can",can)});
+var n=0;ACH.forEach(function(a){var on=!!S.ach[a.id];if(on)n++;achEl[a.id].classList.toggle("on",on)});$("ac").textContent=n;
+var f=$("fr"),left=Math.ceil((frenzy-Date.now())/1000);
+if(left>0){f.style.display="block";f.textContent="Золотая лихорадка ×7 — ещё "+left+" с"}else f.style.display="none";
+$("snd").textContent="Звук: "+(S.sound?"вкл":"выкл");
+document.documentElement.dataset.theme=S.theme;
+document.querySelectorAll("[data-th]").forEach(function(b){b.classList.toggle("on",b.dataset.th===S.theme)})}
 
-function setupAutoUpgrade(btnId, type, perSecCostKey, perSecCountKey, incomeValue) {
-    document.getElementById(btnId).addEventListener('click', () => {
-        if(game.score >= game[perSecCostKey]) {
-            game.score -= game[perSecCostKey];
-            game[perSecCountKey]++;
-            game[perSecCostKey] = Math.round(game[perSecCostKey] * 1.3);
-            updateUI();
-        }
-    });
-}
-setupAutoUpgrade('upg-auto1', 'auto1', 'auto1Cost', 'auto1', 1);
-setupAutoUpgrade('upg-auto2', 'auto2', 'auto2Cost', 'auto2', 10);
-setupAutoUpgrade('upg-auto3', 'auto3', 'auto3Cost', 'auto3', 80);
+/* клик */
+var mine=$("mine"),crystal=$("crystal");
+crystal.onclick=function(e){var v=perClick();S.crystals+=v;S.total+=v;S.clicks++;
+tone(420+Math.random()*320,.09,"triangle",.07);
+var r=mine.getBoundingClientRect(),x,y;
+if(e.clientX){x=e.clientX-r.left;y=e.clientY-r.top}else{var c=crystal.getBoundingClientRect();x=c.left-r.left+c.width/2;y=c.top-r.top+c.height/3}
+var s=document.createElement("span");s.className="float";s.textContent="+"+sh(v);s.style.left=(x-12)+"px";s.style.top=(y-20)+"px";
+mine.appendChild(s);setTimeout(function(){if(s.parentNode)s.parentNode.removeChild(s)},900);render()};
 
-// Проверка ачивок
-function checkAchievements() {
-    if (game.totalEarned >= 10 && !game.achievements.ach1) game.achievements.ach1 = true;
-    if (game.totalEarned >= 1000 && !game.achievements.ach2) game.achievements.ach2 = true;
-    if (game.totalEarned >= 10000 && !game.achievements.ach3) game.achievements.ach3 = true;
-}
+/* золотой кристалл */
+function spawnGold(){if(document.querySelector(".gold"))return;
+var b=document.createElement("button");b.className="gold";b.setAttribute("aria-label","Золотой кристалл");
+b.style.left=(8+Math.random()*78)+"vw";b.style.top=(15+Math.random()*60)+"vh";
+b.innerHTML='<svg viewBox="0 0 200 200" aria-hidden="true"><polygon points="100,12 160,70 100,188 40,70" fill="#ffc83d"/><polygon points="100,12 160,70 100,96 40,70" fill="#fff0a8"/><polygon points="100,96 160,70 100,188" fill="#e8a700"/></svg>';
+b.onclick=function(){if(b.parentNode)b.parentNode.removeChild(b);S.golden++;
+if(Math.random()<.5){frenzy=Date.now()+30000;toast("Золотая лихорадка: добыча ×7 на 30 секунд!")}
+else{var g=perSec()*120+50*Math.max(1,perClick());S.crystals+=g;S.total+=g;toast("Золотой клад: +"+sh(g)+" кристаллов!")}
+[880,1100,1320,1760].forEach(function(f,i){tone(f,.2,"sine",.06,i*.07)});render()};
+document.body.appendChild(b);setTimeout(function(){if(b.parentNode)b.parentNode.removeChild(b)},13000);
+nextGold=Date.now()+(45+Math.random()*60)*1000}
 
-// Пассивный доход (раз в секунду)
-setInterval(() => {
-    let income = getBonusPerSecond();
-    game.score += income;
-    game.totalEarned += income;
-    checkAchievements();
-    updateUI();
-}, 1000);
+/* цикл */
+var last=Date.now(),ss=0;
+setInterval(function(){var now=Date.now(),dt=(now-last)/1000;last=now;S.time+=dt;
+var g=perSec()*dt*S.speed;if(g>0){S.crystals+=g;S.total+=g}
+if(S.autoGold&&now>nextGold)spawnGold();
+checkAch();ss+=dt;if(ss>=5){ss=0;save()}render();if($("ov").classList.contains("on")&&tab==="info")drawAdm()},100);
 
-// Случайное появление золотого бонуса
-function spawnGoldenBonus() {
-    const x = Math.random() * (window.innerWidth - 60);
-    const y = Math.random() * (window.innerHeight - 60);
-    goldenBonus.style.left = `${x}px`;
-    goldenBonus.style.top = `${y}px`;
-    goldenBonus.style.display = 'block';
+/* тема, звук */
+document.querySelectorAll("[data-th]").forEach(function(b){b.onclick=function(){S.theme=b.dataset.th;save();render()}});
+$("snd").onclick=function(){S.sound=!S.sound;save();render();tone(600,.1)};
 
-    // Исчезнет через 6 секунд, если не кликнуть
-    setTimeout(() => { goldenBonus.style.display = 'none'; }, 6000);
-}
-setInterval(() => {
-    if(Math.random() < 0.3 && goldenBonus.style.display !== 'block') { spawnGoldenBonus(); }
-}, 15000); // Проверка каждые 15 сек
+/* админка */
+var TABS=[["res","Ресурсы"],["up","Улучшения"],["gold","Золото и награды"],["data","Данные"],["info","Статистика"]];
+function drawAdm(){var a=$("adm"),h='<div class="row" style="justify-content:space-between"><h2 style="margin:0">Админка</h2><button class="sm" data-a="close">Закрыть</button></div>';
+if(!adminOk){a.innerHTML=h+'<p class="hint">Введи пароль (по умолчанию: admin).</p><div class="ctl"><input id="pw" type="password" placeholder="Пароль" autocomplete="off"><button class="sm on" data-a="login">Войти</button></div>';
+var p=$("pw");if(p){p.onkeydown=function(e){if(e.key==="Enter")login()}}return}
+h+='<div class="tabs">'+TABS.map(function(t){return'<button class="sm'+(tab===t[0]?" on":"")+'" data-a="tab" data-v="'+t[0]+'">'+t[1]+'</button>'}).join("")+"</div>";
+var b="";
+if(tab==="res")b='<div class="ctl"><input id="amt" type="number" value="1000" min="0" style="width:150px"><button class="sm" data-a="add">Добавить кристаллы</button><button class="sm" data-a="zero">Обнулить</button></div>'+
+'<p class="hint">Множитель добычи (сейчас ×'+S.mult+')</p><div class="ctl">'+[1,2,10,100,1000].map(function(v){return'<button class="sm'+(S.mult===v?" on":"")+'" data-a="mult" data-v="'+v+'">×'+v+'</button>'}).join("")+'</div>'+
+'<p class="hint">Скорость времени для авто-добычи (сейчас ×'+S.speed+')</p><div class="ctl">'+[1,5,20,100].map(function(v){return'<button class="sm'+(S.speed===v?" on":"")+'" data-a="speed" data-v="'+v+'">×'+v+'</button>'}).join("")+'</div>';
+if(tab==="up")b=UP.map(function(u){return'<div class="ur"><span>'+u.n+': <b>'+own(u)+'</b></span><span class="row">'+[-1,1,10].map(function(d){return'<button class="sm" data-a="own" data-id="'+u.id+'" data-v="'+d+'">'+(d>0?"+":"")+d+'</button>'}).join("")+'</span></div>'}).join("");
+if(tab==="gold")b='<div class="ctl"><button class="sm" data-a="spawn">Вызвать золотой кристалл</button><button class="sm" data-a="frenzy">Золотая лихорадка 30 с</button></div>'+
+'<div class="ctl"><button class="sm'+(S.autoGold?" on":"")+'" data-a="auto">Автопоявление золота: '+(S.autoGold?"вкл":"выкл")+'</button></div>'+
+'<div class="ctl"><button class="sm" data-a="allach">Открыть все достижения</button><button class="sm" data-a="noach">Закрыть все достижения</button></div>';
+if(tab==="data")b='<p class="hint">Сохранение (скопируй, чтобы перенести на другое устройство):</p><textarea id="ex" readonly>'+JSON.stringify(S)+'</textarea>'+
+'<p class="hint">Вставь сохранение сюда и нажми «Загрузить»:</p><textarea id="im"></textarea>'+
+'<div class="ctl"><button class="sm" data-a="imp">Загрузить</button><button class="sm" data-a="reset" style="border-color:var(--bad)">Начать игру заново</button></div>'+
+'<div class="ctl"><input id="np" type="text" placeholder="Новый пароль"><button class="sm" data-a="pass">Сменить пароль</button></div>';
+if(tab==="info"){var m=Math.floor(S.time/60);b=[["Кристаллов сейчас",sh(S.crystals)],["Всего добыто",sh(S.total)],["Кликов",nf.format(S.clicks)],["Золотых поймано",S.golden],
+["Улучшений куплено",cnt()],["Добыча в секунду",sh(perSec())],["За клик",sh(perClick())],["Достижений",Object.keys(S.ach).length+" из "+ACH.length],["Время в игре",m+" мин"]]
+.map(function(r){return'<div class="stat"><span>'+r[0]+'</span><b>'+r[1]+'</b></div>'}).join("")}
+a.innerHTML=h+b}
+function login(){var p=$("pw");if(p&&p.value===S.pw){adminOk=true;drawAdm()}else{toast("Неверный пароль");tone(200,.2,"sawtooth")}}
+function openAdm(){$("ov").classList.add("on");drawAdm()}
+function closeAdm(){$("ov").classList.remove("on")}
+$("admb").onclick=openAdm;
+$("ov").onclick=function(e){if(e.target===this)closeAdm()};
+document.addEventListener("keydown",function(e){if(e.key==="Escape")closeAdm();if(e.ctrlKey&&e.shiftKey&&e.key.toLowerCase()==="a")openAdm()});
+$("adm").onclick=function(e){var t=e.target.closest("[data-a]");if(!t)return;var a=t.dataset.a,v=t.dataset.v,keep=false;
+if(a==="close")return closeAdm();if(a==="login")return login();
+if(a==="tab")tab=v;
+else if(a==="add"){var n=Math.max(0,+$("amt").value||0);S.crystals+=n;S.total+=n}
+else if(a==="zero")S.crystals=0;
+else if(a==="mult")S.mult=+v;else if(a==="speed")S.speed=+v;
+else if(a==="own"){var u=UP.filter(function(x){return x.id===t.dataset.id})[0];S.own[u.id]=Math.max(0,own(u)+ +v)}
+else if(a==="spawn"){nextGold=0;spawnGold();closeAdm()}
+else if(a==="frenzy"){frenzy=Date.now()+30000}
+else if(a==="auto")S.autoGold=!S.autoGold;
+else if(a==="allach")ACH.forEach(function(x){S.ach[x.id]=1});
+else if(a==="noach")S.ach={};
+else if(a==="imp"){try{var d=JSON.parse($("im").value);S=Object.assign(def(),d);S.own=S.own||{};S.ach=S.ach||{};toast("Сохранение загружено")}catch(x){toast("Не удалось прочитать сохранение");keep=true}}
+else if(a==="reset"){if(!confirm("Начать заново? Весь прогресс будет удалён."))return;var o=S;S=def();S.theme=o.theme;S.sound=o.sound;S.pw=o.pw}
+else if(a==="pass"){var q=$("np").value.trim();if(q){S.pw=q;toast("Пароль изменён")}else keep=true}
+save();render();drawAdm()};
 
-goldenBonus.addEventListener('click', (e) => {
-    let bonusAmount = Math.max(50, Math.round(game.totalEarned * 0.1));
-    game.score += bonusAmount;
-    game.achievements.ach4 = true;
-    createFloatingText(e.clientX, e.clientY, `БОНУС! +${bonusAmount}`);
-    goldenBonus.style.display = 'none';
-    updateUI();
-});
-
-// Автосохранение каждые 5 секунд
-setInterval(() => {
-    localStorage.setItem('megaClickerSave', JSON.stringify(game));
-}, 5000);
-
-// Сброс прогресса
-document.getElementById('reset-btn').addEventListener('click', () => {
-    if(confirm('Вы уверены, что хотите обнулить весь прогресс?')) {
-        localStorage.removeItem('megaClickerSave');
-        location.reload();
-    }
-});
-
-// Первая инициализация
-updateUI();
-
+window.addEventListener("beforeunload",save);
+load();
+if(S.seen){var el=(Date.now()-S.seen)/1000;if(el>30){var g=perSec()*Math.min(el,3600)*.5;if(g>0){S.crystals+=g;S.total+=g;setTimeout(function(){toast("Пока тебя не было, шахта добыла "+sh(g)+" кристаллов")},400)}}}
+render();
+})();
+</script>
+</body>
+</html>
