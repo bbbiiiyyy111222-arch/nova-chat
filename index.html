@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Alive</title>
+<link rel="icon" href="data:,">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
 <style>
 :root{--bg:#eaf1ef;--panel:#fff;--ink:#12292b;--muted:#5d7578;--line:#d5e2df;--me:#0e6e6e;--them:#fff;--acc:#ff5a5f;--on:#22b573}
@@ -115,7 +116,7 @@ aside{background:var(--panel);border-right:1px solid var(--line);display:flex;fl
 (function(){
 /* ===== Ключи Supabase: впиши сюда или введи на стартовом экране ===== */
 var SUPABASE_URL="https://wqxeebqejexaatrtaxro.supabase.co",SUPABASE_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndxeGVlYnFlamV4YWF0cnRheHJvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTE1NTQ1MjEsImV4cCI6MjEwNzEzMDUyMX0.PMp3Bf6_efL7acEpHaguMa8c_ZfBljBCEF9hvSPDv04";
-var GROQ_KEY="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",GROQ_MODEL="llama-3.3-70b-versatile";
+var GROQ_KEY="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",GROQ_MODEL="openai/gpt-oss-120b";
 /* ================================================================ */
 var $=function(i){return document.getElementById(i)};
 function el(t,c,x){var e=document.createElement(t);if(c)e.className=c;if(x!=null)e.textContent=x;return e}
@@ -232,8 +233,8 @@ return["Интересно! Расскажи подробнее.","Понял т
 var SYS="Ты — Alive Бот, дружелюбный ИИ-помощник внутри мессенджера Alive. Отвечай по-русски, кратко и по делу. Если человек пишет на другом языке, отвечай на нём.";
 async function aiReply(){var h=M.bot.slice(-14).map(function(m){return{role:m.sender_id==="bot"?"assistant":"user",content:m.body}});
 var r=await fetch("https://api.groq.com/openai/v1/chat/completions",{method:"POST",headers:{"Content-Type":"application/json",Authorization:"Bearer "+GROQ_KEY},
-body:JSON.stringify({model:GROQ_MODEL,messages:[{role:"system",content:SYS}].concat(h),temperature:.7,max_tokens:700})});
-if(!r.ok)throw new Error("ai");var d=await r.json();return d.choices[0].message.content.trim()}
+body:JSON.stringify({model:GROQ_MODEL,messages:[{role:"system",content:SYS}].concat(h),temperature:.7,max_tokens:1500})});
+if(!r.ok)throw new Error("ai");var d=await r.json();var a=(d.choices[0].message.content||"").trim();if(!a)throw new Error("empty");return a}
 async function toFav(m){var f=favId();if(!f)return;var r=await sb.from("messages").insert({chat_id:f,sender_id:user.id,kind:m.kind,body:m.body,media_url:m.media_url||null}).select().single();
 if(r.error)return toast("Не удалось сохранить");addMsg(r.data);render();toast("Сохранено в избранное")}
 function botSave(){try{localStorage.setItem("alive-bot-"+user.id,JSON.stringify(M.bot.slice(-200)))}catch(e){}}
