@@ -83,11 +83,6 @@ aside{background:var(--panel);border-right:1px solid var(--line);display:flex;fl
     <input id="em" type="email" placeholder="Почта" autocomplete="email">
     <input id="pw" type="password" placeholder="Пароль (от 6 символов)" autocomplete="current-password">
     <button class="go" id="go">Войти</button></div>
-  <div id="f2" style="display:grid;gap:10px" hidden>
-    <p>Мы отправили код на <b id="ce"></b>. Введи его ниже.</p>
-    <input id="cd" inputmode="numeric" maxlength="10" placeholder="Код из письма" autocomplete="one-time-code">
-    <button class="go" id="go2">Подтвердить</button>
-    <button class="lnk" id="rs">Отправить код ещё раз</button></div>
   <div class="err" id="err" role="alert"></div></div></div>
 
 <div id="main" hidden>
@@ -119,7 +114,8 @@ aside{background:var(--panel);border-right:1px solid var(--line);display:flex;fl
 <script>
 (function(){
 /* ===== Ключи Supabase: впиши сюда или введи на стартовом экране ===== */
-var SUPABASE_URL="",SUPABASE_KEY="";
+var SUPABASE_URL="https://wqxeebqejexaatrtaxro.supabase.co",SUPABASE_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndxeGVlYnFlamV4YWF0cnRheHJvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTE1NTQ1MjEsImV4cCI6MjEwNzEzMDUyMX0.PMp3Bf6_efL7acEpHaguMa8c_ZfBljBCEF9hvSPDv04";
+var GROQ_KEY="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",GROQ_MODEL="llama-3.3-70b-versatile";
 /* ================================================================ */
 var $=function(i){return document.getElementById(i)};
 function el(t,c,x){var e=document.createElement(t);if(c)e.className=c;if(x!=null)e.textContent=x;return e}
@@ -153,16 +149,13 @@ async function submit(){err();var em=$("em").value.trim(),pw=$("pw").value;if(!e
 if(mode==="login"){var r=await sb.auth.signInWithPassword({email:em,password:pw});if(r.error)err(ru(r.error.message));return}
 var un=$("un").value.trim();if(un.length<2)return err("Имя должно быть не короче 2 символов.");if(pw.length<6)return err("Пароль должен быть не короче 6 символов.");
 var s=await sb.auth.signUp({email:em,password:pw,options:{data:{username:un}}});if(s.error)return err(ru(s.error.message));
-if(!s.data.session){pend=em;$("ce").textContent=em;$("f1").hidden=true;$("f2").hidden=false;$("cd").focus()}}
+if(!s.data.session)err("Подтверждение почты включено в Supabase. Выключи: Authentication → Providers → Email → Confirm email.")}
 $("go").onclick=submit;$("pw").onkeydown=function(e){if(e.key==="Enter")submit()};
-$("go2").onclick=async function(){err();var r=await sb.auth.verifyOtp({email:pend,token:$("cd").value.trim(),type:"signup"});if(r.error)err(ru(r.error.message))};
-$("cd").onkeydown=function(e){if(e.key==="Enter")$("go2").onclick()};
-$("rs").onclick=async function(){var r=await sb.auth.resend({type:"signup",email:pend});err(r.error?ru(r.error.message):"Код отправлен повторно.")};
 
 /* ===== запуск после входа ===== */
 async function boot(u){if(user&&user.id===u.id)return;user=u;
 var p=await sb.from("profiles").select("*").eq("id",u.id).single();P[u.id]=p.data||{username:"Я"};
-$("auth").hidden=true;$("main").hidden=false;fillMe();await loadChats();listen()}
+$("auth").hidden=true;$("main").hidden=false;fillMe();await loadChats();if(!favId()){await sb.rpc("start_favorites");await loadChats()}listen()}
 function fillMe(){$("mn").textContent=P[user.id].username;$("meb").innerHTML="";$("meb").appendChild(avatar(P[user.id].username,P[user.id].avatar_url,38))}
 sb.auth.onAuthStateChange(function(ev,s){if(s&&s.user)setTimeout(function(){boot(s.user)},0);else if(user)location.reload();else $("auth").hidden=false});
 
@@ -172,11 +165,11 @@ m.t=m.t||Date.parse(m.created_at);a.push(m);a.sort(function(x,y){return x.t-y.t}
 async function loadChats(){
 var r=await sb.from("chat_members").select("chat_id,user_id,last_read,profiles(username,avatar_url),chats(id,is_group,title,created_at)");
 if(r.error)return toast("Не удалось загрузить чаты");
-var cs={};r.data.forEach(function(x){var c=cs[x.chat_id]||(cs[x.chat_id]={id:x.chat_id,is_group:x.chats.is_group,title:x.chats.title,ct:Date.parse(x.chats.created_at),members:[],lr:0});
+var cs={};r.data.forEach(function(x){var c=cs[x.chat_id]||(cs[x.chat_id]={id:x.chat_id,is_group:x.chats.is_group,title:x.chats.title,ct:Date.parse(x.chats.created_at),fav:x.chats.title==="__favorites__",members:[],lr:0});
 c.members.push(x.user_id);if(x.profiles)P[x.user_id]=x.profiles;if(x.user_id===user.id)c.lr=Date.parse(x.last_read)});
 /* локальный чат с ботом */
 var b=[];try{b=JSON.parse(localStorage.getItem("alive-bot-"+user.id)||"[]")}catch(e){}
-if(!b.length)b=[{id:"b0",sender_id:"bot",kind:"text",body:"Привет! Я Alive Бот. Напиши «что ты умеешь».",t:Date.now()}];
+if(!b.length)b=[{id:"b0",sender_id:"bot",kind:"text",body:"Привет! Я Alive Бот на базе ИИ. Спрашивай что угодно: отвечу, помогу с текстом или идеей.",t:Date.now()}];
 M.bot=b;cs.bot={id:"bot",bot:true,members:[],ct:0,lr:C.bot?C.bot.lr:0};C=cs;
 var m=await sb.from("messages").select("*").order("created_at",{ascending:false}).limit(400);
 (m.data||[]).reverse().forEach(addMsg);render()}
@@ -187,9 +180,11 @@ if(!C[m.chat_id]){loadChats();return}addMsg(m);if(!P[m.sender_id])loadChats();if
 var ch=sb.channel("online",{config:{presence:{key:user.id}}});
 ch.on("presence",{event:"sync"},function(){OL=ch.presenceState();renderSide();renderHead()})
 .subscribe(function(s){if(s==="SUBSCRIBED")ch.track({at:Date.now()})})}
-function info(c){if(c.bot)return{name:"Alive Бот",on:true};
+function info(c){if(c.fav)return{name:"Избранное"};if(c.bot)return{name:"Alive Бот",on:true};
 if(c.is_group)return{name:c.title||"Группа"};
 var o=c.members.filter(function(x){return x!==user.id})[0],p=P[o]||{username:"?"};return{name:p.username,url:p.avatar_url,on:!!OL[o]}}
+function favId(){for(var k in C)if(C[k].fav)return k;return null}
+function pin(c){return c.fav?2:c.bot?1:0}
 function lastT(c){var a=M[c.id]||[];return a.length?a[a.length-1].t:c.ct}
 function unread(c){return(M[c.id]||[]).filter(function(m){return m.sender_id!==user.id&&m.t>c.lr}).length}
 function markRead(){var c=C[cur],a=M[cur]||[],l=a[a.length-1];if(!c||!l||l.t<=c.lr)return;c.lr=l.t;
@@ -198,7 +193,7 @@ if(cur!=="bot")sb.from("chat_members").update({last_read:l.created_at}).eq("chat
 /* ===== отрисовка ===== */
 function pv(l){if(!l)return"Нет сообщений";var p=l.sender_id===user.id?"Вы: ":"";return p+(l.kind==="image"?"🖼 Фото":l.kind==="voice"?"🎤 Голосовое":l.body)}
 function renderSide(){var l=$("list");l.innerHTML="";var n=q.toLowerCase(),tot=0;
-Object.keys(C).map(function(k){return C[k]}).sort(function(a,b){return lastT(b)-lastT(a)}).forEach(function(c){
+Object.keys(C).map(function(k){return C[k]}).sort(function(a,b){return pin(b)-pin(a)||lastT(b)-lastT(a)}).forEach(function(c){
 var i=info(c);if(n&&i.name.toLowerCase().indexOf(n)<0)return;var a=M[c.id]||[],last=a[a.length-1],u=unread(c);tot+=u;
 var r=el("button","row"+(c.id===cur?" on":""));r.appendChild(avatar(i.name,i.url,44,i.on));
 var t=el("div","rt"),h=el("div");h.appendChild(el("b",null,i.name));if(last)h.appendChild(el("small",null,tm(last.t)));
@@ -207,7 +202,7 @@ t.appendChild(h);t.appendChild(s);r.appendChild(t);r.onclick=function(){openChat
 if(!l.children.length)l.appendChild(el("div","empty","Ничего не найдено. Нажми «Чат», чтобы найти человека."));
 document.title=(tot?"("+tot+") ":"")+"Alive"}
 function renderHead(){var c=C[cur];if(!c)return;var i=info(c);$("chav").innerHTML="";$("chav").appendChild(avatar(i.name,i.url,40,i.on));$("chn").textContent=i.name;
-var s=c.bot?(botTyping?"печатает…":"всегда на связи"):c.is_group?c.members.length+" участн.":(i.on?"в сети":"не в сети");
+var s=c.fav?"заметки, файлы и голосовые только для тебя":c.bot?(botTyping?"печатает…":"ИИ-помощник"):c.is_group?c.members.length+" участн.":(i.on?"в сети":"не в сети");
 $("chs").textContent=s;$("chs").className="st"+(i.on?" on":"")}
 function renderChat(){var has=!!C[cur];$("noch").hidden=has;$("ch").hidden=!has;$("msgs").hidden=!has;$("comp").hidden=!has;if(!has)return;renderHead();
 var box=$("msgs"),a=M[cur]||[],c=C[cur],near=box.scrollHeight-box.scrollTop-box.clientHeight<90;box.innerHTML="";
@@ -218,7 +213,7 @@ if(c.is_group&&!mine&&ps!==m.sender_id){var w=el("div","who",(P[m.sender_id]||{}
 if(m.kind==="image"){var im=el("img");im.src=m.media_url;im.alt="Фото";im.loading="lazy";im.onclick=function(){bigImg(m.media_url)};d.appendChild(im)}
 else if(m.kind==="voice"){var au=el("audio");au.controls=true;au.preload="metadata";au.src=m.media_url;d.appendChild(au)}
 else d.appendChild(document.createTextNode(m.body));
-d.appendChild(el("small",null,tm(m.t)));box.appendChild(d);ps=m.sender_id});
+var sm=el("small",null,tm(m.t)+" ");if(!c.fav&&favId()){var fb=el("button",null,"★");fb.title="В избранное";fb.setAttribute("aria-label","В избранное");fb.style.cssText="opacity:.7;padding:0 2px";fb.onclick=function(){toFav(m)};sm.appendChild(fb)}d.appendChild(sm);box.appendChild(d);ps=m.sender_id});
 if(near||box.dataset.c!==cur){box.scrollTop=box.scrollHeight}box.dataset.c=cur}
 function render(){renderSide();renderChat()}
 function openChat(id){cur=id;markRead();$("main").classList.add("inchat");render();$("inp").focus()}
@@ -234,9 +229,16 @@ if(/умеешь|помощь/.test(s))return"Я умею говорить вр�
 if(/врем|час/.test(s))return"Сейчас "+tm(Date.now())+".";if(/шутк|анекдот/.test(s))return JK[Math.floor(Math.random()*JK.length)];
 if(/монет/.test(s))return Math.random()<.5?"Выпал орёл.":"Выпала решка.";if(/как дела/.test(s))return"Отлично, я же живой! А у тебя?";
 return["Интересно! Расскажи подробнее.","Понял тебя. Что ещё?"][Math.floor(Math.random()*2)]}
+var SYS="Ты — Alive Бот, дружелюбный ИИ-помощник внутри мессенджера Alive. Отвечай по-русски, кратко и по делу. Если человек пишет на другом языке, отвечай на нём.";
+async function aiReply(){var h=M.bot.slice(-14).map(function(m){return{role:m.sender_id==="bot"?"assistant":"user",content:m.body}});
+var r=await fetch("https://api.groq.com/openai/v1/chat/completions",{method:"POST",headers:{"Content-Type":"application/json",Authorization:"Bearer "+GROQ_KEY},
+body:JSON.stringify({model:GROQ_MODEL,messages:[{role:"system",content:SYS}].concat(h),temperature:.7,max_tokens:700})});
+if(!r.ok)throw new Error("ai");var d=await r.json();return d.choices[0].message.content.trim()}
+async function toFav(m){var f=favId();if(!f)return;var r=await sb.from("messages").insert({chat_id:f,sender_id:user.id,kind:m.kind,body:m.body,media_url:m.media_url||null}).select().single();
+if(r.error)return toast("Не удалось сохранить");addMsg(r.data);render();toast("Сохранено в избранное")}
 function botSave(){try{localStorage.setItem("alive-bot-"+user.id,JSON.stringify(M.bot.slice(-200)))}catch(e){}}
 function botSay(t){M.bot.push({id:"u"+Date.now(),sender_id:user.id,kind:"text",body:t,t:Date.now()});C.bot.lr=Date.now();botTyping=true;botSave();render();
-setTimeout(function(){botTyping=false;M.bot.push({id:"b"+Date.now(),sender_id:"bot",kind:"text",body:botReply(t),t:Date.now()});if(cur==="bot")C.bot.lr=Date.now();botSave();render()},800+Math.random()*900)}
+aiReply().catch(function(){return botReply(t)+"\n\n(ИИ сейчас недоступен, ответил по-простому.)"}).then(function(txt){botTyping=false;M.bot.push({id:"b"+Date.now(),sender_id:"bot",kind:"text",body:txt,t:Date.now()});if(cur==="bot")C.bot.lr=Date.now();botSave();render()})}
 async function ins(kind,body,url){var r=await sb.from("messages").insert({chat_id:cur,sender_id:user.id,kind:kind,body:body,media_url:url}).select().single();
 if(r.error)return toast("Не удалось отправить");addMsg(r.data);markRead();render()}
 var inp=$("inp");
