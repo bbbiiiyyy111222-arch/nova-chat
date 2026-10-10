@@ -6,7 +6,7 @@ const ANON = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZ
 module.exports = async function (req, res) {
   res.setHeader("Cache-Control", "no-store");
   if (req.method !== "POST") return res.status(405).json({ error: "Только POST" });
-  const key = process.env.OPENROUTER_API_KEY;
+  const key = (process.env.OPENROUTER_API_KEY || "").trim().replace(/^["']|["']$/g, "");
   if (!key) return res.status(500).json({ error: "Не задан OPENROUTER_API_KEY" });
   const tok = (req.headers.authorization || "").replace(/^Bearer\s+/i, "");
   if (!tok) return res.status(401).json({ error: "Нужен вход" });
@@ -26,6 +26,10 @@ module.exports = async function (req, res) {
     });
     const t = await r.text();
     res.setHeader("Content-Type", "application/json");
+    if (r.status === 401 || r.status === 403) {
+      // Диагностика: показывает, какой ключ реально видит сервер (только длина и последние 4 символа)
+      return res.status(r.status).json({ error: "OpenRouter отклонил ключ", detail: t.slice(0, 300), debug: { length: key.length, tail: key.slice(-4) } });
+    }
     return res.status(r.status).send(t);
   } catch (e) {
     return res.status(500).json({ error: "Ошибка сервера" });
