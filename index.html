@@ -147,7 +147,6 @@ aside{box-shadow:4px 0 28px rgba(14,60,60,.07)}
 (function(){
 /* ===== Ключи Supabase: впиши сюда или введи на стартовом экране ===== */
 var SUPABASE_URL="https://wqxeebqejexaatrtaxro.supabase.co",SUPABASE_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndxeGVlYnFlamV4YWF0cnRheHJvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTE1NTQ1MjEsImV4cCI6MjEwNzEzMDUyMX0.PMp3Bf6_efL7acEpHaguMa8c_ZfBljBCEF9hvSPDv04";
-var AI_KEY="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",AI_MODEL="openrouter/free";
 /* ================================================================ */
 var $=function(i){return document.getElementById(i)};
 function el(t,c,x){var e=document.createElement(t);if(c)e.className=c;if(x!=null)e.textContent=x;return e}
@@ -161,7 +160,7 @@ $("ssave").onclick=function(){var u=$("su").value.trim(),k=$("sk").value.trim();
 var sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
 
 var user=null,P={},C={},M={},OL={},cur=null,q="",botTyping=false,pend="",mode="login";
-function ru(m){m=m||"";if(/logins are disabled|provider is disabled/i.test(m))return"Вход по почте выключен в Supabase. Включи: Authentication → Sign In / Providers → Email → Enable Email provider (Confirm email оставь выключенным).";if(/Invalid login/i.test(m))return"Неверный логин или пароль.";if(/not confirmed/i.test(m))return"Почта не подтверждена. Зарегистрируйся снова и введи код.";
+function ru(m){m=m||"";if(/(logins|signups) are disabled|provider is disabled|signups not allowed/i.test(m))return"Вход и регистрация выключены в Supabase. Включи: Authentication → Sign In / Providers → Email → Enable Email provider, а вверху странице включи Allow new users to sign up. Confirm email оставь выключенным.";if(/Invalid login/i.test(m))return"Неверный логин или пароль.";if(/not confirmed/i.test(m))return"Почта не подтверждена. Зарегистрируйся снова и введи код.";
 if(/already registered|Database error|duplicate/i.test(m))return"Этот логин уже занят.";if(/rate limit|seconds/i.test(m))return"Слишком много попыток. Подожди немного.";
 if(/expired|invalid/i.test(m))return"Неверный или просроченный код.";if(/password/i.test(m))return"Пароль должен быть не короче 6 символов.";return"Ошибка: "+m}
 function err(m){$("err").textContent=m||""}
@@ -270,8 +269,7 @@ if(/монет/.test(s))return Math.random()<.5?"Выпал орёл.":"Выпа
 return["Интересно! Расскажи подробнее.","Понял тебя. Что ещё?"][Math.floor(Math.random()*2)]}
 var SYS="Ты — Alive Бот, дружелюбный ИИ-помощник внутри мессенджера Alive. Отвечай по-русски, кратко и по делу. Если человек пишет на другом языке, отвечай на нём.";
 async function aiReply(){var h=M.bot.slice(-14).map(function(m){return{role:m.sender_id==="bot"?"assistant":"user",content:m.body}});
-var r=await fetch("https://openrouter.ai/api/v1/chat/completions",{method:"POST",headers:{"Content-Type":"application/json",Authorization:"Bearer "+AI_KEY},
-body:JSON.stringify({model:AI_MODEL,messages:[{role:"system",content:SYS}].concat(h),temperature:.7,max_tokens:1500})});
+var ss=await sb.auth.getSession(),tok=ss.data.session.access_token;var r=await fetch("/api/ai",{method:"POST",headers:{"Content-Type":"application/json",Authorization:"Bearer "+tok},body:JSON.stringify({messages:[{role:"system",content:SYS}].concat(h)})});
 if(!r.ok){console.warn("AI error",r.status,await r.text());throw new Error("ai")}var d=await r.json();var a=(d.choices[0].message.content||"").trim();if(!a)throw new Error("empty");return a}
 async function toFav(m){var f=favId();if(!f)return;var r=await sb.from("messages").insert({chat_id:f,sender_id:user.id,kind:m.kind,body:m.body,media_url:m.media_url||null}).select().single();
 if(r.error)return toast("Не удалось сохранить");addMsg(r.data);render();toast("Сохранено в избранное")}
