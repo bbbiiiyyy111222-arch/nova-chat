@@ -109,9 +109,9 @@ aside{box-shadow:4px 0 28px rgba(14,60,60,.07)}
   <h1>Alive</h1><p>Мессенджер, в котором все на связи</p>
   <div id="f1" style="display:grid;gap:10px">
     <div class="tabs"><button id="tl" class="on">Вход</button><button id="ts">Регистрация</button></div>
-    <input id="un" maxlength="20" placeholder="Имя (2–20 символов)" hidden autocomplete="nickname">
-    <input id="em" type="email" placeholder="Почта" autocomplete="email">
+    <input id="em" maxlength="64" placeholder="Логин" autocomplete="username" autocapitalize="none" spellcheck="false">
     <input id="pw" type="password" placeholder="Пароль (от 6 символов)" autocomplete="current-password">
+    <div class="hint" id="lh" style="color:var(--muted);font-size:.82rem" hidden>Логин: латиница, цифры, _ . - (3–20 символов)</div>
     <button class="go" id="go">Войти</button></div>
   <div class="err" id="err" role="alert"></div></div></div>
 
@@ -161,8 +161,8 @@ $("ssave").onclick=function(){var u=$("su").value.trim(),k=$("sk").value.trim();
 var sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
 
 var user=null,P={},C={},M={},OL={},cur=null,q="",botTyping=false,pend="",mode="login";
-function ru(m){m=m||"";if(/Invalid login/i.test(m))return"Неверная почта или пароль.";if(/not confirmed/i.test(m))return"Почта не подтверждена. Зарегистрируйся снова и введи код.";
-if(/already registered|Database error|duplicate/i.test(m))return"Это имя или почта уже заняты.";if(/rate limit|seconds/i.test(m))return"Слишком много попыток. Подожди немного.";
+function ru(m){m=m||"";if(/logins are disabled|provider is disabled/i.test(m))return"Вход по почте выключен в Supabase. Включи: Authentication → Sign In / Providers → Email → Enable Email provider (Confirm email оставь выключенным).";if(/Invalid login/i.test(m))return"Неверный логин или пароль.";if(/not confirmed/i.test(m))return"Почта не подтверждена. Зарегистрируйся снова и введи код.";
+if(/already registered|Database error|duplicate/i.test(m))return"Этот логин уже занят.";if(/rate limit|seconds/i.test(m))return"Слишком много попыток. Подожди немного.";
 if(/expired|invalid/i.test(m))return"Неверный или просроченный код.";if(/password/i.test(m))return"Пароль должен быть не короче 6 символов.";return"Ошибка: "+m}
 function err(m){$("err").textContent=m||""}
 function color(n){var h=0;for(var i=0;i<n.length;i++)h=(h*31+n.charCodeAt(i))%360;return"hsl("+h+",55%,42%)"}
@@ -174,15 +174,17 @@ return d.toDateString()===n.toDateString()?"Вчера":d.toLocaleDateString("ru
 
 /* ===== вход, регистрация, код ===== */
 function setMode(m){mode=m;$("tl").classList.toggle("on",m==="login");$("ts").classList.toggle("on",m==="signup");
-$("un").hidden=m==="login";$("go").textContent=m==="login"?"Войти":"Создать аккаунт";
+$("lh").hidden=m==="login";$("go").textContent=m==="login"?"Войти":"Создать аккаунт";
 $("pw").autocomplete=m==="login"?"current-password":"new-password";err()}
 $("tl").onclick=function(){setMode("login")};$("ts").onclick=function(){setMode("signup")};
-async function submit(){err();var em=$("em").value.trim(),pw=$("pw").value;if(!em||!pw)return err("Введи почту и пароль.");
+async function submit(){err();var lg=$("em").value.trim(),pw=$("pw").value,em;
+if(mode==="login"&&lg.indexOf("@")>0)em=lg;
+else{if(!/^[A-Za-z0-9_.-]{3,20}$/.test(lg))return err("Логин: 3–20 символов, латиница, цифры и _ . -");em=lg.toLowerCase()+"@alive.app"}
+if(pw.length<6)return err("Пароль должен быть не короче 6 символов.");
 if(mode==="login"){var r=await sb.auth.signInWithPassword({email:em,password:pw});if(r.error)err(ru(r.error.message));return}
-var un=$("un").value.trim();if(un.length<2)return err("Имя должно быть не короче 2 символов.");if(pw.length<6)return err("Пароль должен быть не короче 6 символов.");
-var s=await sb.auth.signUp({email:em,password:pw,options:{data:{username:un}}});if(s.error)return err(ru(s.error.message));
-if(!s.data.session)err("Подтверждение почты включено в Supabase. Выключи: Authentication → Providers → Email → Confirm email.")}
-$("go").onclick=submit;$("pw").onkeydown=function(e){if(e.key==="Enter")submit()};
+var s=await sb.auth.signUp({email:em,password:pw,options:{data:{username:lg}}});if(s.error)return err(ru(s.error.message));
+if(!s.data.session)err("Подтверждение включено в Supabase. Выключи: Authentication → Sign In / Providers → Email → Confirm email.")}
+$("go").onclick=submit;$("pw").onkeydown=$("em").onkeydown=function(e){if(e.key==="Enter")submit()};
 
 /* ===== запуск после входа ===== */
 async function boot(u){if(user&&user.id===u.id)return;user=u;
@@ -360,7 +362,7 @@ var n=Object.keys(sel).map(function(k){return sel[k]});chips.textContent=n.lengt
 var g=el("button","go","Создать группу");g.onclick=async function(){var ids=Object.keys(sel);if(!t.value.trim())return toast("Введи название группы");if(!ids.length)return toast("Выбери хотя бы одного участника");
 var r=await sb.rpc("create_group",{t:t.value.trim(),members:ids});if(r.error)return toast("Не удалось создать группу");close();await loadChats();openChat(r.data)};b.appendChild(g)})};
 $("meb").onclick=function(){modal("Профиль",function(b,close){var box=el("div");box.style.cssText="display:grid;gap:10px;justify-items:center";
-var me=P[user.id];box.appendChild(avatar(me.username,me.avatar_url,96));box.appendChild(el("b",null,me.username));box.appendChild(el("span","chips",user.email));
+var me=P[user.id];box.appendChild(avatar(me.username,me.avatar_url,96));box.appendChild(el("b",null,me.username));
 var f=el("input");f.type="file";f.accept="image/*";f.hidden=true;var c=el("button","go","Сменить фото");c.onclick=function(){f.click()};
 f.onchange=async function(){if(!f.files[0])return;try{var u=await upload(await shrink(f.files[0],256,.85),"jpg","image/jpeg");
 var r=await sb.from("profiles").update({avatar_url:u}).eq("id",user.id).select();if(r.error)throw r.error;if(!r.data||!r.data.length)throw new Error("rls");P[user.id].avatar_url=u;fillMe();render();close();toast("Фото обновлено")}catch(e){console.warn(e);toast(String(e&&e.message).indexOf("rls")>-1?"Нет прав на смену фото: запусти alive-fix.sql в Supabase":"Не удалось сменить фото")}};
