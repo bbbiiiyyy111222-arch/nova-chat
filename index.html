@@ -2,377 +2,329 @@
 <html lang="ru">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Alive</title>
-<link rel="icon" href="data:,">
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Эпоха — империя на 100 дней</title>
 <style>
-:root{--bg:#eaf1ef;--panel:#fff;--ink:#12292b;--muted:#5d7578;--line:#d5e2df;--me:#0e6e6e;--them:#fff;--acc:#ff5a5f;--on:#22b573}
-[data-theme=dark]{--bg:#0d1a1c;--panel:#14272a;--ink:#e6f2f0;--muted:#8aa5a8;--line:#23403f;--me:#15857f;--them:#1d3639}
-*{box-sizing:border-box}html,body{height:100%;margin:0}
-body{background:var(--bg);color:var(--ink);font-family:"Trebuchet MS","Segoe UI",system-ui,sans-serif;line-height:1.4}
-button{font:inherit;color:inherit;cursor:pointer;background:none;border:0}
-button:focus-visible,input:focus-visible,textarea:focus-visible{outline:3px solid var(--me);outline-offset:2px}
-[hidden]{display:none!important}
-input,textarea{font:inherit;background:var(--bg);color:var(--ink);border:1px solid var(--line);border-radius:14px;padding:11px 14px;width:100%}
-.screen{min-height:100%;display:grid;place-items:center;padding:16px}
-.card{background:var(--panel);border:1px solid var(--line);border-radius:24px;padding:30px 26px;width:min(390px,100%);text-align:center;display:grid;gap:10px}
-.logo{width:68px;height:68px;border-radius:22px;background:var(--acc);display:grid;place-items:center;margin:0 auto}
-.logo path{stroke-dasharray:60;stroke-dashoffset:60;animation:draw 1.2s .2s ease forwards}
-@keyframes draw{to{stroke-dashoffset:0}}
-.card h1{margin:6px 0 0;font-size:2rem;letter-spacing:-.02em}.card p{margin:0;color:var(--muted)}
-.tabs{display:grid;grid-template-columns:1fr 1fr;background:var(--bg);border-radius:14px;padding:4px}
-.tabs button{padding:8px;border-radius:11px;color:var(--muted)}.tabs .on{background:var(--panel);color:var(--ink);font-weight:700}
-.go{background:var(--me);color:#fff;border-radius:14px;padding:12px;font-weight:700}
-.lnk{color:var(--muted);font-size:.9rem;text-decoration:underline}
-.err{color:var(--acc);min-height:1.3em;font-size:.9rem}
-#main{height:100%;display:grid;grid-template-columns:350px 1fr}
-aside{background:var(--panel);border-right:1px solid var(--line);display:flex;flex-direction:column;min-height:0}
-.top{display:flex;align-items:center;gap:8px;padding:12px 14px}.top b{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.ib{border-radius:10px;padding:6px 10px;color:var(--muted)}.ib:hover{background:var(--bg);color:var(--ink)}
-.srch{padding:0 14px 10px}
-#list,.ul{overflow:auto;flex:1}
-.row{display:flex;gap:11px;align-items:center;padding:10px 14px;width:100%;text-align:left;border-bottom:1px solid var(--line)}
-.row:hover{background:var(--bg)}.row.on{background:var(--bg);box-shadow:inset 3px 0 var(--me)}
-.av{width:44px;height:44px;border-radius:50%;color:#fff;display:grid;place-items:center;font-weight:700;flex:none;position:relative;background-size:cover;background-position:center}
-.av i{position:absolute;right:-1px;bottom:-1px;width:12px;height:12px;border-radius:50%;background:var(--on);border:2px solid var(--panel)}
-.rt{flex:1;min-width:0}.rt div{display:flex;justify-content:space-between;gap:8px}
-.rt .p{color:var(--muted);font-size:.88rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.rt small{color:var(--muted)}
-.bd{background:var(--acc);color:#fff;border-radius:999px;min-width:22px;height:22px;display:grid;place-items:center;font-size:.78rem;font-weight:700;padding:0 6px}
-.empty{padding:24px 18px;color:var(--muted);text-align:center}
-#chat{display:flex;flex-direction:column;min-height:0;min-width:0}
-.ch{display:flex;align-items:center;gap:12px;padding:10px 16px;background:var(--panel);border-bottom:1px solid var(--line)}
-.st{font-size:.82rem;color:var(--muted)}.st.on{color:var(--on)}.back{display:none}
-#msgs{flex:1;overflow:auto;padding:16px;display:flex;flex-direction:column;gap:4px}
-.day{align-self:center;color:var(--muted);font-size:.78rem;background:var(--panel);border:1px solid var(--line);border-radius:999px;padding:2px 12px;margin:8px 0}
-.m{max-width:min(500px,80%);padding:7px 12px 4px;border-radius:18px;white-space:pre-wrap;overflow-wrap:anywhere;background:var(--them);border:1px solid var(--line)}
-.m.me{align-self:flex-end;background:var(--me);color:#fff;border-color:var(--me);border-bottom-right-radius:6px}
-.m.th{align-self:flex-start;border-bottom-left-radius:6px}
-.m .who{font-size:.78rem;font-weight:700}.m small{display:block;text-align:right;opacity:.65;font-size:.72rem}
-.m img{display:block;max-width:100%;max-height:320px;border-radius:12px;margin:2px 0;cursor:zoom-in}
-.m audio{display:block;max-width:100%;height:38px;margin:2px 0}
-.comp{display:flex;gap:6px;align-items:flex-end;padding:10px 12px;background:var(--panel);border-top:1px solid var(--line);position:relative}
-.comp textarea{resize:none;max-height:120px;height:44px;flex:1}
-.send{background:var(--me);color:#fff;border-radius:50%;width:44px;height:44px;flex:none;font-size:1.1rem}
-#rbar{flex:1;display:flex;align-items:center;gap:8px;color:var(--acc);font-weight:700;height:44px}
-#rbar:before{content:"";width:10px;height:10px;border-radius:50%;background:var(--acc);animation:bl 1s infinite}
-@keyframes bl{50%{opacity:.2}}
-#emr{position:absolute;bottom:62px;left:12px;display:flex;gap:2px;background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:4px}
-#emr button{font-size:1.4rem;padding:4px 7px;border-radius:10px}#emr button:hover{background:var(--bg)}
-.ov{position:fixed;inset:0;background:rgba(8,20,22,.6);display:grid;place-items:center;z-index:50;padding:12px}
-.md{background:var(--panel);border:1px solid var(--line);border-radius:22px;padding:20px;width:min(420px,100%);max-height:86vh;display:flex;flex-direction:column;gap:10px}
-.md h2{margin:0}.md .ul{max-height:44vh;margin-top:4px}.chips{color:var(--muted);font-size:.9rem}
-.ov img.big{max-width:96vw;max-height:92vh;border-radius:12px}
-.toast{position:fixed;left:50%;bottom:18px;transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:12px;z-index:90}
-@media (max-width:760px){#main{grid-template-columns:1fr}#chat{display:none}#main.inchat aside{display:none}#main.inchat #chat{display:flex}.back{display:inline-block}}
-@media (prefers-reduced-motion:reduce){.logo path{animation:none;stroke-dashoffset:0}#rbar:before{animation:none}}
-body{background:radial-gradient(1100px 560px at 8% -10%,color-mix(in srgb,var(--me) 16%,transparent),transparent),var(--bg)}
-#auth{background:radial-gradient(900px 500px at 85% 0,color-mix(in srgb,var(--acc) 20%,transparent),transparent),radial-gradient(800px 520px at 0 100%,color-mix(in srgb,var(--me) 24%,transparent),transparent)}
-.card{box-shadow:0 24px 70px rgba(14,60,60,.2)}
-aside{box-shadow:4px 0 28px rgba(14,60,60,.07)}
-.top{background:linear-gradient(135deg,var(--me),color-mix(in srgb,var(--me) 55%,#000));color:#fff}
-.top .ib{color:rgba(255,255,255,.88)}.top .ib:hover{background:rgba(255,255,255,.18);color:#fff}
-.top .av{box-shadow:0 0 0 2px rgba(255,255,255,.65)}
-.srch input{border-radius:999px}
-.row{border-bottom:0;border-radius:14px;margin:2px 8px;width:calc(100% - 16px);transition:background .15s,transform .15s}
-.row:hover{transform:translateX(2px)}.row.on{background:color-mix(in srgb,var(--me) 15%,transparent);box-shadow:none}
-.av{box-shadow:0 2px 8px rgba(0,0,0,.18)}
-.ch{box-shadow:0 2px 16px rgba(14,60,60,.09);position:relative;z-index:2}
-#msgs{background-image:radial-gradient(color-mix(in srgb,var(--ink) 8%,transparent) 1px,transparent 1.5px);background-size:22px 22px}
-.m{box-shadow:0 1px 4px rgba(0,0,0,.09);animation:pop .22s ease;cursor:pointer}
-.m.me{background:linear-gradient(135deg,var(--me),color-mix(in srgb,var(--me) 72%,#0a4a6a))}
-.m a{text-decoration:underline}
-@keyframes pop{from{opacity:0;transform:translateY(6px) scale(.97)}}
-@keyframes fade{from{opacity:0}}
-.comp{box-shadow:0 -2px 16px rgba(14,60,60,.07)}.comp textarea{border-radius:22px;padding:11px 16px}
-.send{background:linear-gradient(135deg,var(--me),var(--acc));box-shadow:0 4px 14px rgba(255,90,95,.35);transition:transform .15s}.send:hover{transform:scale(1.08)}
-.quote{border-left:3px solid var(--acc);padding:2px 8px;margin:2px 0 5px;font-size:.82rem;background:rgba(0,0,0,.09);border-radius:6px}
-.quote b{display:block}.quote span{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:260px;opacity:.85}
-.rpl{display:flex;align-items:center;gap:8px;padding:7px 14px;background:var(--panel);border-top:1px solid var(--line);font-size:.88rem;color:var(--muted);border-left:4px solid var(--acc)}
-.rpl span{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.pill{border:1px solid var(--line);border-radius:999px;padding:7px 14px}.pill:hover{border-color:var(--me)}
-.row2{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
-.ov{backdrop-filter:blur(5px);animation:fade .15s}.md{animation:pop .2s ease;box-shadow:0 26px 80px rgba(0,0,0,.4)}.toast{animation:pop .2s ease}
-*{scrollbar-width:thin;scrollbar-color:var(--line) transparent}
-@media (prefers-reduced-motion:reduce){.m,.md,.ov,.toast{animation:none}.row{transition:none}}
+:root{--bg:#0f1224;--bg2:#221a4d;--pn:rgba(255,255,255,.06);--pn2:rgba(255,255,255,.11);--ink:#f2efff;--mu:#a9a3d6;--ln:rgba(255,255,255,.13);--ac:#f5b942;--ac2:#3ddc97;--bad:#ff6b81;--sh:rgba(0,0,0,.35)}
+[data-theme=parch]{--bg:#f4ecd8;--bg2:#e6d4aa;--pn:rgba(90,58,12,.07);--pn2:rgba(90,58,12,.13);--ink:#3b2a14;--mu:#7b6541;--ln:rgba(90,58,12,.22);--ac:#b8731a;--ac2:#2c8a58;--bad:#b3261e;--sh:rgba(90,58,12,.2)}
+[data-theme=emerald]{--bg:#05211d;--bg2:#0d4a40;--pn:rgba(255,255,255,.06);--pn2:rgba(255,255,255,.11);--ink:#e8fff6;--mu:#8fc9b6;--ln:rgba(255,255,255,.13);--ac:#ffd166;--ac2:#4be3b0;--bad:#ff7a7a;--sh:rgba(0,0,0,.35)}
+*{box-sizing:border-box}html,body{margin:0;min-height:100%}
+body{background:linear-gradient(160deg,var(--bg),var(--bg2)) fixed;color:var(--ink);font-family:"Trebuchet MS","Segoe UI",system-ui,sans-serif;line-height:1.4;padding-bottom:86px}
+button{font:inherit;color:inherit;cursor:pointer;border:0;background:none}
+button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-visible{outline:3px solid var(--ac);outline-offset:2px}
+header{position:sticky;top:0;z-index:20;background:linear-gradient(180deg,var(--bg),color-mix(in srgb,var(--bg) 82%,transparent));backdrop-filter:blur(10px);border-bottom:1px solid var(--ln);padding:10px 14px 8px}
+.top{display:flex;justify-content:space-between;align-items:center;gap:10px;max-width:980px;margin:0 auto}
+.top h1{margin:0;font-size:1.25rem;letter-spacing:-.01em}.top small{color:var(--mu)}
+.chips{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;max-width:980px;margin:8px auto 0}
+.chip{background:var(--pn);border:1px solid var(--ln);border-radius:14px;padding:6px 10px;min-width:0}
+.chip b{display:block;font-size:1rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.chip small{color:var(--mu);font-size:.72rem;white-space:nowrap}
+main{max-width:980px;margin:0 auto;padding:14px;display:grid;gap:12px}
+.card{background:var(--pn);border:1px solid var(--ln);border-radius:20px;padding:14px;box-shadow:0 8px 24px var(--sh)}
+.card h2,.card h3{margin:0 0 4px}.mu{color:var(--mu);font-size:.88rem}
+.row{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:12px}
+.btn{background:linear-gradient(135deg,var(--ac),color-mix(in srgb,var(--ac) 60%,#ff7a45));color:#241400;font-weight:700;border-radius:14px;padding:9px 16px;transition:transform .12s,filter .12s}
+.btn:hover{transform:translateY(-1px);filter:brightness(1.07)}.btn:active{transform:scale(.97)}
+.btn.sec{background:var(--pn2);color:var(--ink);font-weight:600}.btn.big{padding:12px 20px;text-align:center}
+.btn small{display:block;font-weight:600;opacity:.8}
+.costs{display:flex;gap:6px;flex-wrap:wrap;margin:6px 0}
+.cc{background:var(--pn2);border-radius:999px;padding:2px 10px;font-size:.85rem}.cc.no{color:var(--bad);font-weight:700}
+.bar{height:8px;border-radius:99px;background:var(--pn2);overflow:hidden;margin:4px 0}.bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--ac2),var(--ac));transition:width .4s}
+.tm{display:flex;justify-content:space-between;font-size:.88rem;color:var(--mu)}
+nav{position:fixed;left:0;right:0;bottom:0;z-index:30;display:flex;gap:4px;overflow-x:auto;padding:8px 8px max(8px,env(safe-area-inset-bottom));background:color-mix(in srgb,var(--bg) 92%,transparent);backdrop-filter:blur(12px);border-top:1px solid var(--ln);scrollbar-width:none}
+nav button{flex:1 0 66px;display:grid;justify-items:center;gap:0;padding:6px 4px;border-radius:12px;color:var(--mu);font-size:.72rem}
+nav button span{font-size:1.25rem}nav button.on{background:var(--pn2);color:var(--ink)}
+.cal{display:grid;grid-template-columns:repeat(10,1fr);gap:5px}
+.cell{aspect-ratio:1;border-radius:9px;background:var(--pn);border:1px solid var(--ln);display:grid;place-items:center;font-size:.7rem;color:var(--mu);position:relative}
+.cell.done{background:color-mix(in srgb,var(--ac2) 30%,transparent);color:var(--ink)}.cell.next{border-color:var(--ac);box-shadow:0 0 0 2px var(--ac) inset;color:var(--ink)}
+.cell.big{border-color:var(--ac)}
+.hero{display:grid;gap:2px;text-align:center;padding:10px;border-radius:16px;background:var(--pn);border:1px solid var(--ln)}
+.hero.off{opacity:.38;filter:grayscale(1)}.hero .em{font-size:2rem}
+.r1{color:#c9c9d8}.r2{color:#6fdc8c}.r3{color:#5ea8ff}.r4{color:#c77dff}.r5{color:#ffb347}
+.ach{display:flex;gap:10px;align-items:center;padding:10px;border-radius:14px;background:var(--pn);border:1px solid var(--ln);opacity:.5}.ach.on{opacity:1;border-color:var(--ac)}
+.toast{position:fixed;left:50%;bottom:96px;transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:14px;z-index:90;max-width:92vw;box-shadow:0 8px 28px var(--sh);animation:pop .22s ease}
+@keyframes pop{from{opacity:0;transform:translate(-50%,8px)}}
+.ov{position:fixed;inset:0;background:rgba(6,4,20,.62);backdrop-filter:blur(5px);display:grid;place-items:center;z-index:60;padding:12px}
+.md{background:linear-gradient(160deg,var(--bg2),var(--bg));border:1px solid var(--ln);border-radius:22px;padding:18px;width:min(560px,100%);max-height:88vh;overflow:auto;display:grid;gap:10px}
+.tabs{display:flex;gap:6px;flex-wrap:wrap}.tabs .btn{padding:6px 12px}
+input,textarea,select{font:inherit;background:var(--pn2);color:var(--ink);border:1px solid var(--ln);border-radius:12px;padding:8px 12px;max-width:100%}
+textarea{width:100%;height:120px;font-size:.78rem}
+.log{font-size:.85rem;color:var(--mu);display:grid;gap:3px;max-height:220px;overflow:auto}
+.stat{display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--ln)}
+@media (max-width:560px){.chips{grid-template-columns:repeat(2,1fr)}.cal{grid-template-columns:repeat(7,1fr)}}
+@media (prefers-reduced-motion:reduce){.toast{animation:none}.bar i,.btn{transition:none}}
 </style>
 </head>
 <body>
-<!-- Настройка ключей, если они не вписаны в файл -->
-<div class="screen" id="setup" hidden><div class="card">
-  <h1>Подключение</h1><p>Вставь данные из Supabase (Project Settings → API)</p>
-  <input id="su" placeholder="Project URL (https://…supabase.co)"><input id="sk" placeholder="anon public key">
-  <button class="go" id="ssave">Сохранить</button></div></div>
-
-<div class="screen" id="auth" hidden><div class="card">
-  <div class="logo"><svg width="38" height="38" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M1 12h5l2.5-7 4 14 3-9 1.5 2H23" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
-  <h1>Alive</h1><p>Мессенджер, в котором все на связи</p>
-  <div id="f1" style="display:grid;gap:10px">
-    <div class="tabs"><button id="tl" class="on">Вход</button><button id="ts">Регистрация</button></div>
-    <input id="em" maxlength="64" placeholder="Логин" autocomplete="username" autocapitalize="none" spellcheck="false">
-    <input id="pw" type="password" placeholder="Пароль (от 6 символов)" autocomplete="current-password">
-    <div class="hint" id="lh" style="color:var(--muted);font-size:.82rem" hidden>Логин: латиница, цифры, _ . - (3–20 символов)</div>
-    <button class="go" id="go">Войти</button></div>
-  <div class="err" id="err" role="alert"></div></div></div>
-
-<div id="main" hidden>
-  <aside>
-    <div class="top"><button id="meb" aria-label="Профиль"></button><b id="mn"></b>
-      <button class="ib" id="nc" title="Новый чат">Чат</button><button class="ib" id="ng" title="Новая группа">Группа</button>
-      <button class="ib" id="th" aria-label="Сменить тему">◐</button></div>
-    <div class="srch"><input id="q" placeholder="Поиск по чатам" aria-label="Поиск"></div>
-    <div id="list"></div>
-  </aside>
-  <section id="chat">
-    <div class="empty" id="noch" style="margin:auto"><div class="logo" style="margin-bottom:14px"><svg width="38" height="38" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M1 12h5l2.5-7 4 14 3-9 1.5 2H23" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div style="font-size:1.3rem;font-weight:700;color:var(--ink)">Alive</div>Выбери чат слева или создай новый.</div>
-    <div class="ch" id="ch" hidden><button class="ib back" id="back" aria-label="Назад">←</button><div id="chav"></div>
-      <div><b id="chn"></b><div class="st" id="chs"></div></div>
-      <div style="margin-left:auto;display:flex;gap:4px"><button class="ib" id="clr" hidden>Очистить</button><button class="ib" id="mem" hidden>Участники</button></div></div>
-    <div id="msgs" hidden></div>
-    <div class="rpl" id="rpl" hidden></div>
-    <div class="comp" id="comp" hidden>
-      <div id="emr" hidden></div>
-      <button class="ib" id="att" aria-label="Прикрепить фото">📎</button>
-      <button class="ib" id="emo" aria-label="Эмодзи">☺</button>
-      <textarea id="inp" rows="1" placeholder="Написать сообщение" aria-label="Сообщение"></textarea>
-      <button class="ib" id="rcx" aria-label="Отменить запись" hidden>✕</button>
-      <div id="rbar" hidden><span id="rt">0:00</span></div>
-      <button class="send" id="send" aria-label="Отправить">🎤</button>
-      <input type="file" id="file" accept="image/*" hidden>
-    </div>
-  </section>
-</div>
+<header>
+  <div class="top"><div><h1 id="ttl">Эпоха</h1><small id="sub"></small></div><div class="mu" id="clk"></div></div>
+  <div class="chips" id="chips"></div>
+</header>
+<main id="view"></main>
+<nav id="nav" aria-label="Разделы"></nav>
 
 <script>
-(function(){
-/* ===== Ключи Supabase: впиши сюда или введи на стартовом экране ===== */
-var SUPABASE_URL="https://wqxeebqejexaatrtaxro.supabase.co",SUPABASE_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndxeGVlYnFlamV4YWF0cnRheHJvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTE1NTQ1MjEsImV4cCI6MjEwNzEzMDUyMX0.PMp3Bf6_efL7acEpHaguMa8c_ZfBljBCEF9hvSPDv04";
-/* ================================================================ */
-var $=function(i){return document.getElementById(i)};
-function el(t,c,x){var e=document.createElement(t);if(c)e.className=c;if(x!=null)e.textContent=x;return e}
-function toast(t){var e=el("div","toast",t);e.setAttribute("role","status");document.body.appendChild(e);setTimeout(function(){e.remove()},3200)}
-try{var cf=JSON.parse(localStorage.getItem("alive-cfg")||"{}");SUPABASE_URL=SUPABASE_URL||cf.u||"";SUPABASE_KEY=SUPABASE_KEY||cf.k||""}catch(e){}
-function theme(t){document.documentElement.dataset.theme=t;try{localStorage.setItem("alive-theme",t)}catch(e){}}
-try{theme(localStorage.getItem("alive-theme")||"light")}catch(e){}
-$("th").onclick=function(){theme(document.documentElement.dataset.theme==="dark"?"light":"dark")};
-if(!SUPABASE_URL||!SUPABASE_KEY){$("setup").hidden=false;
-$("ssave").onclick=function(){var u=$("su").value.trim(),k=$("sk").value.trim();if(!u||!k)return;localStorage.setItem("alive-cfg",JSON.stringify({u:u,k:k}));location.reload()};return}
-var sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+(()=>{
+const $=i=>document.getElementById(i),KEY="epoha-save-v1";
+const RI={gold:"🪙",food:"🌾",wood:"🪵",gem:"💎"},RN={gold:"Золото",food:"Еда",wood:"Дерево",gem:"Кристаллы"},RL=["gold","food","wood","gem"];
+const SU=["","К","М","Млрд","Трлн","Квдр","Квнт","Скст","Спт","Окт"];
+const sh=n=>{n=Math.floor(n);if(n<1000)return""+n;const i=Math.min(SU.length-1,Math.floor(Math.log10(n)/3)),v=n/Math.pow(10,i*3);return(v<10?v.toFixed(2):v<100?v.toFixed(1):Math.floor(v))+SU[i]};
+const rt=x=>x<10?x.toFixed(2):sh(x);
+const ft=s=>{s=Math.max(0,Math.ceil(s));const d=Math.floor(s/86400),h=Math.floor(s%86400/3600),m=Math.floor(s%3600/60),c=s%60;return d?d+"д "+h+"ч":h?h+"ч "+m+"м":m?m+"м "+c+"с":c+"с"};
+const ERAS=["Каменный век","Бронзовый век","Античность","Средневековье","Возрождение","Эпоха пара","Индустриализация","Атомный век","Цифровая эра","Космическая эра"];
+const BLD=[
+{id:"farm",n:"Ферма",i:"🌾",res:"food",r:.8,c:{gold:15},d:"Выращивает еду",e:1},
+{id:"sawmill",n:"Лесопилка",i:"🪵",res:"wood",r:.6,c:{gold:20,food:10},d:"Добывает дерево",e:1},
+{id:"mine",n:"Золотой рудник",i:"⛏️",res:"gold",r:.5,c:{wood:25,food:15},d:"Приносит золото",e:1},
+{id:"storage",n:"Склад",i:"🏚️",c:{wood:80,gold:50},d:"Увеличивает вместимость",e:1},
+{id:"market",n:"Рынок",i:"🏪",c:{gold:120,wood:80,food:50},d:"+3% к добыче золота за уровень",e:1},
+{id:"barracks",n:"Казармы",i:"🏰",c:{gold:100,wood:60},d:"+4% к силе героев за уровень",e:2},
+{id:"library",n:"Библиотека",i:"📚",c:{gold:150,wood:100},d:"+4% к скорости исследований",e:2},
+{id:"temple",n:"Храм",i:"⛩️",res:"gem",r:.002,c:{gold:500,wood:300},d:"Приносит кристаллы",e:3}];
+const TECH=[
+{id:"agri",n:"Земледелие",i:"🌱",d:"+12% еды за уровень"},{id:"forest",n:"Лесоводство",i:"🌲",d:"+12% дерева за уровень"},
+{id:"mining",n:"Горное дело",i:"⛰️",d:"+12% золота за уровень"},{id:"store",n:"Логистика",i:"📦",d:"+15% вместимости за уровень"},
+{id:"scholar",n:"Письменность",i:"📜",d:"+3% скорости исследований"},{id:"war",n:"Военное дело",i:"⚔️",d:"+10% силы героев и наград походов"},
+{id:"trade",n:"Торговля",i:"⚖️",d:"+5% к выгоде обмена"},{id:"wonder",n:"Чудеса света",i:"🗿",d:"+5% ко всей добыче"}];
+const HR=[["Лучник Ори","🏹",1],["Крестьянин Ян","🧑‍🌾",1],["Охотница Лея","🦌",1],["Кузнец Бран","🔨",1],["Рыцарь Эйрик","🛡️",2],["Целительница Мира","🌿",2],["Следопыт Кай","🧭",2],["Алхимик Зол","⚗️",2],["Маг Аркон","🔮",3],["Капитан Вега","⚓",3],["Тень Ниакс","🥷",3],["Жрица Сола","🌞",3],["Дракон Игнис","🐉",4],["Валькирия Хельга","⚔️",4],["Король Артур","👑",5],["Звёздный Страж","🌌",5]];
+const EXP=[{n:"Разведка",t:900,i:"🔭"},{n:"Охота",t:3600,i:"🏹"},{n:"Караван",t:14400,i:"🐪"},{n:"Дальняя экспедиция",t:43200,i:"⛵"},{n:"Великий поход",t:86400,i:"🏔️"}];
+const QK={gold:"Добыть {n} золота",up:"Улучшить здания {n} раз",exp:"Завершить походов: {n}",sum:"Призвать героев: {n}",click:"Собрать налоги {n} раз"};
+const LS=[["prod","Имперская мощь","+10% к добыче"],["cap","Великие склады","+20% вместимости"],["rs","Мудрость предков","+10% к скорости исследований"]];
 
-var user=null,P={},C={},M={},OL={},cur=null,q="",botTyping=false,pend="",mode="login";
-function ru(m){m=m||"";if(/(logins|signups) are disabled|provider is disabled|signups not allowed/i.test(m))return"Вход и регистрация выключены в Supabase. Включи: Authentication → Sign In / Providers → Email → Enable Email provider, а вверху странице включи Allow new users to sign up. Confirm email оставь выключенным.";if(/Invalid login/i.test(m))return"Неверный логин или пароль.";if(/not confirmed/i.test(m))return"Почта не подтверждена. Зарегистрируйся снова и введи код.";
-if(/already registered|Database error|duplicate/i.test(m))return"Этот логин уже занят.";if(/rate limit|seconds/i.test(m))return"Слишком много попыток. Подожди немного.";
-if(/expired|invalid/i.test(m))return"Неверный или просроченный код.";if(/password/i.test(m))return"Пароль должен быть не короче 6 символов.";return"Ошибка: "+m}
-function err(m){$("err").textContent=m||""}
-function color(n){var h=0;for(var i=0;i<n.length;i++)h=(h*31+n.charCodeAt(i))%360;return"hsl("+h+",55%,42%)"}
-function avatar(n,url,sz,on){var a=el("div","av",url?"":(n==="Избранное"?"★":n==="Alive Бот"?"✦":n.charAt(0).toUpperCase()));a.style.backgroundColor=n==="Избранное"?"#e8a700":color(n);
-if(url){a.style.backgroundImage='url("'+url+'")'}if(sz){a.style.width=a.style.height=sz+"px";a.style.fontSize=Math.round(sz*.4)+"px"}if(on)a.appendChild(el("i"));return a}
-function tm(t){return new Date(t).toLocaleTimeString("ru-RU",{hour:"2-digit",minute:"2-digit"})}
-function dl(t){var d=new Date(t),n=new Date();if(d.toDateString()===n.toDateString())return"Сегодня";n.setDate(n.getDate()-1);
-return d.toDateString()===n.toDateString()?"Вчера":d.toLocaleDateString("ru-RU",{day:"numeric",month:"long"})}
+const def=()=>{const b={};BLD.forEach(x=>b[x.id]=["farm","mine","sawmill"].includes(x.id)?1:0);
+return{off:0,spd:1,mult:1,last:Date.now(),res:{gold:60,food:40,wood:40,gem:30},bl:b,era:1,eraEnd:0,tech:{},rs:[],slots:1,heroes:{},exp:[],xslots:2,
+day:{n:0,last:""},q:{date:"",l:[]},ach:{},st:{gold:0,run:0,clicks:0,up:0,exp:0,sum:0,ev:0,pr:0,maxEra:1,trade:0},legT:0,leg:0,ls:{},sumDay:"",log:[],evT:0,theme:"night",snd:true,pw:"admin",born:Date.now()}};
+const merge=(a,b)=>{for(const k in b){if(b[k]&&typeof b[k]==="object"&&!Array.isArray(b[k])&&a[k]&&typeof a[k]==="object"&&!Array.isArray(a[k]))merge(a[k],b[k]);else a[k]=b[k]}return a};
+let S=def(),tab="emp",adminOk=false,admTab="res";
+try{const r=localStorage.getItem(KEY);if(r)S=merge(def(),JSON.parse(r))}catch(e){}
+const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}};
+const now=()=>Date.now()+S.off,today=()=>new Date(now()).toDateString();
 
-/* ===== вход, регистрация, код ===== */
-function setMode(m){mode=m;$("tl").classList.toggle("on",m==="login");$("ts").classList.toggle("on",m==="signup");
-$("lh").hidden=m==="login";$("go").textContent=m==="login"?"Войти":"Создать аккаунт";
-$("pw").autocomplete=m==="login"?"current-password":"new-password";err()}
-$("tl").onclick=function(){setMode("login")};$("ts").onclick=function(){setMode("signup")};
-async function submit(){err();var lg=$("em").value.trim(),pw=$("pw").value,em;
-if(mode==="login"&&lg.indexOf("@")>0)em=lg;
-else{if(!/^[A-Za-z0-9_.-]{3,20}$/.test(lg))return err("Логин: 3–20 символов, латиница, цифры и _ . -");em=lg.toLowerCase()+"@alive.app"}
-if(pw.length<6)return err("Пароль должен быть не короче 6 символов.");
-if(mode==="login"){var r=await sb.auth.signInWithPassword({email:em,password:pw});if(r.error)err(ru(r.error.message));return}
-var s=await sb.auth.signUp({email:em,password:pw,options:{data:{username:lg}}});if(s.error)return err(ru(s.error.message));
-if(!s.data.session)err("Подтверждение включено в Supabase. Выключи: Authentication → Sign In / Providers → Email → Confirm email.")}
-$("go").onclick=submit;$("pw").onkeydown=$("em").onkeydown=function(e){if(e.key==="Enter")submit()};
+/* звук и сообщения */
+let ac=null;const beep=(f,d=.12,ty="triangle")=>{if(!S.snd)return;try{ac=ac||new(window.AudioContext||window.webkitAudioContext)();const o=ac.createOscillator(),g=ac.createGain(),t=ac.currentTime;o.type=ty;o.frequency.setValueAtTime(f,t);o.frequency.exponentialRampToValueAtTime(f*1.5,t+d);g.gain.setValueAtTime(.05,t);g.gain.exponentialRampToValueAtTime(.0001,t+d);o.connect(g);g.connect(ac.destination);o.start(t);o.stop(t+d)}catch(e){}};
+const toast=m=>{const e=document.createElement("div");e.className="toast";e.textContent=m;e.setAttribute("role","status");document.body.appendChild(e);setTimeout(()=>e.remove(),3400)};
+const logm=m=>{S.log.unshift({t:now(),m});S.log.length=Math.min(S.log.length,40)};
 
-/* ===== запуск после входа ===== */
-async function boot(u){if(user&&user.id===u.id)return;user=u;
-var p=await sb.from("profiles").select("*").eq("id",u.id).single();P[u.id]=p.data||{username:"Я"};
-$("auth").hidden=true;$("main").hidden=false;fillMe();await loadChats();if(!favId()){await sb.rpc("start_favorites");await loadChats()}listen()}
-function fillMe(){$("mn").textContent=P[user.id].username;$("meb").innerHTML="";$("meb").appendChild(avatar(P[user.id].username,P[user.id].avatar_url,38))}
-sb.auth.onAuthStateChange(function(ev,s){if(s&&s.user)setTimeout(function(){boot(s.user)},0);else if(user)location.reload();else $("auth").hidden=false});
+/* формулы */
+const tb=id=>S.tech[id]||0,lup=k=>S.ls[k]||0,eraM=()=>Math.pow(3.2,S.era-1),legM=()=>1+.1*S.legT;
+const cap=()=>5000*Math.pow(1.2,S.bl.storage)*Math.pow(4,S.era-1)*(1+.15*tb("store"))*(1+.2*lup("cap"));
+const maxL=()=>5+5*S.era;
+const rates=()=>{const r={gold:0,food:0,wood:0,gem:0},m=eraM()*legM()*S.mult*(1+.05*tb("wonder"))*(1+.1*lup("prod")),tm={food:tb("agri"),wood:tb("forest"),gold:tb("mining")};
+BLD.forEach(b=>{if(!b.res)return;const L=S.bl[b.id];if(L<=0)return;let x=b.res==="gem"?b.r*L*S.mult:b.r*L*m*(1+.12*(tm[b.res]||0));if(b.res==="gold")x*=1+.03*S.bl.market;r[b.res]+=x});return r};
+const bcost=b=>{const c={},k=Math.pow(1.16,S.bl[b.id])*Math.pow(2.2,S.era-1);for(const r in b.c)c[r]=Math.ceil(b.c[r]*k);return c};
+const afford=c=>Object.keys(c).every(r=>S.res[r]>=c[r]),pay=c=>{for(const r in c)S.res[r]-=c[r]};
+const addRes=(r,v)=>{if(r==="gem"){S.res.gem+=v;return}const c=cap();S.res[r]=S.res[r]>=c?S.res[r]:Math.min(c,S.res[r]+v)};
+const rsSpeed=()=>1+.04*S.bl.library+.03*tb("scholar")+.1*lup("rs");
+const tcost=l=>({gold:Math.round(250*Math.pow(1.55,l)*eraM()),food:Math.round(120*Math.pow(1.55,l)*eraM())});
+const tdur=l=>1200*Math.pow(1.5,l)/rsSpeed();
+const eraCost=()=>{const k=Math.pow(5,S.era-1);return{gold:3000*k,food:1500*k,wood:1500*k,gem:20*S.era}};
+const eraDur=()=>4*3600*S.era;
+const taxVal=()=>Math.max(2,rates().gold*6+eraM()*2);
+const hp=i=>{const h=S.heroes[i];return h?HR[i][2]*5*(1+.25*(h.lv-1)):0};
+const party=()=>Object.keys(S.heroes).map(i=>hp(+i)).sort((a,b)=>b-a).slice(0,3).reduce((a,b)=>a+b,0)*(1+.04*S.bl.barracks+.1*tb("war"));
+const cnt=()=>Object.keys(S.heroes).length;
+const prGain=()=>Math.floor(Math.sqrt(S.st.run/1e7));
+const xr=(k,pw)=>{const T=EXP[k],R=rates(),pm=(1+pw/60)*(1+.1*tb("war")),e=eraM();
+return{gold:Math.round(Math.max(150*e,R.gold*T.t*.6)*pm),food:Math.round(Math.max(100*e,R.food*T.t*.6)*pm),wood:Math.round(Math.max(100*e,R.wood*T.t*.6)*pm),gem:Math.max(1,Math.round(T.t/7200*(1+pw/200)))}};
+const roll=()=>{const w=[45,30,15,8,2],r=Math.random()*100;let a=0,rar=1;for(let i=0;i<5;i++){a+=w[i];if(r<a){rar=i+1;break}}const p=HR.map((h,i)=>i).filter(i=>HR[i][2]===rar);return p[Math.floor(Math.random()*p.length)]};
+const give=i=>{if(S.heroes[i]){S.heroes[i].sh++;return false}S.heroes[i]={lv:1,sh:0};return true};
+const dayRew=d=>{const R=rates(),s=(d-1)%100+1;return{gem:2+(s%7===0?10:0)+(s%30===0?40:0)+(s===100?400:0),gold:Math.round(500*eraM()+R.gold*600*(1+s/20)),hero:s%10===0}};
 
-/* ===== данные ===== */
-function addMsg(m){var a=M[m.chat_id]||(M[m.chat_id]=[]);if(m.id&&a.some(function(x){return x.id===m.id}))return;
-m.t=m.t||Date.parse(m.created_at);a.push(m);a.sort(function(x,y){return x.t-y.t})}
-async function loadChats(){
-var r=await sb.from("chat_members").select("chat_id,user_id,last_read,profiles(username,avatar_url),chats(id,is_group,title,created_at)");
-if(r.error)return toast("Не удалось загрузить чаты");
-var cs={};r.data.forEach(function(x){var c=cs[x.chat_id]||(cs[x.chat_id]={id:x.chat_id,is_group:x.chats.is_group,title:x.chats.title,ct:Date.parse(x.chats.created_at),fav:x.chats.title==="__favorites__",members:[],lr:0});
-c.members.push(x.user_id);if(x.profiles)P[x.user_id]=x.profiles;if(x.user_id===user.id)c.lr=Date.parse(x.last_read)});
-/* локальный чат с ботом */
-var b=[];try{b=JSON.parse(localStorage.getItem("alive-bot-"+user.id)||"[]")}catch(e){}
-if(!b.length)b=[{id:"b0",sender_id:"bot",kind:"text",body:"Привет! Я Alive Бот на базе ИИ. Спрашивай что угодно: отвечу, помогу с текстом или идеей.",t:Date.now()}];
-M.bot=b;botSave();cs.bot={id:"bot",bot:true,members:[],ct:0,lr:+(localStorage.getItem("alive-botlr-"+user.id)||0)};C=cs;
-var m=await sb.from("messages").select("*").order("created_at",{ascending:false}).limit(400);
-(m.data||[]).reverse().forEach(addMsg);render()}
-function listen(){
-sb.channel("db").on("postgres_changes",{event:"INSERT",schema:"public",table:"messages"},function(p){var m=p.new;
-if(!C[m.chat_id]){loadChats();return}addMsg(m);notify(m);if(!P[m.sender_id])loadChats();if(cur===m.chat_id)markRead();render()})
-.on("postgres_changes",{event:"DELETE",schema:"public",table:"messages"},function(p){if(p.old&&p.old.id){removeMsg(p.old.id);render()}})
-.on("postgres_changes",{event:"UPDATE",schema:"public",table:"profiles"},function(p){var n=p.new;if(n&&P[n.id]){P[n.id].avatar_url=n.avatar_url;if(n.id===user.id)fillMe();render()}})
-.on("postgres_changes",{event:"INSERT",schema:"public",table:"chat_members"},function(p){if(p.new.user_id===user.id)loadChats()}).subscribe();
-tch=sb.channel("typing").on("broadcast",{event:"t"},function(p){var d=p.payload;if(!d||d.u===user.id)return;tmr[d.c]={t:Date.now()+3000,n:d.n};if(d.c===cur)renderHead();setTimeout(renderHead,3100)}).subscribe();
-var ch=sb.channel("online",{config:{presence:{key:user.id}}});
-ch.on("presence",{event:"sync"},function(){OL=ch.presenceState();renderSide();renderHead()})
-.subscribe(function(s){if(s==="SUBSCRIBED")ch.track({at:Date.now()})})}
-function info(c){if(c.fav)return{name:"Избранное"};if(c.bot)return{name:"Alive Бот",on:true};
-if(c.is_group)return{name:c.title||"Группа"};
-var o=c.members.filter(function(x){return x!==user.id})[0],p=P[o]||{username:"?"};return{name:p.username,url:p.avatar_url,on:!!OL[o]}}
-function favId(){for(var k in C)if(C[k].fav)return k;return null}
-function pin(c){return c.fav?2:c.bot?1:0}
-function lastT(c){var a=M[c.id]||[];return a.length?a[a.length-1].t:c.ct}
-function unread(c){return(M[c.id]||[]).filter(function(m){return m.sender_id!==user.id&&m.t>c.lr}).length}
-function markRead(){var c=C[cur],a=M[cur]||[],l=a[a.length-1];if(!c||!l||l.t<=c.lr)return;c.lr=l.t;
-if(cur==="bot"){botLr(l.t);return}
-sb.from("chat_members").update({last_read:l.created_at}).eq("chat_id",cur).eq("user_id",user.id).select().then(function(r){if(r.error||!r.data||!r.data.length)console.warn("last_read не сохранён",r.error)})}
+/* задания и достижения */
+const mkQ=()=>{const R=rates();return Object.keys(QK).sort(()=>Math.random()-.5).slice(0,3).map(x=>({k:x,n:x==="gold"?Math.max(500,Math.round(R.gold*1800)):x==="up"?3+S.era:x==="exp"?2:x==="sum"?1:25,c:0,r:5+S.era,d:0}))};
+const qp=(k,n)=>S.q.l.forEach(q=>{if(q.k===k&&!q.d)q.c=Math.min(q.n,q.c+n)});
+const ACH=[],A=(id,n,f,r)=>ACH.push({id,n,f,r});
+[1e3,1e5,1e7,1e9,1e12,1e15].forEach(v=>A("g"+v,`Добыть ${sh(v)} золота за всё время`,()=>S.st.gold>=v,5+Math.floor(Math.log10(v))));
+[10,100,1000,10000].forEach(v=>A("c"+v,`Собрать налоги ${v} раз`,()=>S.st.clicks>=v,5));
+[10,50,200,1000].forEach(v=>A("u"+v,`Улучшить здания ${v} раз`,()=>S.st.up>=v,6));
+[1,5,25,100].forEach(v=>A("x"+v,`Завершить походов: ${v}`,()=>S.st.exp>=v,6));
+[1,10,50,200].forEach(v=>A("s"+v,`Призвать героев: ${v}`,()=>S.st.sum>=v,6));
+[2,4,6,8,10].forEach(v=>A("e"+v,`Достичь эры «${ERAS[v-1]}»`,()=>S.st.maxEra>=v,10));
+[1,3,10].forEach(v=>A("p"+v,`Возрождений: ${v}`,()=>S.st.pr>=v,20));
+[1,7,30,60,100].forEach(v=>A("d"+v,`Получить ежедневных наград: ${v}`,()=>S.day.n>=v,8));
+[5,10,15].forEach(v=>A("t"+v,`Довести науку до уровня ${v}`,()=>TECH.some(t=>tb(t.id)>=v),12));
+[4,8,16].forEach(v=>A("h"+v,`Собрать героев: ${v}`,()=>cnt()>=v,10));
+[10,50].forEach(v=>A("m"+v,`Совершить сделок на рынке: ${v}`,()=>S.st.trade>=v,6));
 
-/* ===== отрисовка ===== */
-function pv(l){if(!l)return"Нет сообщений";var p=l.sender_id===user.id?"Вы: ":"";return p+(l.kind==="image"?"🖼 Фото":l.kind==="voice"?"🎤 Голосовое":l.body)}
-function renderSide(){var l=$("list");l.innerHTML="";var n=q.toLowerCase(),tot=0;
-Object.keys(C).map(function(k){return C[k]}).sort(function(a,b){return pin(b)-pin(a)||lastT(b)-lastT(a)}).forEach(function(c){
-var i=info(c);if(n&&i.name.toLowerCase().indexOf(n)<0)return;var a=M[c.id]||[],last=a[a.length-1],u=unread(c);tot+=u;
-var r=el("button","row"+(c.id===cur?" on":""));r.appendChild(avatar(i.name,i.url,44,i.on));
-var t=el("div","rt"),h=el("div");h.appendChild(el("b",null,i.name));if(last)h.appendChild(el("small",null,tm(last.t)));
-var s=el("div");s.appendChild(el("span","p",pv(last)));if(u)s.appendChild(el("span","bd",u));
-t.appendChild(h);t.appendChild(s);r.appendChild(t);r.onclick=function(){openChat(c.id)};l.appendChild(r)});
-if(!l.children.length)l.appendChild(el("div","empty","Ничего не найдено. Нажми «Чат», чтобы найти человека."));
-document.title=(tot?"("+tot+") ":"")+"Alive"}
-function renderHead(){var c=C[cur];if(!c)return;var i=info(c);$("chav").innerHTML="";$("chav").appendChild(avatar(i.name,i.url,40,i.on));$("chn").textContent=i.name;
-var s=c.fav?"заметки, файлы и голосовые только для тебя":c.bot?(botTyping?"печатает…":"ИИ-помощник"):c.is_group?c.members.length+" участн.":(i.on?"в сети":"не в сети");
-var ty=tmr[cur];if(ty&&ty.t>Date.now()&&!c.bot)s=(c.is_group?ty.n+" ":"")+"печатает…";$("clr").hidden=!c.bot;$("mem").hidden=!c.is_group;$("chs").textContent=s;$("chs").className="st"+(i.on?" on":"")}
-function renderChat(){var has=!!C[cur];$("noch").hidden=has;$("ch").hidden=!has;$("msgs").hidden=!has;$("comp").hidden=!has;if(!has)return;renderHead();
-var box=$("msgs"),a=M[cur]||[],c=C[cur],near=box.scrollHeight-box.scrollTop-box.clientHeight<90;box.innerHTML="";
-if(!a.length)box.appendChild(el("div","empty","Сообщений пока нет. Напиши первым."));
-var pd="",ps="";a.forEach(function(m){var d=dl(m.t);if(d!==pd){box.appendChild(el("div","day",d));pd=d;ps=""}
-var mine=m.sender_id===user.id,d=el("div","m "+(mine?"me":"th"));
-if(c.is_group&&!mine&&ps!==m.sender_id){var w=el("div","who",(P[m.sender_id]||{}).username||"?");w.style.color=color(w.textContent);d.appendChild(w)}
-if(m.reply_to){var qm=a.filter(function(x){return x.id===m.reply_to})[0],qq=el("div","quote");qq.appendChild(el("b",null,qm?(qm.sender_id===user.id?"Вы":((P[qm.sender_id]||{}).username||"Alive Бот")):"Сообщение"));qq.appendChild(el("span",null,qm?pv(qm).replace(/^Вы: /,""):"удалено"));d.appendChild(qq)}
-if(m.kind==="image"){var im=el("img");im.src=m.media_url;im.alt="Фото";im.loading="lazy";im.onclick=function(){bigImg(m.media_url)};d.appendChild(im)}
-else if(m.kind==="voice"){var au=el("audio");au.controls=true;au.preload="metadata";au.src=m.media_url;d.appendChild(au)}
-else d.appendChild(rich(m.body));
-d.appendChild(el("small",null,tm(m.t)));d.onclick=function(e){if(/^(AUDIO|IMG|A|BUTTON)$/.test(e.target.tagName))return;msgMenu(m)};box.appendChild(d);ps=m.sender_id});
-if(near||box.dataset.c!==cur){box.scrollTop=box.scrollHeight}box.dataset.c=cur}
-function render(){renderSide();renderChat()}
-function openChat(id){cur=id;setReply(null);markRead();$("main").classList.add("inchat");render();$("inp").focus()}
-$("back").onclick=function(){cur=null;$("main").classList.remove("inchat");render()};
-$("q").oninput=function(){q=this.value;renderSide()};
-function bigImg(u){var o=el("div","ov"),i=el("img","big");i.src=u;o.appendChild(i);o.onclick=function(){o.remove()};document.body.appendChild(o)}
+/* случайные события */
+const EV=[
+{t:"Бродячий торговец",d:"Торговец предлагает редкий кристалл за часть вашего золота.",o:[["Купить (−15% золота)",()=>{S.res.gold*=.85;S.res.gem+=3;return"Вы получили 3 💎"}],["Отказаться",()=>"Торговец ушёл дальше."]]},
+{t:"Засуха",d:"Поля сохнут. Можно потратить дерево на колодцы или рискнуть.",o:[["Построить колодцы (−20% дерева)",()=>{S.res.wood*=.8;addRes("food",rates().food*900);return"Урожай спасён: еда пополнена."}],["Рискнуть",()=>{if(Math.random()<.5){S.res.food*=.7;return"Потеряно 30% еды."}addRes("food",rates().food*1800);return"Повезло! Пошли дожди, урожай удвоился."}]]},
+{t:"Находка в шахте",d:"Рабочие нашли странную жилу. Копать глубже?",o:[["Копать глубже",()=>{if(Math.random()<.6){addRes("gold",rates().gold*2400+500*eraM());return"Жила богата золотом!"}S.res.wood*=.9;return"Обвал. Потеряно 10% дерева."}],["Закрыть шахту",()=>"Вы решили не рисковать."]]},
+{t:"Бродячий герой",d:"Путник просится на службу в вашу империю.",o:[["Принять",()=>{const i=roll();return give(i)?`К вам присоединился герой: ${HR[i][0]}!`:`${HR[i][0]} уже служит у вас: +1 осколок.`}],["Накормить и отпустить",()=>{S.res.food*=.95;S.res.gem+=1;return"Путник благодарен и оставил 1 💎"}]]},
+{t:"Праздник урожая",d:"Народ просит устроить праздник.",o:[["Устроить (−10% еды)",()=>{S.res.food*=.9;addRes("gold",rates().gold*1500);return"Праздник удался: казна пополнена."}],["Отказать",()=>"Люди разочарованы, но всё спокойно."]]},
+{t:"Древняя библиотека",d:"Учёные нашли свитки и просят средства на их изучение.",o:[["Профинансировать (−10% золота)",()=>{S.res.gold*=.9;S.res.gem+=4;return"Свитки раскрыли тайны: +4 💎"}],["Отложить",()=>"Свитки отправлены в архив."]]}];
 
-/* ===== отправка ===== */
-var JK=["Почему программисты путают Хэллоуин и Рождество? Потому что 31 Oct = 25 Dec.","Баг — это не ошибка, а недокументированная фича."];
-function botReply(t){var s=t.toLowerCase();
-if(/привет|здравств|хай/.test(s))return"Привет! Рад тебя видеть.";
-if(/умеешь|помощь/.test(s))return"Я умею говорить время («время»), шутить («шутка») и подбрасывать монетку («монетка»).";
-if(/врем|час/.test(s))return"Сейчас "+tm(Date.now())+".";if(/шутк|анекдот/.test(s))return JK[Math.floor(Math.random()*JK.length)];
-if(/монет/.test(s))return Math.random()<.5?"Выпал орёл.":"Выпала решка.";if(/как дела/.test(s))return"Отлично, я же живой! А у тебя?";
-return["Интересно! Расскажи подробнее.","Понял тебя. Что ещё?"][Math.floor(Math.random()*2)]}
-var SYS="Ты — Alive Бот, дружелюбный ИИ-помощник внутри мессенджера Alive. Отвечай по-русски, кратко и по делу. Если человек пишет на другом языке, отвечай на нём.";
-async function aiReply(){var h=M.bot.slice(-14).map(function(m){return{role:m.sender_id==="bot"?"assistant":"user",content:m.body}});
-var ss=await sb.auth.getSession(),tok=ss.data.session.access_token;var r=await fetch("/api/ai",{method:"POST",headers:{"Content-Type":"application/json",Authorization:"Bearer "+tok},body:JSON.stringify({messages:[{role:"system",content:SYS}].concat(h)})});
-if(!r.ok){console.warn("AI error",r.status,await r.text());throw new Error("ai")}var d=await r.json();var a=(d.choices[0].message.content||"").trim();if(!a)throw new Error("empty");return a}
-async function toFav(m){var f=favId();if(!f)return;var r=await sb.from("messages").insert({chat_id:f,sender_id:user.id,kind:m.kind,body:m.body,media_url:m.media_url||null}).select().single();
-if(r.error)return toast("Не удалось сохранить");addMsg(r.data);render();toast("Сохранено в избранное")}
-var replyTo=null,tch=null,tmr={},lastTyping=0,PR={sound:true,notif:false};
-try{Object.assign(PR,JSON.parse(localStorage.getItem("alive-pref")||"{}"))}catch(e){}
-function savePr(){try{localStorage.setItem("alive-pref",JSON.stringify(PR))}catch(e){}}
-var actx=null;
-function beep(){if(!PR.sound)return;try{actx=actx||new(window.AudioContext||window.webkitAudioContext)();var o=actx.createOscillator(),g=actx.createGain(),t=actx.currentTime;
-o.type="sine";o.frequency.setValueAtTime(880,t);o.frequency.setValueAtTime(1175,t+.09);g.gain.setValueAtTime(.08,t);g.gain.exponentialRampToValueAtTime(.0001,t+.25);
-o.connect(g);g.connect(actx.destination);o.start(t);o.stop(t+.25)}catch(e){}}
-function notify(m){if(m.sender_id===user.id)return;var c=C[m.chat_id];if(!c)return;if(cur===m.chat_id&&!document.hidden)return;beep();
-if(PR.notif&&document.hidden&&window.Notification&&Notification.permission==="granted"){try{new Notification(info(c).name,{body:pv(m).replace(/^Вы: /,"")})}catch(e){}}}
-function typing(){if(!cur||cur==="bot"||!tch||Date.now()-lastTyping<2500)return;lastTyping=Date.now();
-tch.send({type:"broadcast",event:"t",payload:{c:cur,u:user.id,n:P[user.id].username}})}
-function rich(t){var f=document.createDocumentFragment();String(t).split(/(https?:\/\/[^\s<]+)/g).forEach(function(p,i){
-if(i%2){var a=el("a",null,p);a.href=p;a.target="_blank";a.rel="noopener noreferrer";a.style.color="inherit";f.appendChild(a)}else if(p)f.appendChild(document.createTextNode(p))});return f}
-function setReply(m){replyTo=m;var b=$("rpl");b.hidden=!m;b.innerHTML="";if(!m)return;
-var n=m.sender_id===user.id?"Вы":((P[m.sender_id]||{}).username||"Alive Бот");
-b.appendChild(el("b",null,"Ответ для "+n+":"));b.appendChild(el("span",null,pv(m).replace(/^Вы: /,"")));
-var x=el("button","ib","✕");x.setAttribute("aria-label","Отменить ответ");x.onclick=function(){setReply(null)};b.appendChild(x);$("inp").focus()}
-function removeMsg(id){for(var k in M)M[k]=M[k].filter(function(x){return x.id!==id})}
-async function delMsg(m){if(cur==="bot"){M.bot=M.bot.filter(function(x){return x.id!==m.id});botSave();render();return}
-var r=await sb.from("messages").delete().eq("id",m.id).select();if(r.error||!r.data||!r.data.length)return toast("Не удалось удалить: запусти alive-fix.sql");removeMsg(m.id);render()}
-function msgMenu(m){var c=C[cur],mine=m.sender_id===user.id;modal("Сообщение",function(b,close){
-function act(t,f,danger){var x=el("button","row",t);if(danger)x.style.color="var(--acc)";x.onclick=function(){close();f()};b.appendChild(x)}
-b.appendChild(el("div","chips",pv(m).replace(/^Вы: /,"").slice(0,120)));
-if(!c.bot)act("↩ Ответить",function(){setReply(m)});
-if(m.kind==="text")act("⧉ Копировать текст",function(){try{navigator.clipboard.writeText(m.body);toast("Скопировано")}catch(e){toast("Не удалось скопировать")}});
-if(!c.fav)act("★ В избранное",function(){toFav(m)});
-if(mine||c.bot)act("🗑 Удалить",function(){delMsg(m)},true)})}
-async function sendImg(f){if(cur==="bot")return toast("Боту нельзя отправлять файлы");toast("Отправляем фото…");
-try{var b=await shrink(f,1280,.82);await ins("image",null,await upload(b,"jpg","image/jpeg"))}catch(e){toast("Не удалось отправить фото")}}
-$("clr").onclick=function(){if(!confirm("Очистить диалог с ботом?"))return;M.bot=[{id:"b"+Date.now(),sender_id:"bot",kind:"text",body:"Диалог очищен. О чём поговорим?",t:Date.now()}];botSave();botLr(Date.now());render()};
-$("mem").onclick=function(){var c=C[cur];if(!c)return;modal("Участники ("+c.members.length+")",function(b){var l=el("div","ul");
-c.members.forEach(function(id){var p=P[id]||{username:"?"},r=el("div","row");r.appendChild(avatar(p.username,p.avatar_url,40,!!OL[id]||id===user.id));
-r.appendChild(el("b",null,p.username+(id===user.id?" (вы)":"")));l.appendChild(r)});b.appendChild(l)})};
-function botLr(v){C.bot.lr=v;try{localStorage.setItem("alive-botlr-"+user.id,v)}catch(e){}}
-function botSave(){try{localStorage.setItem("alive-bot-"+user.id,JSON.stringify(M.bot.slice(-200)))}catch(e){}}
-function botSay(t){M.bot.push({id:"u"+Date.now(),sender_id:user.id,kind:"text",body:t,t:Date.now()});botLr(Date.now());botTyping=true;botSave();render();
-aiReply().catch(function(){return botReply(t)+"\n\n(ИИ сейчас недоступен, ответил по-простому.)"}).then(function(txt){botTyping=false;M.bot.push({id:"b"+Date.now(),sender_id:"bot",kind:"text",body:txt,t:Date.now()});if(cur==="bot")botLr(Date.now());botSave();render()})}
-async function ins(kind,body,url){var row={chat_id:cur,sender_id:user.id,kind:kind,body:body,media_url:url};if(replyTo)row.reply_to=replyTo.id;
-var r=await sb.from("messages").insert(row).select().single();
-if(r.error){console.warn(r.error);return toast(replyTo?"Не удалось отправить ответ: запусти alive-fix.sql":"Не удалось отправить")}setReply(null);addMsg(r.data);markRead();render()}
-var inp=$("inp");
-function fit(){inp.style.height="44px";inp.style.height=Math.min(inp.scrollHeight,120)+"px";$("send").textContent=inp.value.trim()?"➤":"🎤"}
-async function doSend(){if(rec)return recStop(true);var t=inp.value.trim();if(!t)return recStart();inp.value="";fit();$("emr").hidden=true;
-if(cur==="bot")botSay(t);else await ins("text",t,null)}
-$("send").onclick=doSend;inp.oninput=function(){fit();typing()};inp.onkeydown=function(e){if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();if(inp.value.trim())doSend()}};
-["😀","😂","❤️","👍","🔥","🎉","😮","🙏"].forEach(function(x){var b=el("button",null,x);b.onclick=function(){inp.value+=x;fit();inp.focus()};$("emr").appendChild(b)});
-$("emo").onclick=function(){$("emr").hidden=!$("emr").hidden};
+/* ядро: тик */
+const accrue=dt=>{const R=rates(),c=cap();["gold","food","wood"].forEach(r=>{const b=S.res[r],add=R[r]*dt*S.spd;if(b<c)S.res[r]=Math.min(c,b+add);const g=S.res[r]-b;if(r==="gold"&&g>0){S.st.gold+=g;S.st.run+=g;qp("gold",g)}});S.res.gem+=R.gem*dt*S.spd};
+const finishExp=x=>{const T=EXP[x.k],r=xr(x.k,x.pw);["gold","food","wood"].forEach(k=>addRes(k,r[k]));S.res.gem+=r.gem;S.st.exp++;qp("exp",1);
+let extra="";if(Math.random()<.25+T.t/200000){const i=roll();extra=give(i)?` Новый герой: ${HR[i][0]}!`:` Осколок героя: ${HR[i][0]}.`}
+const m=`Поход «${T.n}» завершён: +${sh(r.gold)}🪙 +${sh(r.food)}🌾 +${sh(r.wood)}🪵 +${r.gem}💎.${extra}`;logm(m);toast(m)};
+const timers=n=>{let ch=false;
+S.rs=S.rs.filter(x=>{if(n>=x.end){S.tech[x.id]=tb(x.id)+1;const t=TECH.find(y=>y.id===x.id),m=`Исследование завершено: «${t.n}» → ур. ${S.tech[x.id]}`;logm(m);toast(m);beep(700);ch=true;return false}return true});
+if(S.eraEnd&&n>=S.eraEnd){S.eraEnd=0;S.era++;S.st.maxEra=Math.max(S.st.maxEra,S.era);const m=`Новая эра: «${ERAS[S.era-1]}»!`;logm(m);toast(m);beep(520,.4);ch=true}
+S.exp=S.exp.filter(x=>{if(n>=x.end){finishExp(x);ch=true;return false}return true});
+if(ch)render()};
+const checks=()=>{if(S.q.date!==today()){S.q={date:today(),l:mkQ()}}
+ACH.forEach(a=>{if(!S.ach[a.id]&&a.f()){S.ach[a.id]=1;S.res.gem+=a.r;const m=`Достижение: ${a.n} (+${a.r}💎)`;logm(m);toast(m);beep(880,.3)}})};
+const tick=()=>{const n=now(),dt=Math.max(0,(n-S.last)/1000);S.last=n;if(dt>0)accrue(dt);timers(n);checks();
+if(!S.evT)S.evT=n+10*60000;if(n>=S.evT&&!document.hidden&&!document.querySelector(".ov")){S.evT=n+(20+Math.random()*20)*60000;showEvent(EV[Math.floor(Math.random()*EV.length)])}};
 
-/* ===== медиа: фото, голосовые, аватарки ===== */
-function shrink(f,max,qu){return new Promise(function(res,rej){var im=new Image();im.onload=function(){var s=Math.min(1,max/Math.max(im.width,im.height)),c=document.createElement("canvas");
-c.width=Math.round(im.width*s);c.height=Math.round(im.height*s);c.getContext("2d").drawImage(im,0,0,c.width,c.height);c.toBlob(function(b){b?res(b):rej()},"image/jpeg",qu)};im.onerror=rej;im.src=URL.createObjectURL(f)})}
-async function upload(b,ext,ct){var p=user.id+"/"+Date.now()+"."+ext,r=await sb.storage.from("media").upload(p,b,{contentType:ct});if(r.error)throw r.error;
-return sb.storage.from("media").getPublicUrl(p).data.publicUrl}
-$("att").onclick=function(){if(cur==="bot")return toast("Боту нельзя отправлять файлы");$("file").click()};
-$("file").onchange=function(){var f=this.files[0];this.value="";if(f)sendImg(f)};
-inp.onpaste=function(e){var it=e.clipboardData&&e.clipboardData.files[0];if(it&&/^image\//.test(it.type)){e.preventDefault();sendImg(it)}};
-var rec=null,chunks=[],rtm=0,rint=0,mt="";
-async function recStart(){if(cur==="bot")return toast("Боту нельзя отправлять голосовые");
-var st;try{st=await navigator.mediaDevices.getUserMedia({audio:true})}catch(e){return toast("Нет доступа к микрофону")}
-mt=window.MediaRecorder&&MediaRecorder.isTypeSupported("audio/webm")?"audio/webm":"audio/mp4";rec=new MediaRecorder(st,{mimeType:mt});chunks=[];
-rec.ondataavailable=function(e){chunks.push(e.data)};rec.start();rtm=0;$("rt").textContent="0:00";
-["att","emo","inp"].forEach(function(i){$(i).hidden=true});$("rbar").hidden=false;$("rcx").hidden=false;$("send").textContent="➤";
-rint=setInterval(function(){rtm++;$("rt").textContent=Math.floor(rtm/60)+":"+("0"+rtm%60).slice(-2)},1000)}
-function recStop(sendIt){var r=rec,ch=cur;rec=null;clearInterval(rint);
-r.onstop=async function(){r.stream.getTracks().forEach(function(t){t.stop()});
-if(sendIt&&rtm>0&&C[ch]){try{var b=new Blob(chunks,{type:mt});cur=ch;await ins("voice",null,await upload(b,mt.indexOf("webm")>-1?"webm":"m4a",mt))}catch(e){toast("Не удалось отправить голосовое")}}};
-r.stop();["att","emo","inp"].forEach(function(i){$(i).hidden=false});$("rbar").hidden=true;$("rcx").hidden=true;fit()}
-$("rcx").onclick=function(){recStop(false)};
+/* окна */
+const modal=(html,cls)=>{const o=document.createElement("div");o.className="ov";o.innerHTML=`<div class="md ${cls||""}">${html}</div>`;o.onclick=e=>{if(e.target===o&&!o.dataset.lock)o.remove()};document.body.appendChild(o);return o};
+const showEvent=e=>{const o=modal(`<h2>${e.t}</h2><p>${e.d}</p>${e.o.map((x,i)=>`<button class="btn ${i?"sec":""}" data-a="ev" data-i="${i}">${x[0]}</button>`).join("")}`);o.dataset.lock=1;o.dataset.ev=EV.indexOf(e);beep(440)};
 
-/* ===== окна: новый чат, группа, профиль ===== */
-function modal(title,fn){var o=el("div","ov"),b=el("div","md");b.appendChild(el("h2",null,title));o.appendChild(b);document.body.appendChild(o);
-function close(){o.remove()}o.onclick=function(e){if(e.target===o)close()};fn(b,close)}
-document.addEventListener("keydown",function(e){if(e.key==="Escape"){var o=document.querySelector(".ov");if(o)o.remove()}});
-function pickUsers(box,onPick){var i=el("input");i.placeholder="Найти по имени";var l=el("div","ul"),tmo;box.appendChild(i);box.appendChild(l);
-async function go(){var r=await sb.from("profiles").select("id,username,avatar_url").ilike("username","%"+i.value.trim()+"%").neq("id",user.id).limit(20);
-l.innerHTML="";(r.data||[]).forEach(function(u){P[u.id]=u;var b=el("button","row");b.appendChild(avatar(u.username,u.avatar_url,40));b.appendChild(el("b",null,u.username));b.onclick=function(){onPick(u,b)};l.appendChild(b)});
-if(!(r.data||[]).length)l.appendChild(el("div","empty","Никого не нашли"))}
-i.oninput=function(){clearTimeout(tmo);tmo=setTimeout(go,250)};go();i.focus()}
-$("nc").onclick=function(){modal("Новый чат",function(b,close){pickUsers(b,async function(u){var r=await sb.rpc("start_direct",{other:u.id});
-if(r.error)return toast("Не удалось создать чат");close();await loadChats();openChat(r.data)})})};
-$("ng").onclick=function(){modal("Новая группа",function(b,close){var t=el("input");t.placeholder="Название группы";t.maxLength=40;b.appendChild(t);
-var sel={},chips=el("div","chips","Участники не выбраны");b.appendChild(chips);
-pickUsers(b,function(u,btn){if(sel[u.id])delete sel[u.id];else sel[u.id]=u.username;btn.classList.toggle("on",!!sel[u.id]);
-var n=Object.keys(sel).map(function(k){return sel[k]});chips.textContent=n.length?"Выбрано: "+n.join(", "):"Участники не выбраны"});
-var g=el("button","go","Создать группу");g.onclick=async function(){var ids=Object.keys(sel);if(!t.value.trim())return toast("Введи название группы");if(!ids.length)return toast("Выбери хотя бы одного участника");
-var r=await sb.rpc("create_group",{t:t.value.trim(),members:ids});if(r.error)return toast("Не удалось создать группу");close();await loadChats();openChat(r.data)};b.appendChild(g)})};
-$("meb").onclick=function(){modal("Профиль",function(b,close){var box=el("div");box.style.cssText="display:grid;gap:10px;justify-items:center";
-var me=P[user.id];box.appendChild(avatar(me.username,me.avatar_url,96));box.appendChild(el("b",null,me.username));
-var f=el("input");f.type="file";f.accept="image/*";f.hidden=true;var c=el("button","go","Сменить фото");c.onclick=function(){f.click()};
-f.onchange=async function(){if(!f.files[0])return;try{var u=await upload(await shrink(f.files[0],256,.85),"jpg","image/jpeg");
-var r=await sb.from("profiles").update({avatar_url:u}).eq("id",user.id).select();if(r.error)throw r.error;if(!r.data||!r.data.length)throw new Error("rls");P[user.id].avatar_url=u;fillMe();render();close();toast("Фото обновлено")}catch(e){console.warn(e);toast(String(e&&e.message).indexOf("rls")>-1?"Нет прав на смену фото: запусти alive-fix.sql в Supabase":"Не удалось сменить фото")}};
-var x=el("button","lnk","Выйти из аккаунта");x.onclick=async function(){await sb.auth.signOut();location.reload()};
-var sd=el("button","pill"),nt=el("button","pill"),rw=el("div","row2");
-function sdt(){sd.textContent="Звук: "+(PR.sound?"вкл":"выкл")}function ntt(){nt.textContent="Уведомления: "+(PR.notif?"вкл":"выкл")}sdt();ntt();
-sd.onclick=function(){PR.sound=!PR.sound;savePr();sdt();beep()};
-nt.onclick=async function(){if(!PR.notif){if(!window.Notification)return toast("Браузер не поддерживает уведомления");var pm=await Notification.requestPermission();if(pm!=="granted")return toast("Разреши уведомления в браузере");PR.notif=true}else PR.notif=false;savePr();ntt()};
-rw.appendChild(sd);rw.appendChild(nt);
-box.appendChild(f);box.appendChild(c);box.appendChild(rw);box.appendChild(x);b.appendChild(box)})};
+/* вёрстка вкладок */
+const cc=c=>Object.keys(c).map(r=>`<span class="cc" data-r="${r}" data-v="${c[r]}">${RI[r]} ${sh(c[r])}</span>`).join("");
+const tmr=(label,end,dur)=>`<div class="tm"><span>${label}</span><b data-cd="${end}"></b></div><div class="bar"><i data-end="${end}" data-dur="${dur}"></i></div>`;
+const TABS=[["emp","🏛️","Империя"],["sci","🔬","Наука"],["her","🦸","Герои"],["exp","🧭","Походы"],["day","📅","Календарь"],["qst","📜","Задания"],["mkt","⚖️","Рынок"],["ach","🏆","Награды"],["more","⚙️","Ещё"]];
 
-sb.auth.getSession().then(function(r){if(!r.data.session)$("auth").hidden=false});
+const vEmp=()=>{const R=rates();let h=`<div class="card"><div class="row"><div><div class="mu">Эра ${S.era} из 10</div><h2>${ERAS[S.era-1]}</h2><div class="mu">Лимит уровня зданий: ${maxL()}</div></div><button class="btn big" data-a="tax">⚒ Собрать налоги<small>+${sh(taxVal())} 🪙</small></button></div>`;
+if(S.era<10){if(S.eraEnd)h+=tmr(`Строится «${ERAS[S.era]}»`,S.eraEnd,eraDur());else h+=`<div class="mu" style="margin-top:8px">Следующая эра «${ERAS[S.era]}» · ${ft(eraDur())}</div><div class="costs">${cc(eraCost())}</div><button class="btn" data-a="era">Начать переход</button>`}
+h+=`</div>`;
+if(S.era>=4){const g=prGain();h+=`<div class="card"><div class="row"><div><h3>🔥 Возрождение</h3><div class="mu">Сбросить эру и здания ради Наследия: +10% к добыче навсегда за очко. Герои, наука, награды и календарь сохраняются.</div></div><button class="btn ${g<1?"sec":""}" data-a="pres">Возродиться (+${g})</button></div></div>`}
+h+=`<div class="grid">`;
+BLD.forEach(b=>{const L=S.bl[b.id],lock=S.era<b.e;let x="";if(b.res){const m=eraM()*legM()*S.mult*(1+.05*tb("wonder"))*(1+.1*lup("prod"));x=`<div class="mu">Добыча: ${rt(R[b.res]*0+(b.res==="gem"?b.r*L*S.mult:b.r*L*m*(1+.12*({food:tb("agri"),wood:tb("forest"),gold:tb("mining")}[b.res]||0))))}/с</div>`}
+h+=`<div class="card"><div class="row"><h3>${b.i} ${b.n}</h3><span class="mu">ур. ${L}/${maxL()}</span></div><div class="mu">${b.d}</div>${x}`;
+if(lock)h+=`<div class="mu">🔒 Откроется в эре «${ERAS[b.e-1]}»</div>`;else if(L>=maxL())h+=`<div class="mu">Достигнут предел для этой эры</div>`;else h+=`<div class="costs">${cc(bcost(b))}</div><button class="btn" data-a="up" data-id="${b.id}">${L?"Улучшить":"Построить"}</button>`;h+=`</div>`});
+return h+`</div>`};
+
+const vSci=()=>{let h=`<div class="card"><h2>Исследования</h2><div class="mu">Слотов: ${S.rs.length}/${S.slots} · скорость ×${rsSpeed().toFixed(2)}</div>`;
+S.rs.forEach(x=>{const t=TECH.find(y=>y.id===x.id);h+=tmr(`${t.i} ${t.n} → ур. ${tb(x.id)+1}`,x.end,x.dur)});
+if(S.slots<3)h+=`<div style="margin-top:8px"><button class="btn sec" data-a="slot">Открыть слот №${S.slots+1} · ${S.slots===1?100:500} 💎</button></div>`;
+h+=`</div><div class="grid">`;
+TECH.forEach(t=>{const l=tb(t.id),run=S.rs.some(x=>x.id===t.id);h+=`<div class="card"><div class="row"><h3>${t.i} ${t.n}</h3><span class="mu">ур. ${l}/15</span></div><div class="mu">${t.d}</div>`;
+if(l>=15)h+=`<div class="mu">Максимум</div>`;else if(run)h+=`<div class="mu">Изучается…</div>`;else h+=`<div class="costs">${cc(tcost(l))}</div><div class="mu">Время: ${ft(tdur(l))}</div><button class="btn" data-a="res" data-id="${t.id}">Исследовать</button>`;h+=`</div>`});
+return h+`</div>`};
+
+const vHer=()=>{const free=S.sumDay!==today();let h=`<div class="card"><div class="row"><div><h2>Призыв героев</h2><div class="mu">Сила отряда (лучшие 3): ${sh(party())} · героев: ${cnt()}/${HR.length}</div></div><button class="btn big" data-a="sum">${free?"Бесплатный призыв":"Призвать"}<small>${free?"раз в день":"40 💎"}</small></button></div></div><div class="grid" style="grid-template-columns:repeat(auto-fill,minmax(150px,1fr))">`;
+HR.forEach((x,i)=>{const o=S.heroes[i];h+=`<div class="hero ${o?"":"off"}"><div class="em">${x[1]}</div><b>${x[0]}</b><div class="r${x[2]}">${"★".repeat(x[2])}</div>`;
+if(o){h+=`<div class="mu">ур. ${o.lv} · сила ${sh(hp(i))}</div><div class="mu">осколки: ${o.sh}/${o.lv}</div>`;if(o.lv<30)h+=`<div class="costs" style="justify-content:center">${cc({gold:Math.round(300*o.lv*o.lv*eraM())})}</div><button class="btn sec" data-a="hup" data-id="${i}">Усилить</button>`}else h+=`<div class="mu">Не призван</div>`;h+=`</div>`});
+return h+`</div>`};
+
+const vExp=()=>{const pw=party();let h=`<div class="card"><h2>Походы</h2><div class="mu">Слотов: ${S.exp.length}/${S.xslots} · сила отряда ${sh(pw)}. Награды зависят от добычи и силы героев.</div>`;
+S.exp.forEach(x=>{h+=tmr(`${EXP[x.k].i} ${EXP[x.k].n}`,x.end,x.dur)});h+=`</div><div class="grid">`;
+EXP.forEach((T,k)=>{const r=xr(k,pw);h+=`<div class="card"><h3>${T.i} ${T.n}</h3><div class="mu">Длительность: ${ft(T.t)}</div><div class="costs"><span class="cc">🪙 ${sh(r.gold)}</span><span class="cc">🌾 ${sh(r.food)}</span><span class="cc">🪵 ${sh(r.wood)}</span><span class="cc">💎 ${r.gem}</span></div><div class="mu">Шанс найти героя</div><button class="btn" data-a="xs" data-id="${k}">Отправить</button></div>`});
+return h+`</div>`};
+
+const vDay=()=>{const n=S.day.n,pg=n>0?Math.floor((n-1)/100):0,done=n-pg*100,can=S.day.last!==today(),nd=n+1,r=dayRew(nd);
+let h=`<div class="card"><div class="row"><div><h2>Ежедневная награда</h2><div class="mu">Получено дней: ${n} · цель: 100 дней и дальше (сезон ${pg+1})</div></div><button class="btn big ${can?"":"sec"}" data-a="dclaim">${can?"Забрать день "+nd:"Завтра ждёт награда"}<small>${can?`+${r.gem}💎 +${sh(r.gold)}🪙${r.hero?" + герой":""}`:"приходи позже"}</small></button></div></div><div class="card"><div class="cal">`;
+for(let i=1;i<=100;i++){const big=i%10===0||i===100,cls=i<=done?"done":(i===done+1&&can?"next":"");h+=`<div class="cell ${cls} ${big?"big":""}" title="День ${i}">${i<=done?"✓":i===100?"👑":big?"🎁":i}</div>`}
+return h+`</div></div>`};
+
+const vQst=()=>{let h=`<div class="card"><h2>Задания дня</h2><div class="mu">Обновляются каждый день</div></div>`;
+S.q.l.forEach((q,i)=>{h+=`<div class="card"><div class="row"><b>${QK[q.k].replace("{n}",sh(q.n))}</b><span class="mu">${sh(q.c)}/${sh(q.n)}</span></div><div class="bar"><i style="width:${100*q.c/q.n}%"></i></div>${q.d?`<div class="mu">Награда получена ✓</div>`:`<button class="btn ${q.c>=q.n?"":"sec"}" data-a="qc" data-id="${i}">Забрать ${q.r} 💎</button>`}</div>`});
+h+=`<div class="card"><h3>Хроника</h3><div class="log">${S.log.map(l=>`<div>${new Date(l.t).toLocaleTimeString("ru-RU",{hour:"2-digit",minute:"2-digit"})} — ${l.m}</div>`).join("")||"Пока пусто."}</div></div>`;return h};
+
+const price=k=>1+.25*Math.sin(now()/3600000+k*2)+.02*tb("trade")*2.5;
+const TR=[["food","gold","Продать еду"],["wood","gold","Продать дерево"],["gold","food","Купить еду"],["gold","wood","Купить дерево"]];
+const vMkt=()=>{let h=`<div class="card"><h2>Рынок</h2><div class="mu">Курс меняется каждый час. Обмен ${"20%"} выбранного ресурса.</div></div><div class="grid">`;
+TR.forEach((t,k)=>{const f=S.res[t[0]]*.2,gain=Math.floor(f*price(k)*(t[1]==="gold"?.9:1.1));h+=`<div class="card"><h3>${t[2]}</h3><div class="mu">${RI[t[0]]} ${sh(f)} → ${RI[t[1]]} ${sh(gain)} (курс ×${price(k).toFixed(2)})</div><button class="btn" data-a="trade" data-id="${k}">Обменять</button></div>`});
+return h+`</div>`};
+
+const vAch=()=>{const n=ACH.filter(a=>S.ach[a.id]).length;return`<div class="card"><h2>Награды: ${n} из ${ACH.length}</h2><div class="bar"><i style="width:${100*n/ACH.length}%"></i></div></div><div class="grid">`+ACH.map(a=>`<div class="ach ${S.ach[a.id]?"on":""}"><span style="font-size:1.6rem">${S.ach[a.id]?"🏆":"🔒"}</span><div><b>${a.n}</b><div class="mu">+${a.r} 💎</div></div></div>`).join("")+`</div>`};
+
+const vMore=()=>{const days=Math.floor((Date.now()-S.born)/864e5);let h=`<div class="card"><h2>Наследие</h2><div class="mu">Очков: ${S.leg} · всего заработано: ${S.legT} (+${S.legT*10}% к добыче)</div><div class="grid" style="margin-top:8px">`;
+LS.forEach(x=>{const l=lup(x[0]);h+=`<div class="card"><b>${x[1]}</b> <span class="mu">ур. ${l}</span><div class="mu">${x[2]}</div><button class="btn ${S.leg>=3*(l+1)?"":"sec"}" data-a="ls" data-id="${x[0]}">Улучшить · ${3*(l+1)} очк.</button></div>`});
+h+=`</div></div><div class="card"><h2>Статистика</h2>`;
+[["Дней с начала игры",days],["Золота добыто",sh(S.st.gold)],["Налогов собрано",S.st.clicks],["Улучшений",S.st.up],["Походов",S.st.exp],["Призывов",S.st.sum],["Событий",S.st.ev],["Возрождений",S.st.pr],["Эра",S.era+" из 10"]].forEach(r=>h+=`<div class="stat"><span>${r[0]}</span><b>${r[1]}</b></div>`);
+h+=`</div><div class="card"><h2>Настройки</h2><div class="row" style="justify-content:flex-start">`;
+[["night","Ночь"],["parch","Пергамент"],["emerald","Изумруд"]].forEach(t=>h+=`<button class="btn ${S.theme===t[0]?"":"sec"}" data-a="theme" data-id="${t[0]}">${t[1]}</button>`);
+h+=`<button class="btn sec" data-a="snd">Звук: ${S.snd?"вкл":"выкл"}</button></div><p class="mu">Сохранение (скопируй, чтобы перенести):</p><textarea id="exp" readonly>${JSON.stringify(S)}</textarea><p class="mu">Вставь сохранение и нажми «Загрузить»:</p><textarea id="imp"></textarea>
+<div class="row" style="justify-content:flex-start"><button class="btn sec" data-a="imp">Загрузить</button><button class="btn sec" data-a="adm">Админка</button><button class="btn sec" data-a="reset" style="color:var(--bad)">Начать заново</button></div></div>`;return h};
+const V={emp:vEmp,sci:vSci,her:vHer,exp:vExp,day:vDay,qst:vQst,mkt:vMkt,ach:vAch,more:vMore};
+const render=()=>{const y=scrollY;$("view").innerHTML=V[tab]();$("nav").innerHTML=TABS.map(t=>`<button class="${t[0]===tab?"on":""}" data-a="tab" data-id="${t[0]}"><span>${t[1]}</span>${t[2]}</button>`).join("");document.documentElement.dataset.theme=S.theme;scrollTo(0,y);live()};
+const live=()=>{const n=now(),R=rates(),c=cap();
+$("chips").innerHTML=RL.map(r=>`<div class="chip"><small>${RI[r]} ${RN[r]}</small><b>${sh(S.res[r])}</b><small>${rt(R[r]*S.spd)}/с${r==="gem"?"":" · лимит "+sh(c)}</small></div>`).join("");
+$("ttl").textContent="Эпоха · "+ERAS[S.era-1];$("sub").textContent=`День игры ${Math.floor((Date.now()-S.born)/864e5)+1}`;$("clk").textContent=S.spd>1?`×${S.spd}`:"";
+document.querySelectorAll("[data-cd]").forEach(e=>e.textContent=ft((+e.dataset.cd-n)/1000));
+document.querySelectorAll("[data-end]").forEach(e=>e.style.width=Math.max(0,Math.min(100,100*(1-(+e.dataset.end-n)/(+e.dataset.dur*1000))))+"%");
+document.querySelectorAll("[data-r]").forEach(e=>e.classList.toggle("no",S.res[e.dataset.r]<+e.dataset.v))};
+
+/* действия */
+const no=()=>{toast("Не хватает ресурсов");beep(180,.15,"sawtooth")};
+const act=(a,id,el)=>{
+if(a.startsWith("ad_"))return adm(a,id,el);
+if(a==="tab"){tab=id;scrollTo(0,0);render();return}
+if(a==="tax"){addRes("gold",taxVal());S.st.clicks++;S.st.gold+=taxVal();S.st.run+=taxVal();qp("click",1);qp("gold",taxVal());beep(600,.06)}
+else if(a==="up"){const b=BLD.find(x=>x.id===id),c=bcost(b);if(S.bl[id]>=maxL()||S.era<b.e)return;if(!afford(c))return no();pay(c);S.bl[id]++;S.st.up++;qp("up",1);beep(520,.1)}
+else if(a==="era"){const c=eraCost();if(!afford(c))return no();pay(c);S.eraEnd=now()+eraDur()*1000;logm("Начато строительство новой эры");beep(400,.3)}
+else if(a==="res"){const l=tb(id);if(S.rs.length>=S.slots)return toast("Все слоты исследований заняты");const c=tcost(l);if(!afford(c))return no();pay(c);const d=tdur(l);S.rs.push({id,end:now()+d*1000,dur:d});beep(480,.2)}
+else if(a==="slot"){const p=S.slots===1?100:500;if(S.res.gem<p)return no();S.res.gem-=p;S.slots++;beep(700)}
+else if(a==="sum"){const free=S.sumDay!==today();if(free)S.sumDay=today();else{if(S.res.gem<40)return no();S.res.gem-=40}const i=roll(),nw=give(i);S.st.sum++;qp("sum",1);const m=nw?`Новый герой: ${HR[i][0]} ${"★".repeat(HR[i][2])}`:`${HR[i][0]}: +1 осколок`;logm(m);modal(`<h2 style="text-align:center">${HR[i][1]}</h2><h3 style="text-align:center" class="r${HR[i][2]}">${HR[i][0]}</h3><p style="text-align:center">${nw?"Новый герой!":"Уже есть: +1 осколок"}</p><button class="btn" data-a="close">Отлично</button>`);beep(660+HR[i][2]*100,.4)}
+else if(a==="hup"){const o=S.heroes[id],c=Math.round(300*o.lv*o.lv*eraM());if(o.sh<o.lv)return toast(`Нужно осколков: ${o.lv}`);if(S.res.gold<c)return no();S.res.gold-=c;o.sh-=o.lv;o.lv++;beep(760)}
+else if(a==="xs"){if(S.exp.length>=S.xslots)return toast("Все слоты походов заняты");if(!cnt())return toast("Сначала призови героя");const T=EXP[id];S.exp.push({k:+id,end:now()+T.t*1000,dur:T.t,pw:party()});beep(500)}
+else if(a==="dclaim"){if(S.day.last===today())return toast("Награда за сегодня уже получена");const d=S.day.n+1,r=dayRew(d);S.res.gem+=r.gem;addRes("gold",r.gold);if(r.hero){const i=roll();give(i);toast(`Бонусный герой: ${HR[i][0]}`)}S.day.n=d;S.day.last=today();if(d%100===0)modal(`<h2 style="text-align:center">👑 Легенда</h2><p style="text-align:center">Ты прошёл ${d} дней! Империя будет помнить это.</p><button class="btn" data-a="close">Продолжить</button>`);beep(840,.3)}
+else if(a==="qc"){const q=S.q.l[id];if(q.d)return;if(q.c<q.n)return toast("Задание ещё не выполнено");q.d=1;S.res.gem+=q.r;beep(780)}
+else if(a==="trade"){const t=TR[id],f=S.res[t[0]]*.2;if(f<1)return no();S.res[t[0]]-=f;addRes(t[1],Math.floor(f*price(+id)*(t[1]==="gold"?.9:1.1)));S.st.trade++;beep(560,.08)}
+else if(a==="pres"){const g=prGain();if(g<1)return toast("Нужно добыть больше золота в этом забеге");if(!confirm(`Возродиться и получить ${g} очк. Наследия? Эра и здания сбросятся.`))return;S.leg+=g;S.legT+=g;S.st.pr++;const d=def();S.res=d.res;S.bl=d.bl;S.era=1;S.eraEnd=0;S.exp=[];S.st.run=0;S.q={date:"",l:[]};logm(`Возрождение: +${g} очк. Наследия`);beep(300,.6)}
+else if(a==="ls"){const l=lup(id),c=3*(l+1);if(S.leg<c)return no();S.leg-=c;S.ls[id]=l+1;beep(700)}
+else if(a==="theme")S.theme=id;else if(a==="snd")S.snd=!S.snd;
+else if(a==="imp"){try{const t=JSON.parse($("imp").value);S=merge(def(),t);toast("Сохранение загружено")}catch(e){return toast("Не удалось прочитать сохранение")}}
+else if(a==="reset"){if(confirm("Начать заново? Весь прогресс будет удалён.")){const t=S.theme;S=def();S.theme=t}else return}
+else if(a==="adm"){openAdm();return}
+else if(a==="close"){el.closest(".ov").remove();return}
+else if(a==="ev"){const o=el.closest(".ov"),e=EV[+o.dataset.ev],m=e.o[+el.dataset.i][1]();S.st.ev++;logm(`${e.t}: ${m}`);o.dataset.lock="";o.querySelector(".md").innerHTML=`<h2>${e.t}</h2><p>${m}</p><button class="btn" data-a="close">Понятно</button>`}
+save();render()};
+document.addEventListener("click",e=>{const b=e.target.closest("[data-a]");if(b)act(b.dataset.a,b.dataset.id||b.dataset.i,b)});
+
+/* админка */
+const AT=[["res","Ресурсы"],["time","Время"],["world","Мир"],["her","Герои"],["day","Календарь"],["ach","Награды"],["data","Данные"]];
+let admO=null;
+const openAdm=()=>{if(admO&&admO.isConnected)return;admO=modal("");admO.dataset.adm=1;drawAdm()};
+const drawAdm=()=>{if(!admO)return;const m=admO.querySelector(".md");
+if(!adminOk){m.innerHTML=`<h2>Админка</h2><p class="mu">Введи пароль (по умолчанию: admin)</p><div class="row"><input id="adpw" type="password" autocomplete="off"><button class="btn" data-a="ad_login">Войти</button></div><button class="btn sec" data-a="close">Закрыть</button>`;return}
+let h=`<div class="row"><h2 style="margin:0">Админка</h2><button class="btn sec" data-a="close">Закрыть</button></div><div class="tabs">${AT.map(t=>`<button class="btn ${t[0]===admTab?"":"sec"}" data-a="ad_tab" data-id="${t[0]}">${t[1]}</button>`).join("")}</div>`;
+const inp=(id,v,w)=>`<input id="${id}" type="number" value="${v}" style="width:${w||120}px">`;
+if(admTab==="res")h+=`<div class="row" style="justify-content:flex-start">${inp("adn",1000)}</div><div class="row" style="justify-content:flex-start">${RL.map(r=>`<button class="btn sec" data-a="ad_add" data-id="${r}">+ ${RI[r]}</button>`).join("")}<button class="btn sec" data-a="ad_max">Заполнить склады</button><button class="btn sec" data-a="ad_zero">Обнулить</button></div>
+<p class="mu">Множитель добычи: ×${S.mult}</p><div class="row" style="justify-content:flex-start">${[1,2,10,100,1000,1e6].map(v=>`<button class="btn ${S.mult===v?"":"sec"}" data-a="ad_mult" data-id="${v}">×${sh(v)}</button>`).join("")}</div>`;
+if(admTab==="time")h+=`<p class="mu">Скорость времени для добычи: ×${S.spd}. Сдвиг времени: ${(S.off/3600000).toFixed(1)} ч.</p><div class="row" style="justify-content:flex-start">${[1,5,20,100,1000].map(v=>`<button class="btn ${S.spd===v?"":"sec"}" data-a="ad_spd" data-id="${v}">×${v}</button>`).join("")}</div>
+<p class="mu">Перемотать время вперёд (таймеры, добыча и календарь сдвинутся):</p><div class="row" style="justify-content:flex-start">${[["1 ч",1],["6 ч",6],["1 день",24],["7 дней",168],["30 дней",720]].map(x=>`<button class="btn sec" data-a="ad_shift" data-id="${x[1]}">+${x[0]}</button>`).join("")}</div><div class="row" style="justify-content:flex-start"><button class="btn" data-a="ad_done">Завершить все таймеры</button><button class="btn sec" data-a="ad_ev">Вызвать событие</button></div>`;
+if(admTab==="world")h+=`<div class="row" style="justify-content:flex-start">${inp("ade",S.era,70)}<button class="btn sec" data-a="ad_era">Установить эру (1–10)</button></div><div class="row" style="justify-content:flex-start"><button class="btn sec" data-a="ad_bl">Здания на максимум</button><button class="btn sec" data-a="ad_tech">Наука на 15</button><button class="btn sec" data-a="ad_tech0">Сбросить науку</button><button class="btn sec" data-a="ad_slots">Все слоты</button></div><div class="row" style="justify-content:flex-start">${inp("adl",10,70)}<button class="btn sec" data-a="ad_leg">+ очки Наследия</button></div>`;
+if(admTab==="her")h+=`<div class="row" style="justify-content:flex-start"><button class="btn sec" data-a="ad_hall">Выдать всех героев</button><button class="btn sec" data-a="ad_hsh">+10 осколков всем</button><button class="btn sec" data-a="ad_hlv">Все на ур. 10</button><button class="btn sec" data-a="ad_hno">Удалить героев</button><button class="btn sec" data-a="ad_sumr">Сбросить бесплатный призыв</button></div>`;
+if(admTab==="day")h+=`<p class="mu">Получено дней: ${S.day.n}</p><div class="row" style="justify-content:flex-start">${inp("add",S.day.n,90)}<button class="btn sec" data-a="ad_day">Установить число дней</button></div><div class="row" style="justify-content:flex-start"><button class="btn sec" data-a="ad_dres">Сбросить сегодняшний claim</button><button class="btn sec" data-a="ad_qres">Новые задания</button></div>`;
+if(admTab==="ach")h+=`<div class="row" style="justify-content:flex-start"><button class="btn sec" data-a="ad_aall">Открыть все</button><button class="btn sec" data-a="ad_ano">Закрыть все</button></div>`;
+if(admTab==="data")h+=`<p class="mu">JSON сохранения (можно править и применить):</p><textarea id="adj">${JSON.stringify(S,null,1).replace(/</g,"&lt;")}</textarea><div class="row" style="justify-content:flex-start"><button class="btn" data-a="ad_json">Применить JSON</button><button class="btn sec" data-a="ad_hard" style="color:var(--bad)">Полный сброс</button></div><div class="row" style="justify-content:flex-start"><input id="adnp" placeholder="Новый пароль"><button class="btn sec" data-a="ad_pw">Сменить пароль</button></div>`;
+m.innerHTML=h};
+const adm=(a,id,el)=>{const v=i=>+($(i)&&$(i).value)||0;
+if(a==="ad_login"){if($("adpw").value===S.pw){adminOk=true}else toast("Неверный пароль");drawAdm();return}
+if(!adminOk)return;
+if(a==="ad_tab")admTab=id;
+else if(a==="ad_add"){const n=Math.max(0,v("adn"));if(id==="gem")S.res.gem+=n;else S.res[id]+=n;if(id==="gold")S.st.run+=n}
+else if(a==="ad_max"){const c=cap();["gold","food","wood"].forEach(r=>S.res[r]=c)}
+else if(a==="ad_zero")RL.forEach(r=>S.res[r]=0);
+else if(a==="ad_mult")S.mult=+id;else if(a==="ad_spd")S.spd=+id;
+else if(a==="ad_shift"){S.off+=+id*3600000}
+else if(a==="ad_done"){S.rs.forEach(x=>x.end=0);S.exp.forEach(x=>x.end=0);if(S.eraEnd)S.eraEnd=1}
+else if(a==="ad_ev"){S.evT=1}
+else if(a==="ad_era"){S.era=Math.max(1,Math.min(10,Math.round(v("ade"))||1));S.st.maxEra=Math.max(S.st.maxEra,S.era);S.eraEnd=0}
+else if(a==="ad_bl"){BLD.forEach(b=>{if(S.era>=b.e)S.bl[b.id]=maxL()})}
+else if(a==="ad_tech")TECH.forEach(t=>S.tech[t.id]=15);else if(a==="ad_tech0")S.tech={};
+else if(a==="ad_slots"){S.slots=3;S.xslots=4}
+else if(a==="ad_leg"){const n=Math.round(v("adl"));S.leg+=n;S.legT+=Math.max(0,n)}
+else if(a==="ad_hall")HR.forEach((h,i)=>{if(!S.heroes[i])S.heroes[i]={lv:1,sh:0}});
+else if(a==="ad_hsh")Object.keys(S.heroes).forEach(i=>S.heroes[i].sh+=10);
+else if(a==="ad_hlv")Object.keys(S.heroes).forEach(i=>S.heroes[i].lv=Math.max(S.heroes[i].lv,10));
+else if(a==="ad_hno")S.heroes={};else if(a==="ad_sumr")S.sumDay="";
+else if(a==="ad_day")S.day.n=Math.max(0,Math.round(v("add")));
+else if(a==="ad_dres")S.day.last="";else if(a==="ad_qres")S.q={date:"",l:[]};
+else if(a==="ad_aall")ACH.forEach(x=>S.ach[x.id]=1);else if(a==="ad_ano")S.ach={};
+else if(a==="ad_json"){try{S=merge(def(),JSON.parse($("adj").value.replace(/&lt;/g,"<")));toast("Применено")}catch(e){return toast("Ошибка в JSON")}}
+else if(a==="ad_hard"){if(!confirm("Удалить весь прогресс?"))return;S=def()}
+else if(a==="ad_pw"){const p=$("adnp").value.trim();if(!p)return toast("Введи пароль");S.pw=p;toast("Пароль изменён")}
+save();render();drawAdm()};
+document.addEventListener("keydown",e=>{if(e.ctrlKey&&e.shiftKey&&e.key.toLowerCase()==="a"){e.preventDefault();openAdm()}if(e.key==="Escape"){const o=document.querySelector(".ov:not([data-lock])");if(o)o.remove()}});
+$("ttl").addEventListener("click",(()=>{let n=0,t=0;return()=>{const c=Date.now();n=c-t<600?n+1:1;t=c;if(n>=5){n=0;openAdm()}}})());
+
+/* запуск */
+const before={...S.res};tick();
+render();
+{const gone=Math.round((Date.now()-(+localStorage.getItem(KEY+"-ts")||Date.now()))/1000);if(gone>120){const m=["gold","food","wood"].map(r=>`+${sh(Math.max(0,S.res[r]-before[r]))}${RI[r]}`).join(" ");toast(`Пока тебя не было ${ft(gone)}: ${m}`)}}
+setInterval(()=>{tick();live()},500);
+setInterval(()=>{save();try{localStorage.setItem(KEY+"-ts",Date.now())}catch(e){}},5000);
+addEventListener("beforeunload",()=>{save();try{localStorage.setItem(KEY+"-ts",Date.now())}catch(e){}});
+document.addEventListener("visibilitychange",()=>{if(!document.hidden){tick();render()}});
+window.EPOHA={get S(){return S},act,tick,render};
 })();
 </script>
 </body>
