@@ -3,328 +3,334 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Эпоха — империя на 100 дней</title>
+<title>Король номеров</title>
 <style>
-:root{--bg:#0f1224;--bg2:#221a4d;--pn:rgba(255,255,255,.06);--pn2:rgba(255,255,255,.11);--ink:#f2efff;--mu:#a9a3d6;--ln:rgba(255,255,255,.13);--ac:#f5b942;--ac2:#3ddc97;--bad:#ff6b81;--sh:rgba(0,0,0,.35)}
-[data-theme=parch]{--bg:#f4ecd8;--bg2:#e6d4aa;--pn:rgba(90,58,12,.07);--pn2:rgba(90,58,12,.13);--ink:#3b2a14;--mu:#7b6541;--ln:rgba(90,58,12,.22);--ac:#b8731a;--ac2:#2c8a58;--bad:#b3261e;--sh:rgba(90,58,12,.2)}
-[data-theme=emerald]{--bg:#05211d;--bg2:#0d4a40;--pn:rgba(255,255,255,.06);--pn2:rgba(255,255,255,.11);--ink:#e8fff6;--mu:#8fc9b6;--ln:rgba(255,255,255,.13);--ac:#ffd166;--ac2:#4be3b0;--bad:#ff7a7a;--sh:rgba(0,0,0,.35)}
+:root{--bg:#0b1020;--bg2:#1a1f45;--pn:rgba(255,255,255,.06);--pn2:rgba(255,255,255,.11);--ink:#f1f3ff;--mu:#a3abd0;--ln:rgba(255,255,255,.13);--ac:#ffc857;--gr:#5be3a0;--bl:#5bb8ff;--bad:#ff6b81;--sh:rgba(0,0,0,.4)}
+[data-theme=day]{--bg:#eef2fb;--bg2:#dbe4f7;--pn:rgba(20,30,70,.06);--pn2:rgba(20,30,70,.12);--ink:#16203f;--mu:#56608a;--ln:rgba(20,30,70,.18);--ac:#d98a00;--gr:#1a9b64;--bl:#1f7bd8;--bad:#c62848;--sh:rgba(20,30,70,.18)}
 *{box-sizing:border-box}html,body{margin:0;min-height:100%}
-body{background:linear-gradient(160deg,var(--bg),var(--bg2)) fixed;color:var(--ink);font-family:"Trebuchet MS","Segoe UI",system-ui,sans-serif;line-height:1.4;padding-bottom:86px}
+body{background:linear-gradient(165deg,var(--bg),var(--bg2)) fixed;color:var(--ink);font-family:"Trebuchet MS","Segoe UI",system-ui,sans-serif;line-height:1.4;padding-bottom:84px}
 button{font:inherit;color:inherit;cursor:pointer;border:0;background:none}
-button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-visible{outline:3px solid var(--ac);outline-offset:2px}
-header{position:sticky;top:0;z-index:20;background:linear-gradient(180deg,var(--bg),color-mix(in srgb,var(--bg) 82%,transparent));backdrop-filter:blur(10px);border-bottom:1px solid var(--ln);padding:10px 14px 8px}
-.top{display:flex;justify-content:space-between;align-items:center;gap:10px;max-width:980px;margin:0 auto}
-.top h1{margin:0;font-size:1.25rem;letter-spacing:-.01em}.top small{color:var(--mu)}
-.chips{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;max-width:980px;margin:8px auto 0}
-.chip{background:var(--pn);border:1px solid var(--ln);border-radius:14px;padding:6px 10px;min-width:0}
-.chip b{display:block;font-size:1rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.chip small{color:var(--mu);font-size:.72rem;white-space:nowrap}
-main{max-width:980px;margin:0 auto;padding:14px;display:grid;gap:12px}
+button:focus-visible,input:focus-visible,textarea:focus-visible{outline:3px solid var(--ac);outline-offset:2px}
+header{position:sticky;top:0;z-index:20;background:linear-gradient(180deg,var(--bg),color-mix(in srgb,var(--bg) 80%,transparent));backdrop-filter:blur(10px);border-bottom:1px solid var(--ln);padding:10px 14px}
+.hd{max-width:960px;margin:0 auto;display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.hd h1{margin:0;font-size:1.15rem}.money{font-size:1.5rem;font-weight:800;color:var(--gr);font-variant-numeric:tabular-nums}.money small{display:block;font-size:.74rem;font-weight:600;color:var(--mu)}
+#evb{max-width:960px;margin:6px auto 0;font-size:.85rem;color:var(--ac)}
+main{max-width:960px;margin:0 auto;padding:14px;display:grid;gap:12px}
 .card{background:var(--pn);border:1px solid var(--ln);border-radius:20px;padding:14px;box-shadow:0 8px 24px var(--sh)}
 .card h2,.card h3{margin:0 0 4px}.mu{color:var(--mu);font-size:.88rem}
-.row{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
-.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:12px}
-.btn{background:linear-gradient(135deg,var(--ac),color-mix(in srgb,var(--ac) 60%,#ff7a45));color:#241400;font-weight:700;border-radius:14px;padding:9px 16px;transition:transform .12s,filter .12s}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}.row.sp{justify-content:space-between}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:12px}
+.btn{background:linear-gradient(135deg,var(--ac),#ff9a3d);color:#2a1700;font-weight:800;border-radius:14px;padding:10px 18px;transition:transform .12s,filter .12s}
 .btn:hover{transform:translateY(-1px);filter:brightness(1.07)}.btn:active{transform:scale(.97)}
-.btn.sec{background:var(--pn2);color:var(--ink);font-weight:600}.btn.big{padding:12px 20px;text-align:center}
-.btn small{display:block;font-weight:600;opacity:.8}
-.costs{display:flex;gap:6px;flex-wrap:wrap;margin:6px 0}
-.cc{background:var(--pn2);border-radius:999px;padding:2px 10px;font-size:.85rem}.cc.no{color:var(--bad);font-weight:700}
-.bar{height:8px;border-radius:99px;background:var(--pn2);overflow:hidden;margin:4px 0}.bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--ac2),var(--ac));transition:width .4s}
-.tm{display:flex;justify-content:space-between;font-size:.88rem;color:var(--mu)}
-nav{position:fixed;left:0;right:0;bottom:0;z-index:30;display:flex;gap:4px;overflow-x:auto;padding:8px 8px max(8px,env(safe-area-inset-bottom));background:color-mix(in srgb,var(--bg) 92%,transparent);backdrop-filter:blur(12px);border-top:1px solid var(--ln);scrollbar-width:none}
-nav button{flex:1 0 66px;display:grid;justify-items:center;gap:0;padding:6px 4px;border-radius:12px;color:var(--mu);font-size:.72rem}
-nav button span{font-size:1.25rem}nav button.on{background:var(--pn2);color:var(--ink)}
-.cal{display:grid;grid-template-columns:repeat(10,1fr);gap:5px}
-.cell{aspect-ratio:1;border-radius:9px;background:var(--pn);border:1px solid var(--ln);display:grid;place-items:center;font-size:.7rem;color:var(--mu);position:relative}
-.cell.done{background:color-mix(in srgb,var(--ac2) 30%,transparent);color:var(--ink)}.cell.next{border-color:var(--ac);box-shadow:0 0 0 2px var(--ac) inset;color:var(--ink)}
-.cell.big{border-color:var(--ac)}
-.hero{display:grid;gap:2px;text-align:center;padding:10px;border-radius:16px;background:var(--pn);border:1px solid var(--ln)}
-.hero.off{opacity:.38;filter:grayscale(1)}.hero .em{font-size:2rem}
-.r1{color:#c9c9d8}.r2{color:#6fdc8c}.r3{color:#5ea8ff}.r4{color:#c77dff}.r5{color:#ffb347}
-.ach{display:flex;gap:10px;align-items:center;padding:10px;border-radius:14px;background:var(--pn);border:1px solid var(--ln);opacity:.5}.ach.on{opacity:1;border-color:var(--ac)}
+.btn.sec{background:var(--pn2);color:var(--ink);font-weight:600}.btn.big{font-size:1.3rem;padding:15px 34px;border-radius:18px}.btn.gr{background:linear-gradient(135deg,var(--gr),#2fb97a);color:#04251a}
+.btn[disabled]{opacity:.45;cursor:not-allowed;transform:none}
+.tg{border-radius:12px;padding:8px 14px;background:var(--pn2);font-weight:600}.tg.on{background:linear-gradient(135deg,var(--gr),#2fb97a);color:#04251a}
+.chip{display:inline-block;border-radius:999px;padding:2px 10px;font-size:.78rem;font-weight:700;border:1px solid currentColor}
+.tabs-nav{position:fixed;left:0;right:0;bottom:0;z-index:30;display:flex;gap:4px;overflow-x:auto;padding:8px 8px max(8px,env(safe-area-inset-bottom));background:color-mix(in srgb,var(--bg) 92%,transparent);backdrop-filter:blur(12px);border-top:1px solid var(--ln);scrollbar-width:none}
+.tabs-nav button{flex:1 0 64px;display:grid;justify-items:center;padding:6px 4px;border-radius:12px;color:var(--mu);font-size:.72rem}.tabs-nav button span{font-size:1.3rem}.tabs-nav button.on{background:var(--pn2);color:var(--ink)}
+/* номера */
+.plate{display:inline-flex;flex-direction:column;align-items:center;gap:3px;padding:8px 20px 10px;border-radius:12px;border:3px solid var(--fg);background:linear-gradient(180deg,var(--b1),var(--b2));color:var(--fg);box-shadow:0 8px 22px var(--sh),inset 0 0 0 2px rgba(255,255,255,.55),0 0 0 2px var(--rc);position:relative}
+.plate .tag{font:700 .62rem/1 system-ui,sans-serif;letter-spacing:.22em;text-transform:uppercase;color:var(--tag)}
+.plate .nums,.ph .nums{display:flex;font:900 2.1rem/1 "Arial Black",Impact,system-ui,sans-serif;letter-spacing:.06em;white-space:pre}
+.plate.sm{padding:5px 12px 6px}.plate.sm .nums{font-size:1.15rem}.plate.sm .tag{font-size:.5rem}
+.ph{display:inline-flex;padding:10px 20px;border-radius:16px;background:linear-gradient(180deg,#1d2744,#0d1428);border:2px solid var(--rc);color:#e8f5ff;box-shadow:0 8px 22px var(--sh),0 0 18px color-mix(in srgb,var(--rc) 45%,transparent)}
+.ph .nums{font-family:"Courier New",monospace;font-size:1.55rem;letter-spacing:.02em}.ph.sm{padding:5px 12px}.ph.sm .nums{font-size:.95rem}
+.ch{display:inline-block;min-width:.6em;text-align:center}
+.reel{min-height:112px;display:grid;place-items:center;background:radial-gradient(circle at 50% 40%,rgba(255,255,255,.08),transparent 70%);border-radius:18px;border:1px dashed var(--ln);padding:12px;overflow:hidden}
+.reveal{animation:rv .55s cubic-bezier(.2,1.4,.4,1)}@keyframes rv{from{transform:scale(.7);opacity:0}}
+.badge{display:inline-block;border-radius:8px;padding:2px 10px;font-weight:800;font-size:.8rem;color:#101010}
+.cl{display:grid;gap:4px;text-align:left;padding:12px;border-radius:16px;background:var(--pn);border:2px solid var(--ln);width:100%;transition:border-color .15s}
+.cl.on{border-color:var(--ac);background:var(--pn2)}.cl.lock{opacity:.55}
+.bar{height:6px;border-radius:99px;background:var(--pn2);overflow:hidden;margin:4px 0}.bar i{display:block;height:100%;background:linear-gradient(90deg,var(--gr),var(--ac))}
+.inv{display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap;padding:10px;border-radius:14px;background:var(--pn);border:1px solid var(--ln)}
+.slot{display:grid;place-items:center;height:30px;border-radius:8px;font-size:.7rem;background:var(--pn);border:1px solid var(--ln);color:var(--mu)}.slot.on{color:#101010;border:0;font-weight:800}
 .toast{position:fixed;left:50%;bottom:96px;transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:14px;z-index:90;max-width:92vw;box-shadow:0 8px 28px var(--sh);animation:pop .22s ease}
 @keyframes pop{from{opacity:0;transform:translate(-50%,8px)}}
-.ov{position:fixed;inset:0;background:rgba(6,4,20,.62);backdrop-filter:blur(5px);display:grid;place-items:center;z-index:60;padding:12px}
-.md{background:linear-gradient(160deg,var(--bg2),var(--bg));border:1px solid var(--ln);border-radius:22px;padding:18px;width:min(560px,100%);max-height:88vh;overflow:auto;display:grid;gap:10px}
-.tabs{display:flex;gap:6px;flex-wrap:wrap}.tabs .btn{padding:6px 12px}
-input,textarea,select{font:inherit;background:var(--pn2);color:var(--ink);border:1px solid var(--ln);border-radius:12px;padding:8px 12px;max-width:100%}
-textarea{width:100%;height:120px;font-size:.78rem}
-.log{font-size:.85rem;color:var(--mu);display:grid;gap:3px;max-height:220px;overflow:auto}
+.ov{position:fixed;inset:0;background:rgba(5,8,22,.62);backdrop-filter:blur(5px);display:grid;place-items:center;z-index:60;padding:12px}
+.md{background:linear-gradient(165deg,var(--bg2),var(--bg));border:1px solid var(--ln);border-radius:22px;padding:18px;width:min(580px,100%);max-height:90vh;overflow:auto;display:grid;gap:10px}
+.ac{background:var(--pn);border:1px solid var(--ln);border-radius:14px;padding:10px;display:grid;gap:6px}.at{font-weight:800}.ad{color:var(--mu);font-size:.86rem}
+input,textarea{font:inherit;background:var(--pn2);color:var(--ink);border:1px solid var(--ln);border-radius:12px;padding:8px 12px;max-width:100%}textarea{width:100%;height:110px;font-size:.78rem}
 .stat{display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--ln)}
-@media (max-width:560px){.chips{grid-template-columns:repeat(2,1fr)}.cal{grid-template-columns:repeat(7,1fr)}}
-@media (prefers-reduced-motion:reduce){.toast{animation:none}.bar i,.btn{transition:none}}
+@media (prefers-reduced-motion:reduce){.reveal,.toast{animation:none}.btn{transition:none}}
 </style>
 </head>
 <body>
-<header>
-  <div class="top"><div><h1 id="ttl">Эпоха</h1><small id="sub"></small></div><div class="mu" id="clk"></div></div>
-  <div class="chips" id="chips"></div>
-</header>
+<header><div class="hd"><div><h1 id="ttl">Король номеров</h1><div class="mu" id="sub"></div></div><div class="money" id="mon"></div></div><div id="evb"></div></header>
 <main id="view"></main>
-<nav id="nav" aria-label="Разделы"></nav>
+<nav class="tabs-nav" id="nav" aria-label="Разделы"></nav>
 
 <script>
 (()=>{
-const $=i=>document.getElementById(i),KEY="epoha-save-v1";
-const RI={gold:"🪙",food:"🌾",wood:"🪵",gem:"💎"},RN={gold:"Золото",food:"Еда",wood:"Дерево",gem:"Кристаллы"},RL=["gold","food","wood","gem"];
-const SU=["","К","М","Млрд","Трлн","Квдр","Квнт","Скст","Спт","Окт"];
-const sh=n=>{n=Math.floor(n);if(n<1000)return""+n;const i=Math.min(SU.length-1,Math.floor(Math.log10(n)/3)),v=n/Math.pow(10,i*3);return(v<10?v.toFixed(2):v<100?v.toFixed(1):Math.floor(v))+SU[i]};
-const rt=x=>x<10?x.toFixed(2):sh(x);
-const ft=s=>{s=Math.max(0,Math.ceil(s));const d=Math.floor(s/86400),h=Math.floor(s%86400/3600),m=Math.floor(s%3600/60),c=s%60;return d?d+"д "+h+"ч":h?h+"ч "+m+"м":m?m+"м "+c+"с":c+"с"};
-const ERAS=["Каменный век","Бронзовый век","Античность","Средневековье","Возрождение","Эпоха пара","Индустриализация","Атомный век","Цифровая эра","Космическая эра"];
-const BLD=[
-{id:"farm",n:"Ферма",i:"🌾",res:"food",r:.8,c:{gold:15},d:"Выращивает еду",e:1},
-{id:"sawmill",n:"Лесопилка",i:"🪵",res:"wood",r:.6,c:{gold:20,food:10},d:"Добывает дерево",e:1},
-{id:"mine",n:"Золотой рудник",i:"⛏️",res:"gold",r:.5,c:{wood:25,food:15},d:"Приносит золото",e:1},
-{id:"storage",n:"Склад",i:"🏚️",c:{wood:80,gold:50},d:"Увеличивает вместимость",e:1},
-{id:"market",n:"Рынок",i:"🏪",c:{gold:120,wood:80,food:50},d:"+3% к добыче золота за уровень",e:1},
-{id:"barracks",n:"Казармы",i:"🏰",c:{gold:100,wood:60},d:"+4% к силе героев за уровень",e:2},
-{id:"library",n:"Библиотека",i:"📚",c:{gold:150,wood:100},d:"+4% к скорости исследований",e:2},
-{id:"temple",n:"Храм",i:"⛩️",res:"gem",r:.002,c:{gold:500,wood:300},d:"Приносит кристаллы",e:3}];
-const TECH=[
-{id:"agri",n:"Земледелие",i:"🌱",d:"+12% еды за уровень"},{id:"forest",n:"Лесоводство",i:"🌲",d:"+12% дерева за уровень"},
-{id:"mining",n:"Горное дело",i:"⛰️",d:"+12% золота за уровень"},{id:"store",n:"Логистика",i:"📦",d:"+15% вместимости за уровень"},
-{id:"scholar",n:"Письменность",i:"📜",d:"+3% скорости исследований"},{id:"war",n:"Военное дело",i:"⚔️",d:"+10% силы героев и наград походов"},
-{id:"trade",n:"Торговля",i:"⚖️",d:"+5% к выгоде обмена"},{id:"wonder",n:"Чудеса света",i:"🗿",d:"+5% ко всей добыче"}];
-const HR=[["Лучник Ори","🏹",1],["Крестьянин Ян","🧑‍🌾",1],["Охотница Лея","🦌",1],["Кузнец Бран","🔨",1],["Рыцарь Эйрик","🛡️",2],["Целительница Мира","🌿",2],["Следопыт Кай","🧭",2],["Алхимик Зол","⚗️",2],["Маг Аркон","🔮",3],["Капитан Вега","⚓",3],["Тень Ниакс","🥷",3],["Жрица Сола","🌞",3],["Дракон Игнис","🐉",4],["Валькирия Хельга","⚔️",4],["Король Артур","👑",5],["Звёздный Страж","🌌",5]];
-const EXP=[{n:"Разведка",t:900,i:"🔭"},{n:"Охота",t:3600,i:"🏹"},{n:"Караван",t:14400,i:"🐪"},{n:"Дальняя экспедиция",t:43200,i:"⛵"},{n:"Великий поход",t:86400,i:"🏔️"}];
-const QK={gold:"Добыть {n} золота",up:"Улучшить здания {n} раз",exp:"Завершить походов: {n}",sum:"Призвать героев: {n}",click:"Собрать налоги {n} раз"};
-const LS=[["prod","Имперская мощь","+10% к добыче"],["cap","Великие склады","+20% вместимости"],["rs","Мудрость предков","+10% к скорости исследований"]];
+"use strict";
+const $=i=>document.getElementById(i),KEY="nomera-save-v1";
+const rnd=(a,b)=>a+Math.random()*(b-a),ri=(a,b)=>Math.floor(rnd(a,b+1)),pick=a=>a[Math.floor(Math.random()*a.length)];
+const fmt=n=>{n=Math.round(n);return n>=1e9?(n/1e9).toFixed(2)+" млрд":n>=1e6?(n/1e6).toFixed(2)+" млн":n.toLocaleString("ru-RU")};
+const $$=n=>"$"+fmt(n);
+const ft=s=>{s=Math.max(0,Math.ceil(s));const h=Math.floor(s/3600),m=Math.floor(s%3600/60),c=s%60;return h?h+"ч "+m+"м":m?m+"м "+c+"с":c+"с"};
 
-const def=()=>{const b={};BLD.forEach(x=>b[x.id]=["farm","mine","sawmill"].includes(x.id)?1:0);
-return{off:0,spd:1,mult:1,last:Date.now(),res:{gold:60,food:40,wood:40,gem:30},bl:b,era:1,eraEnd:0,tech:{},rs:[],slots:1,heroes:{},exp:[],xslots:2,
-day:{n:0,last:""},q:{date:"",l:[]},ach:{},st:{gold:0,run:0,clicks:0,up:0,exp:0,sum:0,ev:0,pr:0,maxEra:1,trade:0},legT:0,leg:0,ls:{},sumDay:"",log:[],evT:0,theme:"night",snd:true,pw:"admin",born:Date.now()}};
+/* ---------- данные ---------- */
+const TR=[{n:"Обычный",c:"#aab3c8",b:10,min:0},{n:"Редкий",c:"#4aa8ff",b:50,min:15},{n:"Эпический",c:"#b36bff",b:250,min:38},{n:"Легендарный",c:"#ffb02e",b:1800,min:72},{n:"Мифический",c:"#ff4d6d",b:12000,min:115}];
+const tierOf=s=>{let t=0;TR.forEach((x,i)=>{if(s>=x.min)t=i});return t};
+const CL=[{n:"Эконом",i:"🚗",cost:50,cm:1,w:[78,17,4,.9,.1]},{n:"Комфорт",i:"🚙",cost:400,cm:3,w:[60,28,9,2.5,.5]},{n:"Бизнес",i:"🏎️",cost:3000,cm:10,w:[40,32,20,7,1]}];
+const CARS=[
+[{n:"Городок",i:"🚗",p:2500,inc:.04},{n:"Ласточка",i:"🚙",p:6000,inc:.05},{n:"Скаут",i:"🛻",p:12000,inc:.07}],
+[{n:"Престиж",i:"🚘",p:8000,inc:.4},{n:"Комфорт-С",i:"🚖",p:20000,inc:.5},{n:"Магистраль",i:"🚐",p:40000,inc:.7}],
+[{n:"Директор",i:"🚘",p:60000,inc:2.5},{n:"Сенатор",i:"🏎️",p:150000,inc:3.5},{n:"Президент",i:"🚁",p:400000,inc:5}]];
+const ST=[
+{id:"CA",n:"Калифорния",t:"DLLLDDD",bg:["#ffffff","#dce6ff"],fg:"#1d3a8a",tag:"#c0392b",m:1},
+{id:"NY",n:"Нью-Йорк",t:"LLL-DDDD",bg:["#fff1b8","#ffd966"],fg:"#13306b",tag:"#13306b",m:1.1},
+{id:"TX",n:"Техас",t:"LLL DDDD",bg:["#ffffff","#e9edf5"],fg:"#1b1b1b",tag:"#b32020",m:1.15},
+{id:"FL",n:"Флорида",t:"LLL LDD",bg:["#fffaf0","#ffe2b8"],fg:"#a3261a",tag:"#1b6b3a",m:1.2},
+{id:"NV",n:"Невада",t:"DDD LDD",bg:["#e7f1ff","#b8d3ff"],fg:"#12305f",tag:"#7a4b00",m:1.3},
+{id:"WA",n:"Вашингтон",t:"LLLDDDD",bg:["#f2fff6","#c5efd3"],fg:"#0f4a2f",tag:"#0f4a2f",m:1.2},
+{id:"IL",n:"Иллинойс",t:"LL DDDDD",bg:["#fff","#ffd9d9"],fg:"#8a1c1c",tag:"#8a1c1c",m:1.15}];
+const LET="ABCDEFGHJKLMNPRSTUVWXYZ",ABC="ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+const W3=["ACE","BIG","BOY","CAT","CEO","DOG","FOX","FUN","GUY","HOT","ICE","JET","KID","MAX","NEW","ONE","PRO","RED","SUN","TOP","VIP","WIN","WOW","ZIP","SKY","CAR","BAR","JAM"];
+const VAN=[["BOSS","KING","CASH","LUCKY","FAST","HOTROD","TAXI","MAFIA","SPEED","TIGER","ALPHA","NINJA"],["MONEY","WINNER","TYCOON","MILLION","KINGPIN","BILLION","LEGEND","1","7777777"]];
+const AREAS=["212","213","305","310","312","404","415","512","602","617","702","713","718","786","808","818","917","206","303","214"],PREM=["212","310","305","415","702","786","917","808"];
+const UP=[
+{id:"cap",n:"Склад",i:"📦",d:"+8 мест для номеров за уровень",max:10,c:200,g:1.6},
+{id:"luck",n:"Удача",i:"🍀",d:"+4% к шансу редких номеров за уровень",max:15,c:500,g:1.7},
+{id:"neg",n:"Переговоры",i:"🤝",d:"+4% к цене продажи за уровень",max:20,c:400,g:1.55},
+{id:"lic",n:"Лицензии штатов",i:"🗺️",d:"Открывает новый штат с особыми номерами",max:5,c:3000,g:3},
+{id:"brk",n:"Брокер",i:"💼",d:"Сам продаёт лишнее: ур.1 обычные, ур.2 ещё и редкие",max:2,c:1500,g:10},
+{id:"bot",n:"Робот-крутильщик",i:"🤖",d:"Сам крутит выбранный класс. Каждый уровень ускоряет",max:8,c:5000,g:2},
+{id:"call",n:"Колл-центр",i:"📞",d:"+5% к цене телефонных номеров за уровень",max:10,c:800,g:1.6},
+{id:"auc",n:"Аукционный дом",i:"🔨",d:"+10% к наградам за заказы за уровень",max:5,c:2500,g:2}];
+const EVS=[{n:"Ажиотаж на редкие номера",d:"Редкие стоят на 40% больше",t:1,m:1.4},{n:"Охота за эпиками",d:"Эпические стоят на 40% больше",t:2,m:1.4},{n:"Коллекционеры вышли на рынок",d:"Легендарные стоят на 30% больше",t:3,m:1.3},
+{n:"Спад на обычные",d:"Обычные номера дешевле на 30%",t:0,m:.7},{n:"Фестиваль в Техасе",d:"Номера Техаса дороже на 50%",st:"TX",m:1.5},{n:"Бум телефонов",d:"Телефонные номера дороже на 30%",k:"ph",m:1.3},{n:"Налоговая проверка",d:"Все цены ниже на 15%",all:1,m:.85}];
+const OT=[["палиндром",t=>t.pal],["тройка одинаковых цифр",t=>t.trip||t.same],["красивая последовательность",t=>t.run],["счастливые семёрки (777)",t=>t.seven],["слово из букв",t=>t.word],["низкий номер",t=>t.low],["редкость Редкий или выше",(t,i)=>i.tier>=1],["редкость Эпический или выше",(t,i)=>i.tier>=2]];
+
+/* ---------- состояние ---------- */
+const def=()=>({money:300,earn:0,spins:0,sold:0,orders:0,inv:[],last:null,cars:[[1,0,0],[0,0,0],[0,0,0]],up:{},states:["CA","NY"],alb:{},albDone:{},ach:{},kind:"p",cl:0,ord:[],ev:null,evNext:0,off:0,spd:1,
+day:{last:"",n:0},sound:true,fast:false,auto:false,theme:"night",pw:"admin",adm:{luck:1,price:1,free:false,cap:false,force:-1},t:Date.now(),born:Date.now(),id:1,rt:0,bt:0,best:0});
 const merge=(a,b)=>{for(const k in b){if(b[k]&&typeof b[k]==="object"&&!Array.isArray(b[k])&&a[k]&&typeof a[k]==="object"&&!Array.isArray(a[k]))merge(a[k],b[k]);else a[k]=b[k]}return a};
-let S=def(),tab="emp",adminOk=false,admTab="res";
+let S=def(),tab="spin",adminOk=false,animating=false;
 try{const r=localStorage.getItem(KEY);if(r)S=merge(def(),JSON.parse(r))}catch(e){}
 const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}};
-const now=()=>Date.now()+S.off,today=()=>new Date(now()).toDateString();
+const now=()=>Date.now()+S.off,upl=id=>S.up[id]||0;
 
-/* звук и сообщения */
-let ac=null;const beep=(f,d=.12,ty="triangle")=>{if(!S.snd)return;try{ac=ac||new(window.AudioContext||window.webkitAudioContext)();const o=ac.createOscillator(),g=ac.createGain(),t=ac.currentTime;o.type=ty;o.frequency.setValueAtTime(f,t);o.frequency.exponentialRampToValueAtTime(f*1.5,t+d);g.gain.setValueAtTime(.05,t);g.gain.exponentialRampToValueAtTime(.0001,t+d);o.connect(g);g.connect(ac.destination);o.start(t);o.stop(t+d)}catch(e){}};
-const toast=m=>{const e=document.createElement("div");e.className="toast";e.textContent=m;e.setAttribute("role","status");document.body.appendChild(e);setTimeout(()=>e.remove(),3400)};
-const logm=m=>{S.log.unshift({t:now(),m});S.log.length=Math.min(S.log.length,40)};
+/* ---------- звук ---------- */
+let ac=null;const beep=(f,d=.1,ty="triangle",v=.05,dl=0)=>{if(!S.sound)return;try{ac=ac||new(window.AudioContext||window.webkitAudioContext)();const o=ac.createOscillator(),g=ac.createGain(),t=ac.currentTime+dl;o.type=ty;o.frequency.setValueAtTime(f,t);g.gain.setValueAtTime(v,t);g.gain.exponentialRampToValueAtTime(.0001,t+d);o.connect(g);g.connect(ac.destination);o.start(t);o.stop(t+d)}catch(e){}};
+const toast=m=>{const e=document.createElement("div");e.className="toast";e.textContent=m;e.setAttribute("role","status");document.body.appendChild(e);setTimeout(()=>e.remove(),3000)};
 
-/* формулы */
-const tb=id=>S.tech[id]||0,lup=k=>S.ls[k]||0,eraM=()=>Math.pow(3.2,S.era-1),legM=()=>1+.1*S.legT;
-const cap=()=>5000*Math.pow(1.2,S.bl.storage)*Math.pow(4,S.era-1)*(1+.15*tb("store"))*(1+.2*lup("cap"));
-const maxL=()=>5+5*S.era;
-const rates=()=>{const r={gold:0,food:0,wood:0,gem:0},m=eraM()*legM()*S.mult*(1+.05*tb("wonder"))*(1+.1*lup("prod")),tm={food:tb("agri"),wood:tb("forest"),gold:tb("mining")};
-BLD.forEach(b=>{if(!b.res)return;const L=S.bl[b.id];if(L<=0)return;let x=b.res==="gem"?b.r*L*S.mult:b.r*L*m*(1+.12*(tm[b.res]||0));if(b.res==="gold")x*=1+.03*S.bl.market;r[b.res]+=x});return r};
-const bcost=b=>{const c={},k=Math.pow(1.16,S.bl[b.id])*Math.pow(2.2,S.era-1);for(const r in b.c)c[r]=Math.ceil(b.c[r]*k);return c};
-const afford=c=>Object.keys(c).every(r=>S.res[r]>=c[r]),pay=c=>{for(const r in c)S.res[r]-=c[r]};
-const addRes=(r,v)=>{if(r==="gem"){S.res.gem+=v;return}const c=cap();S.res[r]=S.res[r]>=c?S.res[r]:Math.min(c,S.res[r]+v)};
-const rsSpeed=()=>1+.04*S.bl.library+.03*tb("scholar")+.1*lup("rs");
-const tcost=l=>({gold:Math.round(250*Math.pow(1.55,l)*eraM()),food:Math.round(120*Math.pow(1.55,l)*eraM())});
-const tdur=l=>1200*Math.pow(1.5,l)/rsSpeed();
-const eraCost=()=>{const k=Math.pow(5,S.era-1);return{gold:3000*k,food:1500*k,wood:1500*k,gem:20*S.era}};
-const eraDur=()=>4*3600*S.era;
-const taxVal=()=>Math.max(2,rates().gold*6+eraM()*2);
-const hp=i=>{const h=S.heroes[i];return h?HR[i][2]*5*(1+.25*(h.lv-1)):0};
-const party=()=>Object.keys(S.heroes).map(i=>hp(+i)).sort((a,b)=>b-a).slice(0,3).reduce((a,b)=>a+b,0)*(1+.04*S.bl.barracks+.1*tb("war"));
-const cnt=()=>Object.keys(S.heroes).length;
-const prGain=()=>Math.floor(Math.sqrt(S.st.run/1e7));
-const xr=(k,pw)=>{const T=EXP[k],R=rates(),pm=(1+pw/60)*(1+.1*tb("war")),e=eraM();
-return{gold:Math.round(Math.max(150*e,R.gold*T.t*.6)*pm),food:Math.round(Math.max(100*e,R.food*T.t*.6)*pm),wood:Math.round(Math.max(100*e,R.wood*T.t*.6)*pm),gem:Math.max(1,Math.round(T.t/7200*(1+pw/200)))}};
-const roll=()=>{const w=[45,30,15,8,2],r=Math.random()*100;let a=0,rar=1;for(let i=0;i<5;i++){a+=w[i];if(r<a){rar=i+1;break}}const p=HR.map((h,i)=>i).filter(i=>HR[i][2]===rar);return p[Math.floor(Math.random()*p.length)]};
-const give=i=>{if(S.heroes[i]){S.heroes[i].sh++;return false}S.heroes[i]={lv:1,sh:0};return true};
-const dayRew=d=>{const R=rates(),s=(d-1)%100+1;return{gem:2+(s%7===0?10:0)+(s%30===0?40:0)+(s===100?400:0),gold:Math.round(500*eraM()+R.gold*600*(1+s/20)),hero:s%10===0}};
+/* ---------- оценка номеров ---------- */
+const isPal=s=>s.length>1&&s===[...s].reverse().join("");
+const isRun=(D,k)=>{for(let i=0;i+k<=D.length;i++){let a=true,d=true;for(let j=1;j<k;j++){if(+D[i+j]!==+D[i+j-1]+1)a=false;if(+D[i+j]!==+D[i+j-1]-1)d=false}if(a||d)return true}return false};
+const isLRun=L=>{for(let i=0;i+2<L.length;i++)if(ABC.indexOf(L[i+1])===ABC.indexOf(L[i])+1&&ABC.indexOf(L[i+2])===ABC.indexOf(L[i])+2)return true;return false};
+const sD=D=>{const n=D.length;if(n<2)return 0;let s=0;const all=/^(\d)\1+$/.test(D);
+if(all)s+=n>=4?75:n===3?55:12;else{if(/(\d)\1\1\1/.test(D))s+=45;else if(/(\d)\1\1/.test(D))s+=22;else{const m=D.match(/(\d)\1/g);if(m)s+=7*Math.min(2,m.length)}}
+if(isRun(D,4))s+=40;else if(isRun(D,3))s+=14;if(n>=3&&isPal(D)&&!all)s+=16;
+const v=parseInt(D,10);if(n>=3){if(v<=9)s+=70;else if(v<=99)s+=40;else if(n>=4&&v<=999)s+=15;if(v>0&&/00$/.test(D))s+=10;if(v>0&&/000$/.test(D))s+=15}
+if(/777/.test(D))s+=25;if(/888/.test(D))s+=20;if(/007$|^007/.test(D))s+=40;if(/1337/.test(D))s+=40;return s};
+const sL=L=>{const n=L.length;if(!n)return 0;let s=0;if(n>=2&&/^(.)\1+$/.test(L))s+=n>=3?50:10;else if(n>=3&&/(.)\1/.test(L))s+=8;if(n>=3&&isLRun(L))s+=30;if(W3.includes(L))s+=35;return s};
+const trP=(L,D)=>({same:/^(\d)\1{2,}$/.test(D)||/^(.)\1{2,}$/.test(L),trip:/(\d)\1\1/.test(D),run:isRun(D,3)||isLRun(L),pal:D.length>=3&&isPal(D),low:D.length>=3&&parseInt(D,10)<=99,seven:/777/.test(D),word:W3.includes(L)});
 
-/* задания и достижения */
-const mkQ=()=>{const R=rates();return Object.keys(QK).sort(()=>Math.random()-.5).slice(0,3).map(x=>({k:x,n:x==="gold"?Math.max(500,Math.round(R.gold*1800)):x==="up"?3+S.era:x==="exp"?2:x==="sum"?1:25,c:0,r:5+S.era,d:0}))};
-const qp=(k,n)=>S.q.l.forEach(q=>{if(q.k===k&&!q.d)q.c=Math.min(q.n,q.c+n)});
-const ACH=[],A=(id,n,f,r)=>ACH.push({id,n,f,r});
-[1e3,1e5,1e7,1e9,1e12,1e15].forEach(v=>A("g"+v,`Добыть ${sh(v)} золота за всё время`,()=>S.st.gold>=v,5+Math.floor(Math.log10(v))));
-[10,100,1000,10000].forEach(v=>A("c"+v,`Собрать налоги ${v} раз`,()=>S.st.clicks>=v,5));
-[10,50,200,1000].forEach(v=>A("u"+v,`Улучшить здания ${v} раз`,()=>S.st.up>=v,6));
-[1,5,25,100].forEach(v=>A("x"+v,`Завершить походов: ${v}`,()=>S.st.exp>=v,6));
-[1,10,50,200].forEach(v=>A("s"+v,`Призвать героев: ${v}`,()=>S.st.sum>=v,6));
-[2,4,6,8,10].forEach(v=>A("e"+v,`Достичь эры «${ERAS[v-1]}»`,()=>S.st.maxEra>=v,10));
-[1,3,10].forEach(v=>A("p"+v,`Возрождений: ${v}`,()=>S.st.pr>=v,20));
-[1,7,30,60,100].forEach(v=>A("d"+v,`Получить ежедневных наград: ${v}`,()=>S.day.n>=v,8));
-[5,10,15].forEach(v=>A("t"+v,`Довести науку до уровня ${v}`,()=>TECH.some(t=>tb(t.id)>=v),12));
-[4,8,16].forEach(v=>A("h"+v,`Собрать героев: ${v}`,()=>cnt()>=v,10));
-[10,50].forEach(v=>A("m"+v,`Совершить сделок на рынке: ${v}`,()=>S.st.trade>=v,6));
+/* ---------- генерация ---------- */
+const rd=n=>{let s="";for(let i=0;i<n;i++)s+=ri(0,9);return s},rl=n=>{let s="";for(let i=0;i<n;i++)s+=LET[ri(0,LET.length-1)];return s},same=(c,n)=>String(c).repeat(n);
+const setAt=(s,p,t)=>s.slice(0,p)+t+s.slice(p+t.length);
+const pairD=n=>{const d=rd(n);if(n<2)return d;const p=ri(0,n-2),c=ri(0,9);return setAt(d,p,""+c+c)};
+const tripD=n=>{if(n<3)return pairD(n);const p=ri(0,n-3),c=ri(0,9);return setAt(rd(n),p,""+c+c+c)};
+const runD=(n,len)=>{len=Math.min(len,n);const dir=Math.random()<.7?1:-1,st=dir>0?ri(0,10-len):ri(len-1,9);let r="";for(let i=0;i<len;i++)r+=st+dir*i;const p=ri(0,n-len);return setAt(rd(n),p,r)};
+const palD=n=>{const h=rd(Math.ceil(n/2));return h+[...h].reverse().join("").slice(n%2)};
+const lowD=n=>String(ri(1,Math.random()<.5?9:99)).padStart(n,"0");
+const luckyD=n=>{const t=pick(["777","888","007","1337"]);return n<t.length?rd(n):setAt(rd(n),ri(0,n-t.length),t)};
+const roundD=n=>String(ri(1,9)).padEnd(Math.min(n,3),"0").padEnd(n,"0").slice(0,n);
+const runL=()=>{const s=ri(0,23);return ABC.slice(s,s+3)};
+const fam=(t,nL,nD)=>{const r=Math.random();let L=rl(nL),D=rd(nD);if(t===0)return{L,D};
+if(t===1){if(r<.3)D=pairD(nD);else if(r<.55)D=runD(nD,3);else if(r<.75)D=palD(nD);else if(r<.88&&nL>=2)L=same(rl(1),nL);else D=roundD(nD)}
+else if(t===2){if(r<.2)D=tripD(nD);else if(r<.4)D=runD(nD,4);else if(r<.55)D=luckyD(nD);else if(r<.7&&nL===3)L=pick(W3);else if(r<.85&&nL===3)L=runL();else{L=same(rl(1),nL);D=pairD(nD)}}
+else if(t===3){if(r<.3)D=lowD(nD);else if(r<.5)D=same(ri(1,9),nD);else if(r<.7){L=same(rl(1),nL);D=tripD(nD)}else if(r<.85&&nL===3){L=pick(W3);D=lowD(nD)}else{D=luckyD(nD);L=same(rl(1),nL)}}
+else{if(r<.4){L=same(rl(1),nL);D=lowD(nD)}else if(r<.7){L=same(rl(1),nL);D=same(ri(1,9),nD)}else{L=(nL===3?pick(W3):same(rl(1),nL));D=lowD(nD)}}
+return{L,D}};
+const famPh=t=>{const r=Math.random();let A=pick(AREAS),D=rd(4);
+if(t===1){if(r<.4)D=pairD(4);else if(r<.7)D=runD(4,3);else D=palD(4)}
+else if(t===2){if(r<.3)D=tripD(4);else if(r<.55)D=runD(4,4);else if(r<.8)A=pick(["800","888","877"]);else D=luckyD(4)}
+else if(t===3){if(r<.35)D=lowD(4);else if(r<.65)D=same(ri(1,9),4);else A=same(pick([5,7,8,9]),3)}
+else if(t===4){A=pick([same(7,3),same(8,3),"800","888"]);D=r<.5?same(ri(0,9),4):lowD(4)}
+return{A,D}};
+const wpick=w=>{let t=w.reduce((a,b)=>a+b,0),r=Math.random()*t;for(let i=0;i<w.length;i++){r-=w[i];if(r<=0)return i}return 0};
+const luck=()=>(1+.04*upl("luck"))*S.adm.luck;
+const fin=(it,cl)=>{it.id=S.id++;it.cl=cl;it.tier=it.tier;it.v=Math.round(TR[it.tier].b*(.85+rnd(0,.3))*(1+Math.min(.5,(it.score-TR[it.tier].min)/150)));return it};
+const genItem=(kind,cl,forced)=>{const w=CL[cl].w.slice();for(let i=1;i<5;i++)w[i]*=luck();
+const want=forced>=0?forced:wpick(w);let best=null;
+for(let a=0;a<60;a++){let it;
+if(kind==="ph"){const f=famPh(want),s=sD(f.D)+.7*sD(f.A)+(PREM.includes(f.A)?12:0)+(/^8(00|88|77)$/.test(f.A)?25:0);it={k:"ph",A:f.A,D:f.D,score:s,tr:trP("",f.D)}}
+else if(want>=3&&Math.random()<(want===4?.5:.3)){const wd=pick(VAN[want-3]),sc=TR[want].min+rnd(0,20);it={k:"p",st:pick(ST).id,van:wd,L:"",D:"",score:sc,tr:{same:false,trip:false,run:false,pal:isPal(wd),low:false,seven:/777/.test(wd),word:true}}}
+else{const sid=pick(S.states),s=ST.find(x=>x.id===sid),nL=(s.t.match(/L/g)||[]).length,nD=(s.t.match(/D/g)||[]).length,f=fam(want,nL,nD);
+it={k:"p",st:s.id,L:f.L,D:f.D,score:sD(f.D)+sL(f.L)+((f.L+f.D).length>=5&&isPal(f.L+f.D)?15:0),tr:trP(f.L,f.D)}}
+it.tier=tierOf(it.score);best=it;if(it.tier===want)break}
+return fin(best,cl)};
+const toks=it=>{if(it.k==="ph")return[..."+1 ("].map(c=>({c})).concat([...it.A].map(c=>({c,s:"D"})),[...") 555-"].map(c=>({c})),[...it.D].map(c=>({c,s:"D"})));
+if(it.van)return[...it.van].map(c=>({c,s:/\d/.test(c)?"D":"L"}));
+const t=ST.find(x=>x.id===it.st).t;let li=0,di=0;return[...t].map(c=>c==="L"?{c:it.L[li++],s:"L"}:c==="D"?{c:it.D[di++],s:"D"}:{c})};
+const txt=it=>toks(it).map(x=>x.c).join("");
+const pl=(it,sm)=>{const T=toks(it).map(x=>`<span class="ch"${x.s?` data-s="${x.s}"`:""}>${x.c}</span>`).join("");
+if(it.k==="ph")return`<div class="ph ${sm?"sm":""}" style="--rc:${TR[it.tier].c}"><span class="nums">${T}</span></div>`;
+const s=ST.find(x=>x.id===it.st)||ST[0];return`<div class="plate ${sm?"sm":""}" style="--b1:${s.bg[0]};--b2:${s.bg[1]};--fg:${s.fg};--tag:${s.tag};--rc:${TR[it.tier].c}"><span class="tag">${s.n}</span><span class="nums">${T}</span></div>`};
 
-/* случайные события */
-const EV=[
-{t:"Бродячий торговец",d:"Торговец предлагает редкий кристалл за часть вашего золота.",o:[["Купить (−15% золота)",()=>{S.res.gold*=.85;S.res.gem+=3;return"Вы получили 3 💎"}],["Отказаться",()=>"Торговец ушёл дальше."]]},
-{t:"Засуха",d:"Поля сохнут. Можно потратить дерево на колодцы или рискнуть.",o:[["Построить колодцы (−20% дерева)",()=>{S.res.wood*=.8;addRes("food",rates().food*900);return"Урожай спасён: еда пополнена."}],["Рискнуть",()=>{if(Math.random()<.5){S.res.food*=.7;return"Потеряно 30% еды."}addRes("food",rates().food*1800);return"Повезло! Пошли дожди, урожай удвоился."}]]},
-{t:"Находка в шахте",d:"Рабочие нашли странную жилу. Копать глубже?",o:[["Копать глубже",()=>{if(Math.random()<.6){addRes("gold",rates().gold*2400+500*eraM());return"Жила богата золотом!"}S.res.wood*=.9;return"Обвал. Потеряно 10% дерева."}],["Закрыть шахту",()=>"Вы решили не рисковать."]]},
-{t:"Бродячий герой",d:"Путник просится на службу в вашу империю.",o:[["Принять",()=>{const i=roll();return give(i)?`К вам присоединился герой: ${HR[i][0]}!`:`${HR[i][0]} уже служит у вас: +1 осколок.`}],["Накормить и отпустить",()=>{S.res.food*=.95;S.res.gem+=1;return"Путник благодарен и оставил 1 💎"}]]},
-{t:"Праздник урожая",d:"Народ просит устроить праздник.",o:[["Устроить (−10% еды)",()=>{S.res.food*=.9;addRes("gold",rates().gold*1500);return"Праздник удался: казна пополнена."}],["Отказать",()=>"Люди разочарованы, но всё спокойно."]]},
-{t:"Древняя библиотека",d:"Учёные нашли свитки и просят средства на их изучение.",o:[["Профинансировать (−10% золота)",()=>{S.res.gold*=.9;S.res.gem+=4;return"Свитки раскрыли тайны: +4 💎"}],["Отложить",()=>"Свитки отправлены в архив."]]}];
+/* ---------- экономика ---------- */
+const carsIn=c=>S.cars[c].filter(x=>x).length;
+const inc=()=>{let r=0;CARS.forEach((g,c)=>g.forEach((x,i)=>{if(S.cars[c][i])r+=x.inc}));return r};
+const albBonus=()=>Object.keys(S.albDone).filter(k=>S.albDone[k]).length;
+const evM=it=>{const e=S.ev;if(!e||now()>=e.end)return 1;const d=EVS[e.i];if(d.all)return d.m;if(d.t!=null&&it.tier===d.t)return d.m;if(d.st&&it.st===d.st)return d.m;if(d.k&&it.k===d.k)return d.m;return 1};
+const price=it=>{let p=it.v*CL[it.cl].cm*(1+.25*carsIn(it.cl))*(1+.04*upl("neg"))*(1+.01*albBonus())*evM(it)*S.adm.price;
+if(it.k==="p")p*=(ST.find(x=>x.id===it.st)||ST[0]).m;else p*=1+.05*upl("call");return Math.round(p)};
+const capN=()=>S.adm.cap?9999:12+8*upl("cap");
+const ucost=u=>Math.round(u.c*Math.pow(u.g,upl(u.id)));
+const spinCost=c=>S.adm.free?0:CL[c].cost;
+const canClass=c=>carsIn(c)>0;
+const probs=c=>{const w=CL[c].w.slice();for(let i=1;i<5;i++)w[i]*=luck();const t=w.reduce((a,b)=>a+b,0);return w.map(x=>100*x/t)};
 
-/* ядро: тик */
-const accrue=dt=>{const R=rates(),c=cap();["gold","food","wood"].forEach(r=>{const b=S.res[r],add=R[r]*dt*S.spd;if(b<c)S.res[r]=Math.min(c,b+add);const g=S.res[r]-b;if(r==="gold"&&g>0){S.st.gold+=g;S.st.run+=g;qp("gold",g)}});S.res.gem+=R.gem*dt*S.spd};
-const finishExp=x=>{const T=EXP[x.k],r=xr(x.k,x.pw);["gold","food","wood"].forEach(k=>addRes(k,r[k]));S.res.gem+=r.gem;S.st.exp++;qp("exp",1);
-let extra="";if(Math.random()<.25+T.t/200000){const i=roll();extra=give(i)?` Новый герой: ${HR[i][0]}!`:` Осколок героя: ${HR[i][0]}.`}
-const m=`Поход «${T.n}» завершён: +${sh(r.gold)}🪙 +${sh(r.food)}🌾 +${sh(r.wood)}🪵 +${r.gem}💎.${extra}`;logm(m);toast(m)};
-const timers=n=>{let ch=false;
-S.rs=S.rs.filter(x=>{if(n>=x.end){S.tech[x.id]=tb(x.id)+1;const t=TECH.find(y=>y.id===x.id),m=`Исследование завершено: «${t.n}» → ур. ${S.tech[x.id]}`;logm(m);toast(m);beep(700);ch=true;return false}return true});
-if(S.eraEnd&&n>=S.eraEnd){S.eraEnd=0;S.era++;S.st.maxEra=Math.max(S.st.maxEra,S.era);const m=`Новая эра: «${ERAS[S.era-1]}»!`;logm(m);toast(m);beep(520,.4);ch=true}
-S.exp=S.exp.filter(x=>{if(n>=x.end){finishExp(x);ch=true;return false}return true});
-if(ch)render()};
-const checks=()=>{if(S.q.date!==today()){S.q={date:today(),l:mkQ()}}
-ACH.forEach(a=>{if(!S.ach[a.id]&&a.f()){S.ach[a.id]=1;S.res.gem+=a.r;const m=`Достижение: ${a.n} (+${a.r}💎)`;logm(m);toast(m);beep(880,.3)}})};
-const tick=()=>{const n=now(),dt=Math.max(0,(n-S.last)/1000);S.last=n;if(dt>0)accrue(dt);timers(n);checks();
-if(!S.evT)S.evT=n+10*60000;if(n>=S.evT&&!document.hidden&&!document.querySelector(".ov")){S.evT=n+(20+Math.random()*20)*60000;showEvent(EV[Math.floor(Math.random()*EV.length)])}};
+/* ---------- прокрутка ---------- */
+const regAlb=it=>{const k=it.k==="ph"?"PH":it.st;const a=S.alb[k]||(S.alb[k]=[0,0,0,0,0]);a[it.tier]=1;
+if(!S.albDone[k]&&a.every(x=>x)){S.albDone[k]=1;const r=3000*(1+Object.keys(S.albDone).length);S.money+=r;toast(`Альбом «${k==="PH"?"Телефоны":ST.find(x=>x.id===k).n}» собран: +${$$(r)} и +1% к ценам`);beep(900,.4)}};
+const check=()=>{const q=[["Первая прокрутка",()=>S.spins>=1,100],["50 прокруток",()=>S.spins>=50,500],["500 прокруток",()=>S.spins>=500,5000],["5 000 прокруток",()=>S.spins>=5000,50000],
+["Первые 10 продаж",()=>S.sold>=10,300],["100 продаж",()=>S.sold>=100,3000],["1 000 продаж",()=>S.sold>=1000,30000],
+["Заработать $10 000",()=>S.earn>=1e4,500],["Заработать $1 млн",()=>S.earn>=1e6,20000],["Заработать $100 млн",()=>S.earn>=1e8,2e6],
+["Найти Эпический номер",()=>S.best>=2,1000],["Найти Легендарный номер",()=>S.best>=3,10000],["Найти Мифический номер",()=>S.best>=4,100000],
+["Три машины",()=>CARS.reduce((a,_,c)=>a+carsIn(c),0)>=3,2000],["Весь автопарк",()=>CARS.reduce((a,_,c)=>a+carsIn(c),0)>=9,200000],["Все штаты",()=>S.states.length>=7,50000],
+["Три альбома",()=>albBonus()>=3,20000],["10 заказов",()=>S.orders>=10,5000]];
+q.forEach(a=>{if(!S.ach[a[0]]&&a[1]()){S.ach[a[0]]=1;S.money+=a[2];toast(`Достижение: ${a[0]} (+${$$(a[2])})`);beep(880,.3)}});return q};
+const doSpin=(auto)=>{const c=S.cl,k=S.kind;if(!canClass(c))return null;const cost=spinCost(c);if(S.money<cost){if(!auto)toast("Не хватает денег");return null}
+if(S.inv.length>=capN()){if(!auto)toast("Склад полон: продай номера");return null}
+const it=genItem(k,c,S.adm.force);S.money-=cost;S.inv.push(it);S.last=it;S.spins++;S.best=Math.max(S.best,it.tier);regAlb(it);check();return it};
+const sell=it=>{const p=price(it);S.money+=p;S.earn+=p;S.sold++;S.inv=S.inv.filter(x=>x.id!==it.id);if(S.last&&S.last.id===it.id)S.last=null;return p};
 
-/* окна */
-const modal=(html,cls)=>{const o=document.createElement("div");o.className="ov";o.innerHTML=`<div class="md ${cls||""}">${html}</div>`;o.onclick=e=>{if(e.target===o&&!o.dataset.lock)o.remove()};document.body.appendChild(o);return o};
-const showEvent=e=>{const o=modal(`<h2>${e.t}</h2><p>${e.d}</p>${e.o.map((x,i)=>`<button class="btn ${i?"sec":""}" data-a="ev" data-i="${i}">${x[0]}</button>`).join("")}`);o.dataset.lock=1;o.dataset.ev=EV.indexOf(e);beep(440)};
+/* ---------- заказы и события ---------- */
+const mkOrder=()=>{const k=Math.random()<.65?"p":"ph",o=ri(0,OT.length-1);return{k,o,m:+rnd(1.8,3.2).toFixed(2),end:now()+ri(30,70)*60000,id:S.id++}};
+const okOrder=(od,it)=>it.k===od.k&&OT[od.o][1](it.tr,it);
+const orderItems=od=>S.inv.filter(it=>okOrder(od,it)).sort((a,b)=>price(a)-price(b));
+const timers=()=>{const n=now();while(S.ord.length<4)S.ord.push(mkOrder());S.ord=S.ord.map(o=>n>=o.end?mkOrder():o);
+if(S.ev&&n>=S.ev.end){S.ev=null;S.evNext=n+ri(4,8)*60000}
+if(!S.ev&&n>=(S.evNext||0)){const i=ri(0,EVS.length-1);S.ev={i,end:n+8*60000};toast("Рынок: "+EVS[i].n)}};
+const tick=()=>{const n=now(),dt=Math.max(0,(n-S.t)/1000);S.t=n;if(dt>0){const g=inc()*dt*S.spd;S.money+=g;S.earn+=g;
+const bl=upl("brk");if(bl>0){S.bt+=dt;if(S.bt>=8){S.bt=0;S.inv.filter(it=>it.tier<bl).forEach(sell)}}
+const bo=upl("bot");if(bo>0&&S.auto){S.rt+=dt;const iv=Math.max(1.5,12-1.4*bo);if(S.rt>=iv){S.rt=0;doSpin(true)}}}timers();check()};
 
-/* вёрстка вкладок */
-const cc=c=>Object.keys(c).map(r=>`<span class="cc" data-r="${r}" data-v="${c[r]}">${RI[r]} ${sh(c[r])}</span>`).join("");
-const tmr=(label,end,dur)=>`<div class="tm"><span>${label}</span><b data-cd="${end}"></b></div><div class="bar"><i data-end="${end}" data-dur="${dur}"></i></div>`;
-const TABS=[["emp","🏛️","Империя"],["sci","🔬","Наука"],["her","🦸","Герои"],["exp","🧭","Походы"],["day","📅","Календарь"],["qst","📜","Задания"],["mkt","⚖️","Рынок"],["ach","🏆","Награды"],["more","⚙️","Ещё"]];
+/* ---------- интерфейс ---------- */
+const TABS=[["spin","🎰","Крутить"],["inv","📦","Склад"],["ord","📋","Заказы"],["gar","🚗","Гараж"],["biz","🏢","Компания"],["alb","📖","Альбом"],["more","⚙️","Ещё"]];
+const badge=t=>`<span class="badge" style="background:${TR[t].c}">${TR[t].n}</span>`;
+const vSpin=()=>{const it=S.last,pr=probs(S.cl);let h=`<div class="card"><div class="row"><button class="tg ${S.kind==="p"?"on":""}" data-a="kind" data-id="p">🚘 Автономера</button><button class="tg ${S.kind==="ph"?"on":""}" data-a="kind" data-id="ph">📞 Телефонные номера</button></div></div><div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(200px,1fr))">`;
+CL.forEach((c,i)=>{const ok=canClass(i);h+=`<button class="cl ${S.cl===i?"on":""} ${ok?"":"lock"}" data-a="cls" data-id="${i}"><b>${c.i} ${c.n}</b><span class="mu">Прокрутка: ${$$(spinCost(i))} · цена ×${c.cm}</span><span class="mu">${ok?"Редкие и лучше: "+(100-pr[0]).toFixed(1)+"%":"🔒 Нужна машина класса «"+c.n+"» в гараже"}</span></button>`});
+h+=`</div><div class="card" style="text-align:center"><div class="reel" id="reel">${it?`<div class="reveal">${pl(it)}</div>`:`<span class="mu">Нажми «Крутить», чтобы выпал номер</span>`}</div>`;
+if(it)h+=`<div style="margin-top:10px">${badge(it.tier)} <b style="margin-left:6px">Сейчас стоит ${$$(price(it))}</b></div><div class="row" style="justify-content:center;margin-top:8px"><button class="btn gr" data-a="sellit" data-id="${it.id}">Продать сразу</button></div>`;
+h+=`<div class="row" style="justify-content:center;margin-top:12px"><button class="btn big" data-a="spin" ${animating?"disabled":""}>Крутить за ${$$(spinCost(S.cl))}</button>`;
+if(upl("bot")>0)h+=`<button class="tg ${S.auto?"on":""}" data-a="auto">🤖 Авто: ${S.auto?"вкл":"выкл"}</button>`;
+h+=`</div><div class="mu" style="margin-top:8px">Склад: ${S.inv.length}/${capN()>9000?"∞":capN()} · Всё вымышлено, номера случайные</div></div>`;return h};
+const vInv=()=>{const L=[...S.inv].sort((a,b)=>price(b)-price(a));let h=`<div class="card"><div class="row sp"><div><h2>Склад</h2><div class="mu">${S.inv.length}/${capN()>9000?"∞":capN()} · на ${$$(S.inv.reduce((a,b)=>a+price(b),0))}</div></div><div class="row"><button class="btn sec" data-a="sellt" data-id="0">Продать Обычные</button><button class="btn sec" data-a="sellt" data-id="1">Продать до Редких</button></div></div></div>`;
+if(!L.length)h+=`<div class="card mu">Склад пуст. Прокрути первые номера.</div>`;
+L.forEach(it=>{h+=`<div class="inv"><div>${pl(it,true)}</div><div>${badge(it.tier)} <span class="mu">${CL[it.cl].i} ${CL[it.cl].n}</span></div><div class="row"><b>${$$(price(it))}</b><button class="btn gr" data-a="sellit" data-id="${it.id}">Продать</button></div></div>`});return h};
+const vOrd=()=>{const e=S.ev&&now()<S.ev.end?S.ev:null;let h=`<div class="card"><h2>Рынок</h2>${e?`<div><b>${EVS[e.i].n}</b></div><div class="mu">${EVS[e.i].d} · ещё <span data-cd="${e.end}"></span></div>`:`<div class="mu">Сейчас спокойно, цены обычные. Скоро может начаться событие.</div>`}</div><div class="card"><h2>Заказы покупателей</h2><div class="mu">Покупатель платит в несколько раз выше рынка за подходящий номер. Отдаётся самый дешёвый подходящий.</div></div>`;
+S.ord.forEach(od=>{const m=orderItems(od),r=m.length?Math.round(price(m[0])*od.m*(1+.1*upl("auc"))):0;h+=`<div class="card"><div class="row sp"><div><b>${od.k==="p"?"🚘 Автономер":"📞 Телефон"}: ${OT[od.o][0]}</b><div class="mu">Награда ×${od.m} от цены · ещё <span data-cd="${od.end}"></span></div></div><div class="row"><span class="mu">Подходит: ${m.length}</span><button class="btn ${m.length?"gr":"sec"}" data-a="ful" data-id="${od.id}">${m.length?"Продать за "+$$(r):"Нет подходящих"}</button></div></div></div>`});return h};
+const vGar=()=>{let h=`<div class="card"><h2>Гараж</h2><div class="mu">Машина открывает свой класс номеров. Каждая машина класса даёт +25% к цене номеров этого класса и приносит доход. Доход: ${$$(inc()*60)} в минуту.</div></div>`;
+CARS.forEach((g,c)=>{h+=`<div class="card"><h3>${CL[c].i} ${CL[c].n} <span class="mu">· машин ${carsIn(c)}/3 · +${25*carsIn(c)}% к цене</span></h3><div class="grid">`;g.forEach((x,i)=>{const own=S.cars[c][i];h+=`<div class="inv" style="display:grid"><b>${x.i} ${x.n}</b><span class="mu">Доход ${$$(x.inc*60)}/мин</span>${own?`<span class="chip" style="color:var(--gr)">Куплена</span>`:`<button class="btn ${S.money>=x.p?"":"sec"}" data-a="car" data-c="${c}" data-id="${i}">Купить · ${$$(x.p)}</button>`}</div>`});h+=`</div></div>`});return h};
+const vBiz=()=>{let h=`<div class="card"><h2>Компания</h2><div class="mu">Улучшения действуют постоянно.</div></div><div class="grid">`;
+UP.forEach(u=>{const l=upl(u.id),mx=l>=u.max,c=ucost(u);h+=`<div class="card"><b>${u.i} ${u.n}</b> <span class="mu">ур. ${l}/${u.max}</span><div class="mu">${u.d}</div>${u.id==="lic"&&l<5?`<div class="mu">Следующий штат: ${ST[2+l].n}</div>`:""}<button class="btn ${!mx&&S.money>=c?"":"sec"}" data-a="up" data-id="${u.id}" ${mx?"disabled":""} style="margin-top:6px">${mx?"Максимум":"Улучшить · "+$$(c)}</button></div>`});return h+`</div>`};
+const vAlb=()=>{let h=`<div class="card"><h2>Альбом</h2><div class="mu">Собери номер каждой редкости в штате. Полный альбом даёт деньги и +1% к ценам. Номера считаются, даже если ты их продал.</div></div><div class="grid">`;
+const rows=ST.map(s=>[s.id,s.n,S.states.includes(s.id)]).concat([["PH","Телефоны",true]]);
+rows.forEach(r=>{const a=S.alb[r[0]]||[0,0,0,0,0];h+=`<div class="card ${r[2]?"":"mu"}"><b>${r[1]} ${S.albDone[r[0]]?"✅":""}</b>${r[2]?`<div style="display:grid;grid-template-columns:repeat(5,1fr);gap:4px;margin-top:6px">${TR.map((t,i)=>`<div class="slot ${a[i]?"on":""}" ${a[i]?`style="background:${t.c}"`:""}>${a[i]?"✓":i+1}</div>`).join("")}</div>`:`<div class="mu">🔒 Нужна лицензия штата</div>`}</div>`});return h+`</div>`};
+const vMore=()=>{const days=Math.floor((Date.now()-S.born)/864e5)+1,can=S.day.last!==new Date(now()).toDateString(),amt=Math.round(300*(1+Math.min(S.day.n,30)*.4));
+let h=`<div class="card row sp"><div><h2>Ежедневный бонус</h2><div class="mu">Заходов за бонусом: ${S.day.n}</div></div><button class="btn ${can?"gr":"sec"}" data-a="daily">${can?"Забрать "+$$(amt):"Завтра будет новый"}</button></div>`;
+h+=`<div class="card"><h2>Статистика</h2>`;[["Дней в игре",days],["Прокруток",fmt(S.spins)],["Продано номеров",fmt(S.sold)],["Заработано всего",$$(S.earn)],["Лучшая находка",TR[S.best].n],["Выполнено заказов",S.orders]].forEach(r=>h+=`<div class="stat"><span>${r[0]}</span><b>${r[1]}</b></div>`);
+const ach=check();h+=`</div><div class="card"><h2>Достижения: ${ach.filter(a=>S.ach[a[0]]).length} из ${ach.length}</h2><div class="grid" style="grid-template-columns:repeat(auto-fill,minmax(180px,1fr))">${ach.map(a=>`<div class="inv" style="opacity:${S.ach[a[0]]?1:.5};display:grid"><b>${S.ach[a[0]]?"🏆":"🔒"} ${a[0]}</b><span class="mu">+${$$(a[2])}</span></div>`).join("")}</div></div>`;
+h+=`<div class="card"><h2>Настройки</h2><div class="row"><button class="tg ${S.sound?"on":""}" data-a="snd">Звук: ${S.sound?"вкл":"выкл"}</button><button class="tg ${S.fast?"on":""}" data-a="fast">Быстрая прокрутка: ${S.fast?"вкл":"выкл"}</button><button class="tg" data-a="theme">Тема: ${S.theme==="night"?"ночь":"день"}</button><button class="btn sec" data-a="adm">Админка</button></div></div>`;return h};
+const V={spin:vSpin,inv:vInv,ord:vOrd,gar:vGar,biz:vBiz,alb:vAlb,more:vMore};
+const render=()=>{if(animating)return;const y=scrollY;$("view").innerHTML=V[tab]();$("nav").innerHTML=TABS.map(t=>`<button class="${t[0]===tab?"on":""}" data-a="tab" data-id="${t[0]}"><span>${t[1]}</span>${t[2]}</button>`).join("");document.documentElement.dataset.theme=S.theme==="day"?"day":"night";scrollTo(0,y);live()};
+const live=()=>{const n=now();$("mon").innerHTML=`${$$(S.money)}<small>${inc()*S.spd>0?"+"+$$(inc()*S.spd*60)+" в минуту":"доход от машин: нужна первая машина"}</small>`;
+$("sub").textContent=`Прокруток: ${fmt(S.spins)} · продано: ${fmt(S.sold)}`;const e=S.ev&&n<S.ev.end?S.ev:null;$("evb").textContent=e?`📈 ${EVS[e.i].n}: ${EVS[e.i].d}`:"";
+document.querySelectorAll("[data-cd]").forEach(x=>x.textContent=ft((+x.dataset.cd-n)/1000))};
 
-const vEmp=()=>{const R=rates();let h=`<div class="card"><div class="row"><div><div class="mu">Эра ${S.era} из 10</div><h2>${ERAS[S.era-1]}</h2><div class="mu">Лимит уровня зданий: ${maxL()}</div></div><button class="btn big" data-a="tax">⚒ Собрать налоги<small>+${sh(taxVal())} 🪙</small></button></div>`;
-if(S.era<10){if(S.eraEnd)h+=tmr(`Строится «${ERAS[S.era]}»`,S.eraEnd,eraDur());else h+=`<div class="mu" style="margin-top:8px">Следующая эра «${ERAS[S.era]}» · ${ft(eraDur())}</div><div class="costs">${cc(eraCost())}</div><button class="btn" data-a="era">Начать переход</button>`}
-h+=`</div>`;
-if(S.era>=4){const g=prGain();h+=`<div class="card"><div class="row"><div><h3>🔥 Возрождение</h3><div class="mu">Сбросить эру и здания ради Наследия: +10% к добыче навсегда за очко. Герои, наука, награды и календарь сохраняются.</div></div><button class="btn ${g<1?"sec":""}" data-a="pres">Возродиться (+${g})</button></div></div>`}
-h+=`<div class="grid">`;
-BLD.forEach(b=>{const L=S.bl[b.id],lock=S.era<b.e;let x="";if(b.res){const m=eraM()*legM()*S.mult*(1+.05*tb("wonder"))*(1+.1*lup("prod"));x=`<div class="mu">Добыча: ${rt(R[b.res]*0+(b.res==="gem"?b.r*L*S.mult:b.r*L*m*(1+.12*({food:tb("agri"),wood:tb("forest"),gold:tb("mining")}[b.res]||0))))}/с</div>`}
-h+=`<div class="card"><div class="row"><h3>${b.i} ${b.n}</h3><span class="mu">ур. ${L}/${maxL()}</span></div><div class="mu">${b.d}</div>${x}`;
-if(lock)h+=`<div class="mu">🔒 Откроется в эре «${ERAS[b.e-1]}»</div>`;else if(L>=maxL())h+=`<div class="mu">Достигнут предел для этой эры</div>`;else h+=`<div class="costs">${cc(bcost(b))}</div><button class="btn" data-a="up" data-id="${b.id}">${L?"Улучшить":"Построить"}</button>`;h+=`</div>`});
-return h+`</div>`};
-
-const vSci=()=>{let h=`<div class="card"><h2>Исследования</h2><div class="mu">Слотов: ${S.rs.length}/${S.slots} · скорость ×${rsSpeed().toFixed(2)}</div>`;
-S.rs.forEach(x=>{const t=TECH.find(y=>y.id===x.id);h+=tmr(`${t.i} ${t.n} → ур. ${tb(x.id)+1}`,x.end,x.dur)});
-if(S.slots<3)h+=`<div style="margin-top:8px"><button class="btn sec" data-a="slot">Открыть слот №${S.slots+1} · ${S.slots===1?100:500} 💎</button></div>`;
-h+=`</div><div class="grid">`;
-TECH.forEach(t=>{const l=tb(t.id),run=S.rs.some(x=>x.id===t.id);h+=`<div class="card"><div class="row"><h3>${t.i} ${t.n}</h3><span class="mu">ур. ${l}/15</span></div><div class="mu">${t.d}</div>`;
-if(l>=15)h+=`<div class="mu">Максимум</div>`;else if(run)h+=`<div class="mu">Изучается…</div>`;else h+=`<div class="costs">${cc(tcost(l))}</div><div class="mu">Время: ${ft(tdur(l))}</div><button class="btn" data-a="res" data-id="${t.id}">Исследовать</button>`;h+=`</div>`});
-return h+`</div>`};
-
-const vHer=()=>{const free=S.sumDay!==today();let h=`<div class="card"><div class="row"><div><h2>Призыв героев</h2><div class="mu">Сила отряда (лучшие 3): ${sh(party())} · героев: ${cnt()}/${HR.length}</div></div><button class="btn big" data-a="sum">${free?"Бесплатный призыв":"Призвать"}<small>${free?"раз в день":"40 💎"}</small></button></div></div><div class="grid" style="grid-template-columns:repeat(auto-fill,minmax(150px,1fr))">`;
-HR.forEach((x,i)=>{const o=S.heroes[i];h+=`<div class="hero ${o?"":"off"}"><div class="em">${x[1]}</div><b>${x[0]}</b><div class="r${x[2]}">${"★".repeat(x[2])}</div>`;
-if(o){h+=`<div class="mu">ур. ${o.lv} · сила ${sh(hp(i))}</div><div class="mu">осколки: ${o.sh}/${o.lv}</div>`;if(o.lv<30)h+=`<div class="costs" style="justify-content:center">${cc({gold:Math.round(300*o.lv*o.lv*eraM())})}</div><button class="btn sec" data-a="hup" data-id="${i}">Усилить</button>`}else h+=`<div class="mu">Не призван</div>`;h+=`</div>`});
-return h+`</div>`};
-
-const vExp=()=>{const pw=party();let h=`<div class="card"><h2>Походы</h2><div class="mu">Слотов: ${S.exp.length}/${S.xslots} · сила отряда ${sh(pw)}. Награды зависят от добычи и силы героев.</div>`;
-S.exp.forEach(x=>{h+=tmr(`${EXP[x.k].i} ${EXP[x.k].n}`,x.end,x.dur)});h+=`</div><div class="grid">`;
-EXP.forEach((T,k)=>{const r=xr(k,pw);h+=`<div class="card"><h3>${T.i} ${T.n}</h3><div class="mu">Длительность: ${ft(T.t)}</div><div class="costs"><span class="cc">🪙 ${sh(r.gold)}</span><span class="cc">🌾 ${sh(r.food)}</span><span class="cc">🪵 ${sh(r.wood)}</span><span class="cc">💎 ${r.gem}</span></div><div class="mu">Шанс найти героя</div><button class="btn" data-a="xs" data-id="${k}">Отправить</button></div>`});
-return h+`</div>`};
-
-const vDay=()=>{const n=S.day.n,pg=n>0?Math.floor((n-1)/100):0,done=n-pg*100,can=S.day.last!==today(),nd=n+1,r=dayRew(nd);
-let h=`<div class="card"><div class="row"><div><h2>Ежедневная награда</h2><div class="mu">Получено дней: ${n} · цель: 100 дней и дальше (сезон ${pg+1})</div></div><button class="btn big ${can?"":"sec"}" data-a="dclaim">${can?"Забрать день "+nd:"Завтра ждёт награда"}<small>${can?`+${r.gem}💎 +${sh(r.gold)}🪙${r.hero?" + герой":""}`:"приходи позже"}</small></button></div></div><div class="card"><div class="cal">`;
-for(let i=1;i<=100;i++){const big=i%10===0||i===100,cls=i<=done?"done":(i===done+1&&can?"next":"");h+=`<div class="cell ${cls} ${big?"big":""}" title="День ${i}">${i<=done?"✓":i===100?"👑":big?"🎁":i}</div>`}
-return h+`</div></div>`};
-
-const vQst=()=>{let h=`<div class="card"><h2>Задания дня</h2><div class="mu">Обновляются каждый день</div></div>`;
-S.q.l.forEach((q,i)=>{h+=`<div class="card"><div class="row"><b>${QK[q.k].replace("{n}",sh(q.n))}</b><span class="mu">${sh(q.c)}/${sh(q.n)}</span></div><div class="bar"><i style="width:${100*q.c/q.n}%"></i></div>${q.d?`<div class="mu">Награда получена ✓</div>`:`<button class="btn ${q.c>=q.n?"":"sec"}" data-a="qc" data-id="${i}">Забрать ${q.r} 💎</button>`}</div>`});
-h+=`<div class="card"><h3>Хроника</h3><div class="log">${S.log.map(l=>`<div>${new Date(l.t).toLocaleTimeString("ru-RU",{hour:"2-digit",minute:"2-digit"})} — ${l.m}</div>`).join("")||"Пока пусто."}</div></div>`;return h};
-
-const price=k=>1+.25*Math.sin(now()/3600000+k*2)+.02*tb("trade")*2.5;
-const TR=[["food","gold","Продать еду"],["wood","gold","Продать дерево"],["gold","food","Купить еду"],["gold","wood","Купить дерево"]];
-const vMkt=()=>{let h=`<div class="card"><h2>Рынок</h2><div class="mu">Курс меняется каждый час. Обмен ${"20%"} выбранного ресурса.</div></div><div class="grid">`;
-TR.forEach((t,k)=>{const f=S.res[t[0]]*.2,gain=Math.floor(f*price(k)*(t[1]==="gold"?.9:1.1));h+=`<div class="card"><h3>${t[2]}</h3><div class="mu">${RI[t[0]]} ${sh(f)} → ${RI[t[1]]} ${sh(gain)} (курс ×${price(k).toFixed(2)})</div><button class="btn" data-a="trade" data-id="${k}">Обменять</button></div>`});
-return h+`</div>`};
-
-const vAch=()=>{const n=ACH.filter(a=>S.ach[a.id]).length;return`<div class="card"><h2>Награды: ${n} из ${ACH.length}</h2><div class="bar"><i style="width:${100*n/ACH.length}%"></i></div></div><div class="grid">`+ACH.map(a=>`<div class="ach ${S.ach[a.id]?"on":""}"><span style="font-size:1.6rem">${S.ach[a.id]?"🏆":"🔒"}</span><div><b>${a.n}</b><div class="mu">+${a.r} 💎</div></div></div>`).join("")+`</div>`};
-
-const vMore=()=>{const days=Math.floor((Date.now()-S.born)/864e5);let h=`<div class="card"><h2>Наследие</h2><div class="mu">Очков: ${S.leg} · всего заработано: ${S.legT} (+${S.legT*10}% к добыче)</div><div class="grid" style="margin-top:8px">`;
-LS.forEach(x=>{const l=lup(x[0]);h+=`<div class="card"><b>${x[1]}</b> <span class="mu">ур. ${l}</span><div class="mu">${x[2]}</div><button class="btn ${S.leg>=3*(l+1)?"":"sec"}" data-a="ls" data-id="${x[0]}">Улучшить · ${3*(l+1)} очк.</button></div>`});
-h+=`</div></div><div class="card"><h2>Статистика</h2>`;
-[["Дней с начала игры",days],["Золота добыто",sh(S.st.gold)],["Налогов собрано",S.st.clicks],["Улучшений",S.st.up],["Походов",S.st.exp],["Призывов",S.st.sum],["Событий",S.st.ev],["Возрождений",S.st.pr],["Эра",S.era+" из 10"]].forEach(r=>h+=`<div class="stat"><span>${r[0]}</span><b>${r[1]}</b></div>`);
-h+=`</div><div class="card"><h2>Настройки</h2><div class="row" style="justify-content:flex-start">`;
-[["night","Ночь"],["parch","Пергамент"],["emerald","Изумруд"]].forEach(t=>h+=`<button class="btn ${S.theme===t[0]?"":"sec"}" data-a="theme" data-id="${t[0]}">${t[1]}</button>`);
-h+=`<button class="btn sec" data-a="snd">Звук: ${S.snd?"вкл":"выкл"}</button></div><p class="mu">Сохранение (скопируй, чтобы перенести):</p><textarea id="exp" readonly>${JSON.stringify(S)}</textarea><p class="mu">Вставь сохранение и нажми «Загрузить»:</p><textarea id="imp"></textarea>
-<div class="row" style="justify-content:flex-start"><button class="btn sec" data-a="imp">Загрузить</button><button class="btn sec" data-a="adm">Админка</button><button class="btn sec" data-a="reset" style="color:var(--bad)">Начать заново</button></div></div>`;return h};
-const V={emp:vEmp,sci:vSci,her:vHer,exp:vExp,day:vDay,qst:vQst,mkt:vMkt,ach:vAch,more:vMore};
-const render=()=>{const y=scrollY;$("view").innerHTML=V[tab]();$("nav").innerHTML=TABS.map(t=>`<button class="${t[0]===tab?"on":""}" data-a="tab" data-id="${t[0]}"><span>${t[1]}</span>${t[2]}</button>`).join("");document.documentElement.dataset.theme=S.theme;scrollTo(0,y);live()};
-const live=()=>{const n=now(),R=rates(),c=cap();
-$("chips").innerHTML=RL.map(r=>`<div class="chip"><small>${RI[r]} ${RN[r]}</small><b>${sh(S.res[r])}</b><small>${rt(R[r]*S.spd)}/с${r==="gem"?"":" · лимит "+sh(c)}</small></div>`).join("");
-$("ttl").textContent="Эпоха · "+ERAS[S.era-1];$("sub").textContent=`День игры ${Math.floor((Date.now()-S.born)/864e5)+1}`;$("clk").textContent=S.spd>1?`×${S.spd}`:"";
-document.querySelectorAll("[data-cd]").forEach(e=>e.textContent=ft((+e.dataset.cd-n)/1000));
-document.querySelectorAll("[data-end]").forEach(e=>e.style.width=Math.max(0,Math.min(100,100*(1-(+e.dataset.end-n)/(+e.dataset.dur*1000))))+"%");
-document.querySelectorAll("[data-r]").forEach(e=>e.classList.toggle("no",S.res[e.dataset.r]<+e.dataset.v))};
+/* анимация барабанов */
+const animate=(it,done)=>{const box=$("reel");if(!box||S.fast){done();return}box.innerHTML=pl(it);const cells=[...box.querySelectorAll(".ch[data-s]")];cells.forEach(c=>c.dataset.r=c.textContent);
+if(!cells.length){done();return}animating=true;const t0=performance.now();
+const iv=setInterval(()=>{const el=performance.now()-t0;let lk=0;cells.forEach((c,k)=>{if(el>=500+k*120){if(c.dataset.l!=="1"){c.dataset.l="1";c.textContent=c.dataset.r;beep(500+k*40,.05,"square",.03)}lk++}else c.textContent=c.dataset.s==="L"?LET[ri(0,22)]:ri(0,9)});
+if(lk===cells.length){clearInterval(iv);animating=false;done()}},55)};
+const reveal=it=>{const t=it.tier;[520,660,780,1040,1320].slice(0,t+1).forEach((f,i)=>beep(f,.25,"triangle",.05,i*.09));render();if(t>=3)toast(`${TR[t].n} номер! ${txt(it)}`)};
 
 /* действия */
-const no=()=>{toast("Не хватает ресурсов");beep(180,.15,"sawtooth")};
 const act=(a,id,el)=>{
 if(a.startsWith("ad_"))return adm(a,id,el);
 if(a==="tab"){tab=id;scrollTo(0,0);render();return}
-if(a==="tax"){addRes("gold",taxVal());S.st.clicks++;S.st.gold+=taxVal();S.st.run+=taxVal();qp("click",1);qp("gold",taxVal());beep(600,.06)}
-else if(a==="up"){const b=BLD.find(x=>x.id===id),c=bcost(b);if(S.bl[id]>=maxL()||S.era<b.e)return;if(!afford(c))return no();pay(c);S.bl[id]++;S.st.up++;qp("up",1);beep(520,.1)}
-else if(a==="era"){const c=eraCost();if(!afford(c))return no();pay(c);S.eraEnd=now()+eraDur()*1000;logm("Начато строительство новой эры");beep(400,.3)}
-else if(a==="res"){const l=tb(id);if(S.rs.length>=S.slots)return toast("Все слоты исследований заняты");const c=tcost(l);if(!afford(c))return no();pay(c);const d=tdur(l);S.rs.push({id,end:now()+d*1000,dur:d});beep(480,.2)}
-else if(a==="slot"){const p=S.slots===1?100:500;if(S.res.gem<p)return no();S.res.gem-=p;S.slots++;beep(700)}
-else if(a==="sum"){const free=S.sumDay!==today();if(free)S.sumDay=today();else{if(S.res.gem<40)return no();S.res.gem-=40}const i=roll(),nw=give(i);S.st.sum++;qp("sum",1);const m=nw?`Новый герой: ${HR[i][0]} ${"★".repeat(HR[i][2])}`:`${HR[i][0]}: +1 осколок`;logm(m);modal(`<h2 style="text-align:center">${HR[i][1]}</h2><h3 style="text-align:center" class="r${HR[i][2]}">${HR[i][0]}</h3><p style="text-align:center">${nw?"Новый герой!":"Уже есть: +1 осколок"}</p><button class="btn" data-a="close">Отлично</button>`);beep(660+HR[i][2]*100,.4)}
-else if(a==="hup"){const o=S.heroes[id],c=Math.round(300*o.lv*o.lv*eraM());if(o.sh<o.lv)return toast(`Нужно осколков: ${o.lv}`);if(S.res.gold<c)return no();S.res.gold-=c;o.sh-=o.lv;o.lv++;beep(760)}
-else if(a==="xs"){if(S.exp.length>=S.xslots)return toast("Все слоты походов заняты");if(!cnt())return toast("Сначала призови героя");const T=EXP[id];S.exp.push({k:+id,end:now()+T.t*1000,dur:T.t,pw:party()});beep(500)}
-else if(a==="dclaim"){if(S.day.last===today())return toast("Награда за сегодня уже получена");const d=S.day.n+1,r=dayRew(d);S.res.gem+=r.gem;addRes("gold",r.gold);if(r.hero){const i=roll();give(i);toast(`Бонусный герой: ${HR[i][0]}`)}S.day.n=d;S.day.last=today();if(d%100===0)modal(`<h2 style="text-align:center">👑 Легенда</h2><p style="text-align:center">Ты прошёл ${d} дней! Империя будет помнить это.</p><button class="btn" data-a="close">Продолжить</button>`);beep(840,.3)}
-else if(a==="qc"){const q=S.q.l[id];if(q.d)return;if(q.c<q.n)return toast("Задание ещё не выполнено");q.d=1;S.res.gem+=q.r;beep(780)}
-else if(a==="trade"){const t=TR[id],f=S.res[t[0]]*.2;if(f<1)return no();S.res[t[0]]-=f;addRes(t[1],Math.floor(f*price(+id)*(t[1]==="gold"?.9:1.1)));S.st.trade++;beep(560,.08)}
-else if(a==="pres"){const g=prGain();if(g<1)return toast("Нужно добыть больше золота в этом забеге");if(!confirm(`Возродиться и получить ${g} очк. Наследия? Эра и здания сбросятся.`))return;S.leg+=g;S.legT+=g;S.st.pr++;const d=def();S.res=d.res;S.bl=d.bl;S.era=1;S.eraEnd=0;S.exp=[];S.st.run=0;S.q={date:"",l:[]};logm(`Возрождение: +${g} очк. Наследия`);beep(300,.6)}
-else if(a==="ls"){const l=lup(id),c=3*(l+1);if(S.leg<c)return no();S.leg-=c;S.ls[id]=l+1;beep(700)}
-else if(a==="theme")S.theme=id;else if(a==="snd")S.snd=!S.snd;
-else if(a==="imp"){try{const t=JSON.parse($("imp").value);S=merge(def(),t);toast("Сохранение загружено")}catch(e){return toast("Не удалось прочитать сохранение")}}
-else if(a==="reset"){if(confirm("Начать заново? Весь прогресс будет удалён.")){const t=S.theme;S=def();S.theme=t}else return}
+if(a==="kind"){S.kind=id}
+else if(a==="cls"){if(!canClass(+id)){toast(`Купи машину класса «${CL[+id].n}» в гараже`);return}S.cl=+id}
+else if(a==="spin"){if(animating)return;const it=doSpin(false);if(!it){render();return}save();animate(it,()=>{reveal(it);save()});if(!S.fast)render_live();return}
+else if(a==="auto"){S.auto=!S.auto}
+else if(a==="sellit"){const it=S.inv.find(x=>x.id===+id);if(it){const p=sell(it);toast(`Продано за ${$$(p)}`);beep(900,.1,"square",.04)}}
+else if(a==="sellt"){const mx=+id,L=S.inv.filter(it=>it.tier<=mx);if(!L.length)return toast("Нечего продавать");let s=0;L.forEach(it=>s+=sell(it));toast(`Продано ${L.length} шт. за ${$$(s)}`);beep(900,.12,"square",.04)}
+else if(a==="ful"){const od=S.ord.find(x=>x.id===+id),m=od&&orderItems(od);if(!m||!m.length)return toast("Нет подходящего номера");const it=m[0],p=Math.round(price(it)*od.m*(1+.1*upl("auc")));S.inv=S.inv.filter(x=>x.id!==it.id);if(S.last&&S.last.id===it.id)S.last=null;S.money+=p;S.earn+=p;S.orders++;S.ord=S.ord.map(o=>o.id===od.id?mkOrder():o);toast(`Заказ выполнен: +${$$(p)}`);beep(880,.3)}
+else if(a==="car"){const c=+el.dataset.c,x=CARS[c][+id];if(S.cars[c][+id])return;if(S.money<x.p)return toast("Не хватает денег");S.money-=x.p;S.cars[c][+id]=1;toast(`Куплена машина: ${x.n}`);beep(660,.3)}
+else if(a==="up"){const u=UP.find(x=>x.id===id),c=ucost(u);if(upl(id)>=u.max)return;if(S.money<c)return toast("Не хватает денег");S.money-=c;S.up[id]=upl(id)+1;if(id==="lic"){S.states.push(ST[1+upl(id)].id);toast(`Открыт штат: ${ST[1+upl(id)].n}`)}beep(700,.2)}
+else if(a==="daily"){const d=new Date(now()).toDateString();if(S.day.last===d)return toast("Бонус за сегодня уже получен");const amt=Math.round(300*(1+Math.min(S.day.n,30)*.4));S.money+=amt;S.day.n++;S.day.last=d;beep(800,.3)}
+else if(a==="snd")S.sound=!S.sound;else if(a==="fast")S.fast=!S.fast;else if(a==="theme")S.theme=S.theme==="night"?"day":"night";
 else if(a==="adm"){openAdm();return}
 else if(a==="close"){el.closest(".ov").remove();return}
-else if(a==="ev"){const o=el.closest(".ov"),e=EV[+o.dataset.ev],m=e.o[+el.dataset.i][1]();S.st.ev++;logm(`${e.t}: ${m}`);o.dataset.lock="";o.querySelector(".md").innerHTML=`<h2>${e.t}</h2><p>${m}</p><button class="btn" data-a="close">Понятно</button>`}
 save();render()};
-document.addEventListener("click",e=>{const b=e.target.closest("[data-a]");if(b)act(b.dataset.a,b.dataset.id||b.dataset.i,b)});
+const render_live=()=>{const y=scrollY;$("nav").innerHTML=TABS.map(t=>`<button class="${t[0]===tab?"on":""}" data-a="tab" data-id="${t[0]}"><span>${t[1]}</span>${t[2]}</button>`).join("");live()};
+document.addEventListener("click",e=>{const b=e.target.closest("[data-a]");if(b&&!b.disabled)act(b.dataset.a,b.dataset.id,b)});
 
 /* админка */
-const AT=[["res","Ресурсы"],["time","Время"],["world","Мир"],["her","Герои"],["day","Календарь"],["ach","Награды"],["data","Данные"]];
-let admO=null;
-const openAdm=()=>{if(admO&&admO.isConnected)return;admO=modal("");admO.dataset.adm=1;drawAdm()};
+let admO=null,admT="money";
+const AT=[["money","Деньги"],["spin","Прокрутка"],["market","Рынок"],["stock","Склад и гараж"],["time","Время"],["data","Данные"]];
+const openAdm=()=>{if(admO&&admO.isConnected)return;admO=document.createElement("div");admO.className="ov";admO.innerHTML=`<div class="md"></div>`;admO.onclick=e=>{if(e.target===admO)admO.remove()};document.body.appendChild(admO);drawAdm()};
+const AC=(t,d,b)=>`<div class="ac"><div class="at">${t}</div><div class="ad">${d}</div><div class="row">${b}</div></div>`;
+const TG=(k,l)=>`<button class="tg ${S.adm[k]?"on":""}" data-a="ad_tg" data-id="${k}">${l}: ${S.adm[k]?"ВКЛ":"выкл"}</button>`;
+const B=(a,id,l,x)=>`<button class="btn sec" data-a="${a}" data-id="${id}" ${x||""}>${l}</button>`;
 const drawAdm=()=>{if(!admO)return;const m=admO.querySelector(".md");
 if(!adminOk){m.innerHTML=`<h2>Админка</h2><p class="mu">Введи пароль (по умолчанию: admin)</p><div class="row"><input id="adpw" type="password" autocomplete="off"><button class="btn" data-a="ad_login">Войти</button></div><button class="btn sec" data-a="close">Закрыть</button>`;return}
-let h=`<div class="row"><h2 style="margin:0">Админка</h2><button class="btn sec" data-a="close">Закрыть</button></div><div class="tabs">${AT.map(t=>`<button class="btn ${t[0]===admTab?"":"sec"}" data-a="ad_tab" data-id="${t[0]}">${t[1]}</button>`).join("")}</div>`;
-const inp=(id,v,w)=>`<input id="${id}" type="number" value="${v}" style="width:${w||120}px">`;
-if(admTab==="res")h+=`<div class="row" style="justify-content:flex-start">${inp("adn",1000)}</div><div class="row" style="justify-content:flex-start">${RL.map(r=>`<button class="btn sec" data-a="ad_add" data-id="${r}">+ ${RI[r]}</button>`).join("")}<button class="btn sec" data-a="ad_max">Заполнить склады</button><button class="btn sec" data-a="ad_zero">Обнулить</button></div>
-<p class="mu">Множитель добычи: ×${S.mult}</p><div class="row" style="justify-content:flex-start">${[1,2,10,100,1000,1e6].map(v=>`<button class="btn ${S.mult===v?"":"sec"}" data-a="ad_mult" data-id="${v}">×${sh(v)}</button>`).join("")}</div>`;
-if(admTab==="time")h+=`<p class="mu">Скорость времени для добычи: ×${S.spd}. Сдвиг времени: ${(S.off/3600000).toFixed(1)} ч.</p><div class="row" style="justify-content:flex-start">${[1,5,20,100,1000].map(v=>`<button class="btn ${S.spd===v?"":"sec"}" data-a="ad_spd" data-id="${v}">×${v}</button>`).join("")}</div>
-<p class="mu">Перемотать время вперёд (таймеры, добыча и календарь сдвинутся):</p><div class="row" style="justify-content:flex-start">${[["1 ч",1],["6 ч",6],["1 день",24],["7 дней",168],["30 дней",720]].map(x=>`<button class="btn sec" data-a="ad_shift" data-id="${x[1]}">+${x[0]}</button>`).join("")}</div><div class="row" style="justify-content:flex-start"><button class="btn" data-a="ad_done">Завершить все таймеры</button><button class="btn sec" data-a="ad_ev">Вызвать событие</button></div>`;
-if(admTab==="world")h+=`<div class="row" style="justify-content:flex-start">${inp("ade",S.era,70)}<button class="btn sec" data-a="ad_era">Установить эру (1–10)</button></div><div class="row" style="justify-content:flex-start"><button class="btn sec" data-a="ad_bl">Здания на максимум</button><button class="btn sec" data-a="ad_tech">Наука на 15</button><button class="btn sec" data-a="ad_tech0">Сбросить науку</button><button class="btn sec" data-a="ad_slots">Все слоты</button></div><div class="row" style="justify-content:flex-start">${inp("adl",10,70)}<button class="btn sec" data-a="ad_leg">+ очки Наследия</button></div>`;
-if(admTab==="her")h+=`<div class="row" style="justify-content:flex-start"><button class="btn sec" data-a="ad_hall">Выдать всех героев</button><button class="btn sec" data-a="ad_hsh">+10 осколков всем</button><button class="btn sec" data-a="ad_hlv">Все на ур. 10</button><button class="btn sec" data-a="ad_hno">Удалить героев</button><button class="btn sec" data-a="ad_sumr">Сбросить бесплатный призыв</button></div>`;
-if(admTab==="day")h+=`<p class="mu">Получено дней: ${S.day.n}</p><div class="row" style="justify-content:flex-start">${inp("add",S.day.n,90)}<button class="btn sec" data-a="ad_day">Установить число дней</button></div><div class="row" style="justify-content:flex-start"><button class="btn sec" data-a="ad_dres">Сбросить сегодняшний claim</button><button class="btn sec" data-a="ad_qres">Новые задания</button></div>`;
-if(admTab==="ach")h+=`<div class="row" style="justify-content:flex-start"><button class="btn sec" data-a="ad_aall">Открыть все</button><button class="btn sec" data-a="ad_ano">Закрыть все</button></div>`;
-if(admTab==="data")h+=`<p class="mu">JSON сохранения (можно править и применить):</p><textarea id="adj">${JSON.stringify(S,null,1).replace(/</g,"&lt;")}</textarea><div class="row" style="justify-content:flex-start"><button class="btn" data-a="ad_json">Применить JSON</button><button class="btn sec" data-a="ad_hard" style="color:var(--bad)">Полный сброс</button></div><div class="row" style="justify-content:flex-start"><input id="adnp" placeholder="Новый пароль"><button class="btn sec" data-a="ad_pw">Сменить пароль</button></div>`;
+let h=`<div class="row sp"><h2 style="margin:0">Админка</h2><button class="btn sec" data-a="close">Закрыть</button></div><p class="mu">Под каждой кнопкой написано, что она делает. Всё применяется сразу.</p><div class="row">${AT.map(t=>`<button class="tg ${t[0]===admT?"on":""}" data-a="ad_tab" data-id="${t[0]}">${t[1]}</button>`).join("")}</div>`;
+const inp=(id,v)=>`<input id="${id}" type="number" value="${v}" style="width:130px">`;
+if(admT==="money")h+=AC("Выдать деньги","Добавляет деньги на счёт. Впиши сумму или нажми готовую кнопку.",`${inp("adn",1000)}${B("ad_add","x","Добавить сумму")}${B("ad_add",1e3,"+$1 тыс.")}${B("ad_add",1e6,"+$1 млн")}${B("ad_add",1e9,"+$1 млрд")}`)
++AC("Обнулить деньги","Ставит баланс в ноль, чтобы начать копить заново.",B("ad_zero","x","Обнулить"))
++AC("Бесплатные прокрутки","Прокрутки номеров ничего не стоят, можно крутить без остановки.",TG("free","Бесплатно"));
+if(admT==="spin")h+=AC("Удача","Во сколько раз чаще выпадают редкие номера. ×20 почти каждый раз даёт что-то ценное.",[1,2,5,20,100].map(v=>`<button class="tg ${S.adm.luck===v?"on":""}" data-a="ad_luck" data-id="${v}">×${v}</button>`).join(""))
++AC("Гарантированная редкость","Каждая следующая прокрутка будет строго такой редкости, пока не выключишь.",`<button class="tg ${S.adm.force<0?"on":""}" data-a="ad_force" data-id="-1">Выкл</button>`+TR.map((t,i)=>`<button class="tg ${S.adm.force===i?"on":""}" data-a="ad_force" data-id="${i}">${t.n}</button>`).join(""))
++AC("Быстрая прокрутка","Пропускает анимацию барабанов, номер появляется сразу.",`<button class="tg ${S.fast?"on":""}" data-a="ad_fast">Мгновенно: ${S.fast?"ВКЛ":"выкл"}</button>`);
+if(admT==="market")h+=AC("Множитель цен продажи","Во сколько раз выше или ниже платят за все номера.",[.5,1,2,5,10,100].map(v=>`<button class="tg ${S.adm.price===v?"on":""}" data-a="ad_price" data-id="${v}">×${v}</button>`).join(""))
++AC("Рыночное событие","Запускает случайное событие, которое меняет цены на 8 минут.",B("ad_ev","x","Запустить событие")+B("ad_evoff","x","Остановить событие"))
++AC("Заказы покупателей","Заменяет все заказы на новые.",B("ad_ords","x","Обновить заказы"));
+if(admT==="stock")h+=AC("Склад без лимита","Склад принимает сколько угодно номеров.",TG("cap","Безлимит"))
++AC("Выдать номера","Добавляет на склад 10 номеров выбранной редкости, класс берётся текущий.",TR.map((t,i)=>B("ad_give",i,"+10 "+t.n)).join(""))
++AC("Очистить склад","Удаляет все номера со склада без оплаты.",B("ad_clr","x","Очистить"))
++AC("Гараж","Выдать все машины сразу или забрать все.",B("ad_cars","1","Выдать все")+B("ad_cars","0","Забрать все"))
++AC("Штаты","Открывает все штаты с особыми номерами.",B("ad_states","x","Открыть все штаты"));
+if(admT==="time")h+=AC("Скорость дохода","Во сколько раз быстрее машины приносят деньги.",[1,10,100,1000].map(v=>`<button class="tg ${S.spd===v?"on":""}" data-a="ad_spd" data-id="${v}">×${v}</button>`).join(""))
++AC("Перемотка времени","Сдвигает часы вперёд: приходит доход, заканчиваются заказы и события.",[["1 час",1],["8 часов",8],["1 день",24],["7 дней",168]].map(x=>B("ad_shift",x[1],"+"+x[0])).join(""));
+if(admT==="data")h+=AC("Достижения и альбомы","Открыть всё сразу или сбросить.",B("ad_ach","1","Открыть достижения")+B("ad_ach","0","Сбросить достижения")+B("ad_alb","1","Заполнить альбомы"))
++AC("Сохранение","Скопируй, чтобы перенести прогресс, или вставь сохранение и нажми «Загрузить».",`<textarea id="adj">${JSON.stringify(S).replace(/</g,"&lt;")}</textarea>`+B("ad_json","x","Загрузить"))
++AC("Сменить пароль","Закрывает админку от других людей.",`<input id="adnp" placeholder="Новый пароль">${B("ad_pw","x","Сменить")}`)
++AC("Полный сброс","Удаляет весь прогресс без возможности вернуть.",`<button class="btn sec" data-a="ad_hard" data-id="x" style="color:var(--bad)">Сбросить всё</button>`);
 m.innerHTML=h};
 const adm=(a,id,el)=>{const v=i=>+($(i)&&$(i).value)||0;
-if(a==="ad_login"){if($("adpw").value===S.pw){adminOk=true}else toast("Неверный пароль");drawAdm();return}
+if(a==="ad_login"){if($("adpw").value===S.pw)adminOk=true;else toast("Неверный пароль");drawAdm();return}
 if(!adminOk)return;
-if(a==="ad_tab")admTab=id;
-else if(a==="ad_add"){const n=Math.max(0,v("adn"));if(id==="gem")S.res.gem+=n;else S.res[id]+=n;if(id==="gold")S.st.run+=n}
-else if(a==="ad_max"){const c=cap();["gold","food","wood"].forEach(r=>S.res[r]=c)}
-else if(a==="ad_zero")RL.forEach(r=>S.res[r]=0);
-else if(a==="ad_mult")S.mult=+id;else if(a==="ad_spd")S.spd=+id;
-else if(a==="ad_shift"){S.off+=+id*3600000}
-else if(a==="ad_done"){S.rs.forEach(x=>x.end=0);S.exp.forEach(x=>x.end=0);if(S.eraEnd)S.eraEnd=1}
-else if(a==="ad_ev"){S.evT=1}
-else if(a==="ad_era"){S.era=Math.max(1,Math.min(10,Math.round(v("ade"))||1));S.st.maxEra=Math.max(S.st.maxEra,S.era);S.eraEnd=0}
-else if(a==="ad_bl"){BLD.forEach(b=>{if(S.era>=b.e)S.bl[b.id]=maxL()})}
-else if(a==="ad_tech")TECH.forEach(t=>S.tech[t.id]=15);else if(a==="ad_tech0")S.tech={};
-else if(a==="ad_slots"){S.slots=3;S.xslots=4}
-else if(a==="ad_leg"){const n=Math.round(v("adl"));S.leg+=n;S.legT+=Math.max(0,n)}
-else if(a==="ad_hall")HR.forEach((h,i)=>{if(!S.heroes[i])S.heroes[i]={lv:1,sh:0}});
-else if(a==="ad_hsh")Object.keys(S.heroes).forEach(i=>S.heroes[i].sh+=10);
-else if(a==="ad_hlv")Object.keys(S.heroes).forEach(i=>S.heroes[i].lv=Math.max(S.heroes[i].lv,10));
-else if(a==="ad_hno")S.heroes={};else if(a==="ad_sumr")S.sumDay="";
-else if(a==="ad_day")S.day.n=Math.max(0,Math.round(v("add")));
-else if(a==="ad_dres")S.day.last="";else if(a==="ad_qres")S.q={date:"",l:[]};
-else if(a==="ad_aall")ACH.forEach(x=>S.ach[x.id]=1);else if(a==="ad_ano")S.ach={};
-else if(a==="ad_json"){try{S=merge(def(),JSON.parse($("adj").value.replace(/&lt;/g,"<")));toast("Применено")}catch(e){return toast("Ошибка в JSON")}}
-else if(a==="ad_hard"){if(!confirm("Удалить весь прогресс?"))return;S=def()}
+if(a==="ad_tab")admT=id;
+else if(a==="ad_add"){S.money+=id==="x"?Math.max(0,v("adn")):+id}
+else if(a==="ad_zero")S.money=0;
+else if(a==="ad_tg")S.adm[id]=!S.adm[id];
+else if(a==="ad_luck")S.adm.luck=+id;else if(a==="ad_force")S.adm.force=+id;else if(a==="ad_fast")S.fast=!S.fast;else if(a==="ad_price")S.adm.price=+id;
+else if(a==="ad_ev"){S.ev={i:ri(0,EVS.length-1),end:now()+8*60000}}else if(a==="ad_evoff"){S.ev=null;S.evNext=now()+5*60000}
+else if(a==="ad_ords")S.ord=[];
+else if(a==="ad_give"){for(let i=0;i<10;i++){const c=canClass(S.cl)?S.cl:0;S.inv.push(genItem(S.kind,c,+id))}}
+else if(a==="ad_clr")S.inv=[];
+else if(a==="ad_cars")S.cars=S.cars.map(g=>g.map(()=>+id));
+else if(a==="ad_states")S.states=ST.map(s=>s.id);
+else if(a==="ad_spd")S.spd=+id;else if(a==="ad_shift")S.off+=+id*3600000;
+else if(a==="ad_ach"){if(id==="1")check().forEach(q=>S.ach[q[0]]=1);else S.ach={}}
+else if(a==="ad_alb"){ST.concat([{id:"PH"}]).forEach(s=>{S.alb[s.id]=[1,1,1,1,1];S.albDone[s.id]=1})}
+else if(a==="ad_json"){try{S=merge(def(),JSON.parse($("adj").value.replace(/&lt;/g,"<")));toast("Загружено")}catch(e){return toast("Ошибка в JSON")}}
 else if(a==="ad_pw"){const p=$("adnp").value.trim();if(!p)return toast("Введи пароль");S.pw=p;toast("Пароль изменён")}
+else if(a==="ad_hard"){if(!confirm("Удалить весь прогресс?"))return;const pw=S.pw;S=def();S.pw=pw}
 save();render();drawAdm()};
-document.addEventListener("keydown",e=>{if(e.ctrlKey&&e.shiftKey&&e.key.toLowerCase()==="a"){e.preventDefault();openAdm()}if(e.key==="Escape"){const o=document.querySelector(".ov:not([data-lock])");if(o)o.remove()}});
+document.addEventListener("keydown",e=>{if(e.ctrlKey&&e.shiftKey&&e.key.toLowerCase()==="a"){e.preventDefault();openAdm()}if(e.key==="Escape"){const o=document.querySelector(".ov");if(o)o.remove()}});
 $("ttl").addEventListener("click",(()=>{let n=0,t=0;return()=>{const c=Date.now();n=c-t<600?n+1:1;t=c;if(n>=5){n=0;openAdm()}}})());
 
 /* запуск */
-const before={...S.res};tick();
-render();
-{const gone=Math.round((Date.now()-(+localStorage.getItem(KEY+"-ts")||Date.now()))/1000);if(gone>120){const m=["gold","food","wood"].map(r=>`+${sh(Math.max(0,S.res[r]-before[r]))}${RI[r]}`).join(" ");toast(`Пока тебя не было ${ft(gone)}: ${m}`)}}
-setInterval(()=>{tick();live()},500);
-setInterval(()=>{save();try{localStorage.setItem(KEY+"-ts",Date.now())}catch(e){}},5000);
-addEventListener("beforeunload",()=>{save();try{localStorage.setItem(KEY+"-ts",Date.now())}catch(e){}});
-document.addEventListener("visibilitychange",()=>{if(!document.hidden){tick();render()}});
-window.EPOHA={get S(){return S},act,tick,render};
+{const gone=Math.min(8*3600,Math.max(0,(now()-S.t)/1000)),before=S.money;tick();render();if(gone>120&&S.money-before>1)toast(`Пока тебя не было ${ft(gone)}: +${$$(S.money-before)} от машин`)}
+setInterval(()=>{tick();live()},1000);
+setInterval(()=>{save();if(!animating&&(tab==="ord"||tab==="inv"))render()},5000);
+addEventListener("beforeunload",save);
+window.NOMERA={get S(){return S},act,tick,render,genItem,price};
 })();
 </script>
 </body>
