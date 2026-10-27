@@ -1,567 +1,508 @@
-Понимаю запрос: вам нужен очень премиальный сайт авиакомпании с выраженным "мелиманестичным" (то есть, судя по всему, мультимедийным и эффектным) дизайном. Ниже готовый одностраничный сайт в одном HTML-файле: тёмная палитра с золотыми акцентами, анимации при прокрутке, видеофон на основе градиентов, форма бронирования, карточки направлений, тарифы и подвал.
-
-```html
 <!DOCTYPE html>
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AURELIA - Премиальная авиакомпания</title>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <title>Emirates - Полёты высочайшего уровня</title>
     <style>
-        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
-
-        :root {
-            --gold: #d4af37;
-            --gold-light: #f3e5ab;
-            --dark: #0a0a0f;
-            --dark-2: #13131c;
-            --glass: rgba(255, 255, 255, 0.04);
-            --border: rgba(212, 175, 55, 0.25);
-            --text: #e8e6e3;
-            --muted: #9a9aa6;
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
 
-        html { scroll-behavior: smooth; }
-
         body {
-            font-family: 'Inter', sans-serif;
-            background: var(--dark);
-            color: var(--text);
-            overflow-x: hidden;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: #333;
             line-height: 1.6;
         }
 
-        h1, h2, h3 { font-family: 'Cormorant Garamond', serif; font-weight: 700; }
-
-        a { color: inherit; text-decoration: none; }
-
-        .container { max-width: 1280px; margin: 0 auto; padding: 0 24px; }
-
-        /* ---------- HEADER ---------- */
+        /* Навигация */
         header {
-            position: fixed;
-            top: 0; left: 0; right: 0;
-            z-index: 1000;
-            padding: 22px 0;
-            transition: all 0.4s ease;
+            background: linear-gradient(135deg, #001f3f 0%, #003d7a 100%);
+            color: white;
+            padding: 20px 0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
         }
-        header.scrolled {
-            background: rgba(10, 10, 15, 0.85);
-            backdrop-filter: blur(14px);
-            padding: 14px 0;
-            border-bottom: 1px solid var(--border);
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
         }
-        .header-inner {
+
+        nav {
             display: flex;
             justify-content: space-between;
             align-items: center;
         }
-        .logo {
-            font-family: 'Cormorant Garamond', serif;
-            font-size: 28px;
-            letter-spacing: 6px;
-            color: var(--gold);
-        }
-        nav ul { display: flex; gap: 40px; list-style: none; }
-        nav a {
-            font-size: 14px;
-            letter-spacing: 1.5px;
-            text-transform: uppercase;
-            position: relative;
-            transition: color 0.3s;
-        }
-        nav a::after {
-            content: '';
-            position: absolute;
-            left: 0; bottom: -6px;
-            width: 0; height: 1px;
-            background: var(--gold);
-            transition: width 0.4s;
-        }
-        nav a:hover { color: var(--gold); }
-        nav a:hover::after { width: 100%; }
-        .btn-gold {
-            display: inline-block;
-            padding: 14px 36px;
-            background: linear-gradient(135deg, var(--gold), #b8912b);
-            color: var(--dark);
-            font-weight: 600;
-            letter-spacing: 1px;
-            text-transform: uppercase;
-            font-size: 13px;
-            border: none;
-            cursor: pointer;
-            transition: transform 0.3s, box-shadow 0.3s;
-        }
-        .btn-gold:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 12px 30px rgba(212, 175, 55, 0.35);
-        }
-        .btn-outline {
-            display: inline-block;
-            padding: 14px 36px;
-            border: 1px solid var(--gold);
-            color: var(--gold);
-            background: transparent;
-            font-size: 13px;
-            letter-spacing: 1px;
-            text-transform: uppercase;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-        .btn-outline:hover { background: var(--gold); color: var(--dark); }
 
-        /* ---------- HERO ---------- */
+        .logo {
+            font-size: 28px;
+            font-weight: 700;
+            letter-spacing: 2px;
+            color: #ffd700;
+        }
+
+        nav ul {
+            display: flex;
+            list-style: none;
+            gap: 40px;
+        }
+
+        nav a {
+            color: white;
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s ease;
+        }
+
+        nav a:hover {
+            color: #ffd700;
+        }
+
+        /* Главный баннер */
         .hero {
-            position: relative;
-            min-height: 100vh;
+            background: linear-gradient(rgba(0, 31, 63, 0.6), rgba(0, 31, 63, 0.6)),
+                        url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 600"><rect fill="%23001f3f" width="1200" height="600"/><path fill="%23003d7a" opacity="0.3" d="M0 300 Q300 200 600 250 T1200 300 L1200 600 L0 600 Z"/></svg>');
+            background-size: cover;
+            background-position: center;
+            color: white;
+            padding: 150px 20px;
+            text-align: center;
+        }
+
+        .hero h1 {
+            font-size: 56px;
+            margin-bottom: 20px;
+            font-weight: 300;
+            letter-spacing: 1px;
+        }
+
+        .hero p {
+            font-size: 20px;
+            margin-bottom: 40px;
+            opacity: 0.9;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 14px 40px;
+            background: #ffd700;
+            color: #001f3f;
+            text-decoration: none;
+            border-radius: 3px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            border: 2px solid #ffd700;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        .btn:hover {
+            background: transparent;
+            color: #ffd700;
+        }
+
+        /* Поиск рейсов */
+        .search-section {
+            background: #f8f9fa;
+            padding: 60px 20px;
+        }
+
+        .search-box {
+            background: white;
+            padding: 30px;
+            border-radius: 5px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .search-box h2 {
+            margin-bottom: 25px;
+            color: #001f3f;
+            font-weight: 400;
+            font-size: 24px;
+        }
+
+        .search-form {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-group label {
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 8px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .form-group input,
+        .form-group select {
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 3px;
+            font-size: 14px;
+            font-family: inherit;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #ffd700;
+            box-shadow: 0 0 5px rgba(255, 215, 0, 0.3);
+        }
+
+        /* Преимущества */
+        .benefits {
+            padding: 80px 20px;
+            background: white;
+        }
+
+        .benefits h2 {
+            text-align: center;
+            font-size: 36px;
+            margin-bottom: 60px;
+            color: #001f3f;
+            font-weight: 400;
+        }
+
+        .benefits-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 40px;
+        }
+
+        .benefit-card {
+            text-align: center;
+            padding: 30px;
+            transition: transform 0.3s ease;
+        }
+
+        .benefit-card:hover {
+            transform: translateY(-10px);
+        }
+
+        .benefit-icon {
+            font-size: 48px;
+            margin-bottom: 20px;
+        }
+
+        .benefit-card h3 {
+            color: #001f3f;
+            margin-bottom: 15px;
+            font-weight: 600;
+            font-size: 18px;
+        }
+
+        .benefit-card p {
+            color: #666;
+            font-size: 14px;
+        }
+
+        /* Маршруты */
+        .routes {
+            background: #f8f9fa;
+            padding: 80px 20px;
+        }
+
+        .routes h2 {
+            text-align: center;
+            font-size: 36px;
+            margin-bottom: 60px;
+            color: #001f3f;
+            font-weight: 400;
+        }
+
+        .routes-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 30px;
+        }
+
+        .route-card {
+            background: white;
+            border-radius: 5px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+            transition: box-shadow 0.3s ease;
+        }
+
+        .route-card:hover {
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+        }
+
+        .route-image {
+            width: 100%;
+            height: 200px;
+            background: linear-gradient(135deg, #001f3f, #003d7a);
             display: flex;
             align-items: center;
             justify-content: center;
-            text-align: center;
-            overflow: hidden;
-            background:
-                radial-gradient(ellipse at 20% 30%, rgba(212,175,55,0.18), transparent 50%),
-                radial-gradient(ellipse at 80% 70%, rgba(60,90,200,0.22), transparent 55%),
-                linear-gradient(180deg, #0a0a0f 0%, #13131c 100%);
+            font-size: 24px;
         }
-        .hero-bg-glow {
-            position: absolute;
-            width: 700px; height: 700px;
-            border-radius: 50%;
-            background: radial-gradient(circle, rgba(212,175,55,0.12), transparent 70%);
-            top: 50%; left: 50%;
-            transform: translate(-50%, -50%);
-            animation: pulse 8s ease-in-out infinite;
-        }
-        @keyframes pulse {
-            0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 0.6; }
-            50% { transform: translate(-50%, -50%) scale(1.15); opacity: 1; }
-        }
-        .plane-path {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            top: 0; left: 0;
-            opacity: 0.25;
-            pointer-events: none;
-        }
-        .plane-path path {
-            fill: none;
-            stroke: var(--gold);
-            stroke-width: 1;
-            stroke-dasharray: 8 10;
-            animation: dash 30s linear infinite;
-        }
-        @keyframes dash { to { stroke-dashoffset: -1000; } }
 
-        .hero-content { position: relative; z-index: 2; max-width: 900px; }
-        .eyebrow {
-            display: inline-block;
-            font-size: 12px;
-            letter-spacing: 5px;
-            text-transform: uppercase;
-            color: var(--gold);
-            margin-bottom: 24px;
-            opacity: 0;
-            animation: fadeUp 1s 0.2s forwards;
+        .route-content {
+            padding: 25px;
         }
-        .hero h1 {
-            font-size: clamp(44px, 7vw, 92px);
-            line-height: 1.05;
-            margin-bottom: 26px;
-            opacity: 0;
-            animation: fadeUp 1s 0.4s forwards;
+
+        .route-content h3 {
+            color: #001f3f;
+            margin-bottom: 10px;
+            font-size: 20px;
+            font-weight: 600;
         }
-        .hero h1 em { color: var(--gold); font-style: italic; font-weight: 400; }
-        .hero p {
+
+        .route-content p {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 15px;
+        }
+
+        .price {
+            color: #ffd700;
             font-size: 18px;
-            color: var(--muted);
-            max-width: 620px;
-            margin: 0 auto 40px;
-            opacity: 0;
-            animation: fadeUp 1s 0.6s forwards;
-        }
-        .hero-buttons {
-            display: flex;
-            gap: 20px;
-            justify-content: center;
-            opacity: 0;
-            animation: fadeUp 1s 0.8s forwards;
-        }
-        @keyframes fadeUp {
-            from { opacity: 0; transform: translateY(30px); }
-            to { opacity: 1; transform: translateY(0); }
+            font-weight: 600;
         }
 
-        /* ---------- BOOKING ---------- */
-        .booking-wrap { position: relative; z-index: 5; margin-top: -90px; }
-        .booking {
-            background: rgba(19, 19, 28, 0.9);
-            backdrop-filter: blur(20px);
-            border: 1px solid var(--border);
-            padding: 40px;
-            box-shadow: 0 30px 80px rgba(0,0,0,0.5);
+        /* Отзывы */
+        .reviews {
+            padding: 80px 20px;
+            background: white;
         }
-        .tabs { display: flex; gap: 30px; margin-bottom: 30px; border-bottom: 1px solid rgba(255,255,255,0.08); }
-        .tab {
-            background: none; border: none; color: var(--muted);
-            font-size: 14px; letter-spacing: 1.5px; text-transform: uppercase;
-            padding: 0 0 14px; cursor: pointer; position: relative;
-            font-family: inherit;
-        }
-        .tab.active { color: var(--gold); }
-        .tab.active::after {
-            content: ''; position: absolute; left: 0; bottom: -1px;
-            width: 100%; height: 2px; background: var(--gold);
-        }
-        .form-grid {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr) auto;
-            gap: 20px;
-            align-items: end;
-        }
-        .field label {
-            display: block;
-            font-size: 11px;
-            letter-spacing: 1.5px;
-            text-transform: uppercase;
-            color: var(--muted);
-            margin-bottom: 8px;
-        }
-        .field input, .field select {
-            width: 100%;
-            padding: 14px 16px;
-            background: var(--glass);
-            border: 1px solid rgba(255,255,255,0.1);
-            color: var(--text);
-            font-family: inherit;
-            font-size: 15px;
-            outline: none;
-            transition: border-color 0.3s;
-        }
-        .field select option { background: var(--dark-2); }
-        .field input:focus, .field select:focus { border-color: var(--gold); }
 
-        /* ---------- SECTIONS ---------- */
-        section { padding: 130px 0; position: relative; }
-        .section-head { text-align: center; margin-bottom: 70px; }
-        .section-tag {
-            font-size: 12px; letter-spacing: 5px; text-transform: uppercase;
-            color: var(--gold); display: block; margin-bottom: 14px;
-        }
-        .section-head h2 { font-size: clamp(36px, 4.5vw, 56px); }
-
-        /* Fleet / Services */
-        .services-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-            gap: 2px;
-            background: var(--border);
-        }
-        .service {
-            background: var(--dark-2);
-            padding: 50px 40px;
-            transition: background 0.4s;
-        }
-        .service:hover { background: #1a1a26; }
-        .service-icon {
-            width: 60px; height: 60px;
-            border: 1px solid var(--gold);
-            display: flex; align-items: center; justify-content: center;
-            color: var(--gold);
-            font-size: 22px;
-            margin-bottom: 26px;
-        }
-        .service h3 { font-size: 26px; margin-bottom: 14px; }
-        .service p { color: var(--muted); font-size: 15px; }
-
-        /* Destinations */
-        .dest-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 30px;
-        }
-        .dest {
-            position: relative;
-            height: 440px;
-            overflow: hidden;
-            cursor: pointer;
-            display: flex;
-            align-items: flex-end;
-            padding: 30px;
-            border: 1px solid rgba(255,255,255,0.06);
-        }
-        .dest-bg {
-            position: absolute; inset: 0;
-            transition: transform 0.9s ease;
-        }
-        .dest:hover .dest-bg { transform: scale(1.08); }
-        .dest-1 .dest-bg { background: linear-gradient(160deg, #1e3a8a, #0a0a0f 80%); }
-        .dest-2 .dest-bg { background: linear-gradient(160deg, #b45309, #0a0a0f 80%); }
-        .dest-3 .dest-bg { background: linear-gradient(160deg, #047857, #0a0a0f 80%); }
-        .dest::after {
-            content: ''; position: absolute; inset: 0;
-            background: linear-gradient(to top, rgba(10,10,15,0.95), transparent 60%);
-        }
-        .dest-info { position: relative; z-index: 2; }
-        .dest-info small {
-            color: var(--gold); letter-spacing: 3px; text-transform: uppercase; font-size: 11px;
-        }
-        .dest-info h3 { font-size: 34px; margin: 8px 0; }
-        .dest-info p { color: var(--muted); font-size: 14px; }
-        .dest-price { margin-top: 14px; font-size: 15px; color: var(--text); }
-        .dest-price strong { color: var(--gold); font-size: 22px; font-family: 'Cormorant Garamond', serif; }
-
-        /* Fare classes */
-        .fares {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 30px;
-        }
-        .fare {
-            border: 1px solid rgba(255,255,255,0.08);
-            padding: 50px 36px;
-            background: var(--dark-2);
-            transition: transform 0.4s, border-color 0.4s;
-        }
-        .fare:hover { transform: translateY(-8px); border-color: var(--gold); }
-        .fare.featured { border-color: var(--gold); background: linear-gradient(180deg, #1c1a14, var(--dark-2)); }
-        .fare h3 { font-size: 32px; margin-bottom: 8px; }
-        .fare .price {
-            font-family: 'Cormorant Garamond', serif;
-            font-size: 44px;
-            color: var(--gold);
-            margin: 20px 0;
-        }
-        .fare ul { list-style: none; margin-bottom: 36px; }
-        .fare li {
-            padding: 10px 0;
-            border-bottom: 1px solid rgba(255,255,255,0.05);
-            color: var(--muted);
-            font-size: 15px;
-        }
-        .fare li i { color: var(--gold); margin-right: 10px; }
-        .fare .btn-outline { width: 100%; text-align: center; }
-
-        /* Testimonials */
-        .quote-wrap {
-            max-width: 860px;
-            margin: 0 auto;
+        .reviews h2 {
             text-align: center;
+            font-size: 36px;
+            margin-bottom: 60px;
+            color: #001f3f;
+            font-weight: 400;
         }
-        .quote-wrap blockquote {
-            font-family: 'Cormorant Garamond', serif;
-            font-size: 34px;
-            font-style: italic;
-            line-height: 1.4;
-            margin-bottom: 30px;
+
+        .reviews-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 30px;
         }
-        .quote-wrap cite {
-            font-style: normal;
-            color: var(--gold);
-            letter-spacing: 3px;
-            text-transform: uppercase;
+
+        .review-card {
+            background: #f8f9fa;
+            padding: 30px;
+            border-radius: 5px;
+            border-left: 4px solid #ffd700;
+        }
+
+        .stars {
+            color: #ffd700;
+            margin-bottom: 15px;
+            font-size: 14px;
+        }
+
+        .review-text {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 14px;
+        }
+
+        .reviewer {
+            color: #001f3f;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        /* Футер */
+        footer {
+            background: #001f3f;
+            color: white;
+            padding: 60px 20px 30px;
+        }
+
+        .footer-content {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 40px;
+            margin-bottom: 40px;
+        }
+
+        .footer-section h4 {
+            margin-bottom: 20px;
+            color: #ffd700;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .footer-section ul {
+            list-style: none;
+        }
+
+        .footer-section ul li {
+            margin-bottom: 10px;
+        }
+
+        .footer-section a {
+            color: #ccc;
+            text-decoration: none;
+            font-size: 13px;
+            transition: color 0.3s ease;
+        }
+
+        .footer-section a:hover {
+            color: #ffd700;
+        }
+
+        .footer-bottom {
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            padding-top: 30px;
+            text-align: center;
+            color: #999;
             font-size: 13px;
         }
 
-        /* Stats */
-        .stats {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 30px;
-            text-align: center;
-            padding: 80px 0;
-            border-top: 1px solid var(--border);
-            border-bottom: 1px solid var(--border);
-        }
-        .stat-num {
-            font-family: 'Cormorant Garamond', serif;
-            font-size: 56px;
-            color: var(--gold);
-        }
-        .stat-label { color: var(--muted); font-size: 13px; letter-spacing: 2px; text-transform: uppercase; }
+        /* Адаптивность */
+        @media (max-width: 768px) {
+            nav ul {
+                gap: 20px;
+                font-size: 14px;
+            }
 
-        /* CTA */
-        .cta {
-            text-align: center;
-            background:
-                radial-gradient(circle at center, rgba(212,175,55,0.12), transparent 60%),
-                var(--dark-2);
-        }
-        .cta h2 { font-size: clamp(38px, 5vw, 64px); margin-bottom: 20px; }
-        .cta p { color: var(--muted); margin-bottom: 40px; font-size: 17px; }
+            .hero h1 {
+                font-size: 36px;
+            }
 
-        /* Footer */
-        footer {
-            border-top: 1px solid var(--border);
-            padding: 70px 0 30px;
-            background: var(--dark);
-        }
-        .footer-grid {
-            display: grid;
-            grid-template-columns: 2fr 1fr 1fr 1fr;
-            gap: 40px;
-            margin-bottom: 50px;
-        }
-        .footer-grid h4 {
-            font-size: 12px; letter-spacing: 2px; text-transform: uppercase;
-            color: var(--gold); margin-bottom: 20px; font-family: 'Inter', sans-serif;
-        }
-        .footer-grid ul { list-style: none; }
-        .footer-grid li { margin-bottom: 10px; color: var(--muted); font-size: 14px; }
-        .footer-grid li a:hover { color: var(--gold); }
-        .copy {
-            text-align: center; padding-top: 30px;
-            border-top: 1px solid rgba(255,255,255,0.06);
-            color: var(--muted); font-size: 13px;
-        }
+            .hero p {
+                font-size: 16px;
+            }
 
-        /* Reveal on scroll */
-        .reveal { opacity: 0; transform: translateY(40px); transition: all 0.9s ease; }
-        .reveal.visible { opacity: 1; transform: translateY(0); }
-
-        /* Responsive */
-        @media (max-width: 960px) {
-            nav { display: none; }
-            .form-grid { grid-template-columns: 1fr 1fr; }
-            .stats { grid-template-columns: repeat(2, 1fr); }
-            .fares { grid-template-columns: 1fr; }
-            .footer-grid { grid-template-columns: 1fr 1fr; }
-            .hero-buttons { flex-direction: column; align-items: center; }
-        }
-        @media (max-width: 600px) {
-            .form-grid { grid-template-columns: 1fr; }
-            .booking { padding: 26px; }
-            .footer-grid { grid-template-columns: 1fr; }
-            .quote-wrap blockquote { font-size: 24px; }
+            .search-form {
+                grid-template-columns: 1fr;
+            }
         }
     </style>
 </head>
 <body>
-
-    <header id="header">
-        <div class="container header-inner">
-            <a href="#" class="logo">AURELIA</a>
+    <!-- Навигация -->
+    <header>
+        <div class="container">
             <nav>
+                <div class="logo">✈ EMIRATES</div>
                 <ul>
-                    <li><a href="#services">Сервис</a></li>
-                    <li><a href="#destinations">Направления</a></li>
-                    <li><a href="#fares">Тарифы</a></li>
+                    <li><a href="#search">Бронирование</a></li>
+                    <li><a href="#routes">Маршруты</a></li>
+                    <li><a href="#benefits">О нас</a></li>
                     <li><a href="#contact">Контакты</a></li>
                 </ul>
             </nav>
-            <a href="#booking" class="btn-gold">Забронировать</a>
         </div>
     </header>
 
+    <!-- Главный баннер -->
     <section class="hero">
-        <div class="hero-bg-glow"></div>
-        <svg class="plane-path" viewBox="0 0 1440 900" preserveAspectRatio="none">
-            <path d="M-50 700 C 300 500, 500 100, 1500 200" />
-            <path d="M-50 800 C 400 650, 800 300, 1500 500" />
-        </svg>
-        <div class="container hero-content">
-            <span class="eyebrow">Частная и бизнес-авиация</span>
-            <h1>Полёт, который <em>начинается</em> задолго до взлёта</h1>
-            <p>AURELIA соединяет безупречный сервис, тишину салона и маршруты, которые открывают мир без compromise.</p>
-            <div class="hero-buttons">
-                <a href="#booking" class="btn-gold">Найти рейс</a>
-                <a href="#destinations" class="btn-outline">Смотреть направления</a>
+        <div class="container">
+            <h1>Летите с достоинством</h1>
+            <p>Премиальные перелёты в 180 стран мира</p>
+            <button class="btn">Забронировать сейчас</button>
+        </div>
+    </section>
+
+    <!-- Поиск рейсов -->
+    <section class="search-section" id="search">
+        <div class="container">
+            <div class="search-box">
+                <h2>Поиск рейсов</h2>
+                <form class="search-form">
+                    <div class="form-group">
+                        <label>Откуда</label>
+                        <input type="text" placeholder="Город отправления" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Куда</label>
+                        <input type="text" placeholder="Город назначения" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Вылет</label>
+                        <input type="date" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Возврат</label>
+                        <input type="date">
+                    </div>
+                    <div class="form-group">
+                        <label>Пассажиры</label>
+                        <select required>
+                            <option>1 пассажир</option>
+                            <option>2 пассажира</option>
+                            <option>3 пассажира</option>
+                            <option>4+ пассажиров</option>
+                        </select>
+                    </div>
+                </form>
+                <button class="btn">Искать рейсы</button>
             </div>
         </div>
     </section>
 
-    <div class="container booking-wrap" id="booking">
-        <div class="booking">
-            <div class="tabs">
-                <button class="tab active">В одну сторону</button>
-                <button class="tab">Туда и обратно</button>
-                <button class="tab">Мультимаршрут</button>
-            </div>
-            <form class="form-grid" onsubmit="event.preventDefault(); alert('Спасибо! Наш менеджер свяжется с вами.');">
-                <div class="field">
-                    <label>Откуда</label>
-                    <input type="text" placeholder="Москва (SVO)" required>
-                </div>
-                <div class="field">
-                    <label>Куда</label>
-                    <input type="text" placeholder="Париж (CDG)" required>
-                </div>
-                <div class="field">
-                    <label>Дата вылета</label>
-                    <input type="date" required>
-                </div>
-                <div class="field">
-                    <label>Класс</label>
-                    <select>
-                        <option>Эконом</option>
-                        <option>Бизнес</option>
-                        <option>Первый класс</option>
-                    </select>
-                </div>
-                <button type="submit" class="btn-gold">Поиск</button>
-            </form>
-        </div>
-    </div>
-
-    <section id="services">
+    <!-- Преимущества -->
+    <section class="benefits" id="benefits">
         <div class="container">
-            <div class="section-head reveal">
-                <span class="section-tag">Сервис</span>
-                <h2>Всё, что нужно для идеального полёта</h2>
-            </div>
-            <div class="services-grid">
-                <div class="service reveal">
-                    <div class="service-icon"><i class="fa-solid fa-couch"></i></div>
-                    <h3>Лаунж-залы</h3>
-                    <p>Приватные залы ожидания с гастрономией шеф-повара, спа-зоной и быстрым Wi-Fi.</p>
+            <h2>Почему выбирают Emirates</h2>
+            <div class="benefits-grid">
+                <div class="benefit-card">
+                    <div class="benefit-icon">🌟</div>
+                    <h3>Премиум комфорт</h3>
+                    <p>Широкие кресла, премиальное питание и безупречный сервис в каждом полёте</p>
                 </div>
-                <div class="service reveal">
-                    <div class="service-icon"><i class="fa-solid fa-utensils"></i></div>
-                    <h3>Кулинария</h3>
-                    <p>Меню от мишленовских шефов, сомелье на борту и авторские десерты.</p>
+                <div class="benefit-card">
+                    <div class="benefit-icon">🌍</div>
+                    <h3>180+ маршрутов</h3>
+                    <p>Летите в любую точку земного шара с удобными стыковками</p>
                 </div>
-                <div class="service reveal">
-                    <div class="service-icon"><i class="fa-solid fa-user-tie"></i></div>
-                    <h3>Персональный консьерж</h3>
-                    <p>Личный менеджер 24/7 для трансферов, отелей и любых ваших пожеланий.</p>
+                <div class="benefit-card">
+                    <div class="benefit-icon">💎</div>
+                    <h3>Lounge Access</h3>
+                    <p>Премиальный доступ в VIP залы ожидания мира</p>
+                </div>
+                <div class="benefit-card">
+                    <div class="benefit-icon">🎬</div>
+                    <h3>Развлечения</h3>
+                    <p>Тысячи фильмов, сериалов и музыкальных треков на борту</p>
+                </div>
+                <div class="benefit-card">
+                    <div class="benefit-icon">🛄</div>
+                    <h3>Багаж включён</h3>
+                    <p>Щедрые лимиты багажа и приоритетная обработка</p>
+                </div>
+                <div class="benefit-card">
+                    <div class="benefit-icon">🏆</div>
+                    <h3>Миль бонусы</h3>
+                    <p>Накапливайте мили и обменивайте на билеты</p>
                 </div>
             </div>
         </div>
     </section>
 
-    <section id="destinations" style="background: var(--dark-2);">
+    <!-- Популярные маршруты -->
+    <section class="routes" id="routes">
         <div class="container">
-            <div class="section-head reveal">
-                <span class="section-tag">Направления</span>
-                <h2>Города, которые ждут вас</h2>
-            </div>
-            <div class="dest-grid">
-                <div class="dest dest-1 reveal">
-                    <div class="dest-bg"></div>
-                    <div class="dest-info">
-                        <small>Европа</small>
-                        <h3>Париж</h3>
-                        <p>Ежедневные рейсы из Москвы и Санкт-Петербурга</p>
-                        <div class="dest-price">от <strong>24 900 ₽</strong></div>
+            <h2>Популярные маршруты</h2>
+            <div class="routes-grid">
+                <div class="route-card">
+                    <div class="route-image">🏙️</div>
+                    <div class="route-content">
+                        <h3>Дубай → Лондон</h3>
+                        <p>Прямой рейс с отличным обслуживанием. Время в полёте 8 часов</p>
+                        <div class="price">от 450 €</div>
                     </div>
                 </div>
-                <div class="dest dest-2 reveal">
-                    <div class="dest-bg"></div>
-                    <div class="dest-info">
-                        <small>Ближний Восток</small>
-                        <h3>Дубай</h3>
-                        <p>Прямые рейсы бизнес-класса без пересадок</p>
-                        <div class="dest-price">от <strong>41 500 ₽</strong></div>
-                    </div>
-                </div>
-                <div class="dest dest-3 reveal">
-                    <div class="dest-bg"></div>
-                    <div class="dest-info">
-                        <small>Азия</small>
-                        <h3>Токио</h3>
-                        <p>Комфортные перелёты с отдыхом в премиальном салоне</p>
-                        <div class="dest-price">от <strong>68 000 ₽</
