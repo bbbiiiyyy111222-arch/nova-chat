@@ -3,506 +3,1075 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Emirates - Полёты высочайшего уровня</title>
+    <title>Новогодняя площадь: Календарь призов</title>
+    <!-- Подключение пиксельного шрифта с поддержкой кириллицы -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Rubik:wght@400;500;700&display=swap" rel="stylesheet">
+
     <style>
+        :root {
+            --bg-deep-blue: #091322;
+            --bg-pine-green: #0d2622;
+            --card-bg: rgba(16, 36, 46, 0.85);
+            --card-filled-bg: rgba(19, 48, 45, 0.9);
+            --gold-main: #f5c242;
+            --gold-dark: #b3831b;
+            --gold-glow: rgba(245, 194, 66, 0.35);
+            --snow-white: #eef6fc;
+            --ice-blue: #88c9e8;
+            --emerald-accent: #2ecc71;
+            --border-dark: #050b14;
+            --pixel-font: 'Press Start 2P', monospace;
+            --body-font: 'Rubik', sans-serif;
+        }
+
         * {
+            box-sizing: border-box;
             margin: 0;
             padding: 0;
-            box-sizing: border-box;
         }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            color: #333;
-            line-height: 1.6;
+            font-family: var(--body-font);
+            background: radial-gradient(circle at top center, var(--bg-pine-green) 0%, var(--bg-deep-blue) 80%);
+            color: var(--snow-white);
+            min-height: 100vh;
+            overflow-x: hidden;
+            position: relative;
         }
 
-        /* Навигация */
-        header {
-            background: linear-gradient(135deg, #001f3f 0%, #003d7a 100%);
-            color: white;
-            padding: 20px 0;
-            position: sticky;
+        /* Canvas для снегопада */
+        #snow-canvas {
+            position: fixed;
             top: 0;
-            z-index: 100;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
         }
 
         .container {
-            max-width: 1200px;
+            max-width: 1280px;
             margin: 0 auto;
-            padding: 0 20px;
+            padding: 20px;
+            position: relative;
+            z-index: 2;
         }
 
-        nav {
+        /* Minecraft-стиль кнопок */
+        .mc-btn {
+            font-family: var(--pixel-font);
+            font-size: 12px;
+            padding: 12px 18px;
+            background-color: #1c3d4a;
+            color: var(--snow-white);
+            border: 3px solid var(--border-dark);
+            box-shadow: inset 3px 3px 0px rgba(255, 255, 255, 0.2), inset -3px -3px 0px rgba(0, 0, 0, 0.4);
+            cursor: pointer;
+            transition: transform 0.1s, background-color 0.2s;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            line-height: 1.4;
+        }
+
+        .mc-btn:hover {
+            background-color: #265363;
+            color: var(--gold-main);
+        }
+
+        .mc-btn:active {
+            transform: translateY(2px);
+            box-shadow: inset 2px 2px 0px rgba(0, 0, 0, 0.5);
+        }
+
+        .mc-btn-gold {
+            background-color: #9e7316;
+            color: #fff;
+        }
+
+        .mc-btn-gold:hover {
+            background-color: #bd8b1c;
+            color: #fff;
+        }
+
+        /* Шапка сайта */
+        header {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: center;
+            gap: 20px;
+            padding: 25px 30px;
+            background: rgba(9, 21, 34, 0.8);
+            border: 4px solid var(--gold-dark);
+            box-shadow: 0 0 25px rgba(0, 0, 0, 0.6), inset 0 0 15px rgba(245, 194, 66, 0.15);
+            margin-bottom: 30px;
+            backdrop-filter: blur(6px);
+        }
+
+        .title-block h1 {
+            font-family: var(--pixel-font);
+            font-size: clamp(16px, 2.5vw, 24px);
+            color: var(--gold-main);
+            text-shadow: 3px 3px 0px #000;
+            line-height: 1.5;
+            margin-bottom: 8px;
+        }
+
+        .title-block p {
+            color: var(--ice-blue);
+            font-size: 14px;
+        }
+
+        .header-controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            align-items: center;
+        }
+
+        /* Панель администратора (появляется после входа) */
+        .admin-bar {
+            display: none;
+            background: rgba(14, 46, 38, 0.9);
+            border: 3px solid var(--emerald-accent);
+            padding: 15px 25px;
+            margin-bottom: 25px;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.4);
+        }
+
+        .admin-bar.active {
+            display: flex;
+        }
+
+        .admin-status {
+            font-family: var(--pixel-font);
+            font-size: 11px;
+            color: var(--emerald-accent);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .admin-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        /* Сетка календаря на 10 дней */
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+            gap: 24px;
+            margin-bottom: 50px;
+        }
+
+        @media (min-width: 1100px) {
+            .calendar-grid {
+                grid-template-columns: repeat(5, 1fr);
+            }
+        }
+
+        /* Карточка дня */
+        .day-card {
+            background: var(--card-bg);
+            border: 4px solid #1e4252;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5), inset 0 0 0 2px rgba(136, 201, 232, 0.15);
+            min-height: 290px;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
+            overflow: hidden;
+        }
+
+        .day-card:hover {
+            transform: translateY(-4px);
+            border-color: var(--ice-blue);
+        }
+
+        .day-card.filled {
+            background: var(--card-filled-bg);
+            border-color: var(--gold-dark);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.6), 0 0 15px var(--gold-glow);
+        }
+
+        .day-card.filled:hover {
+            border-color: var(--gold-main);
+        }
+
+        /* Шапка карточки */
+        .card-header {
+            background: rgba(5, 13, 22, 0.7);
+            padding: 12px 15px;
             display: flex;
             justify-content: space-between;
             align-items: center;
+            border-bottom: 2px solid rgba(255, 255, 255, 0.08);
         }
 
-        .logo {
-            font-size: 28px;
-            font-weight: 700;
-            letter-spacing: 2px;
-            color: #ffd700;
+        .day-number {
+            font-family: var(--pixel-font);
+            font-size: 13px;
+            color: var(--ice-blue);
         }
 
-        nav ul {
-            display: flex;
-            list-style: none;
-            gap: 40px;
+        .day-card.filled .day-number {
+            color: var(--gold-main);
         }
 
-        nav a {
-            color: white;
-            text-decoration: none;
-            font-weight: 500;
-            transition: color 0.3s ease;
+        .slot-badge {
+            font-family: var(--pixel-font);
+            font-size: 9px;
+            background: rgba(245, 194, 66, 0.15);
+            color: var(--gold-main);
+            border: 1px solid var(--gold-dark);
+            padding: 4px 6px;
         }
 
-        nav a:hover {
-            color: #ffd700;
-        }
-
-        /* Главный баннер */
-        .hero {
-            background: linear-gradient(rgba(0, 31, 63, 0.6), rgba(0, 31, 63, 0.6)),
-                        url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 600"><rect fill="%23001f3f" width="1200" height="600"/><path fill="%23003d7a" opacity="0.3" d="M0 300 Q300 200 600 250 T1200 300 L1200 600 L0 600 Z"/></svg>');
-            background-size: cover;
-            background-position: center;
-            color: white;
-            padding: 150px 20px;
-            text-align: center;
-        }
-
-        .hero h1 {
-            font-size: 56px;
-            margin-bottom: 20px;
-            font-weight: 300;
-            letter-spacing: 1px;
-        }
-
-        .hero p {
-            font-size: 20px;
-            margin-bottom: 40px;
-            opacity: 0.9;
-        }
-
-        .btn {
-            display: inline-block;
-            padding: 14px 40px;
-            background: #ffd700;
-            color: #001f3f;
-            text-decoration: none;
-            border-radius: 3px;
-            font-weight: 600;
-            transition: all 0.3s ease;
-            border: 2px solid #ffd700;
-            cursor: pointer;
-            font-size: 16px;
-        }
-
-        .btn:hover {
-            background: transparent;
-            color: #ffd700;
-        }
-
-        /* Поиск рейсов */
-        .search-section {
-            background: #f8f9fa;
-            padding: 60px 20px;
-        }
-
-        .search-box {
-            background: white;
-            padding: 30px;
-            border-radius: 5px;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.08);
-            max-width: 900px;
-            margin: 0 auto;
-        }
-
-        .search-box h2 {
-            margin-bottom: 25px;
-            color: #001f3f;
-            font-weight: 400;
-            font-size: 24px;
-        }
-
-        .search-form {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-            gap: 15px;
-            margin-bottom: 20px;
-        }
-
-        .form-group {
+        /* Тело пустой карточки */
+        .card-empty-body {
+            flex: 1;
             display: flex;
             flex-direction: column;
-        }
-
-        .form-group label {
-            font-size: 12px;
-            color: #666;
-            margin-bottom: 8px;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .form-group input,
-        .form-group select {
-            padding: 12px;
-            border: 1px solid #ddd;
-            border-radius: 3px;
-            font-size: 14px;
-            font-family: inherit;
-        }
-
-        .form-group input:focus,
-        .form-group select:focus {
-            outline: none;
-            border-color: #ffd700;
-            box-shadow: 0 0 5px rgba(255, 215, 0, 0.3);
-        }
-
-        /* Преимущества */
-        .benefits {
-            padding: 80px 20px;
-            background: white;
-        }
-
-        .benefits h2 {
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
             text-align: center;
-            font-size: 36px;
-            margin-bottom: 60px;
-            color: #001f3f;
-            font-weight: 400;
+            color: rgba(238, 246, 252, 0.45);
         }
 
-        .benefits-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 40px;
-        }
-
-        .benefit-card {
-            text-align: center;
-            padding: 30px;
-            transition: transform 0.3s ease;
-        }
-
-        .benefit-card:hover {
-            transform: translateY(-10px);
-        }
-
-        .benefit-icon {
-            font-size: 48px;
-            margin-bottom: 20px;
-        }
-
-        .benefit-card h3 {
-            color: #001f3f;
-            margin-bottom: 15px;
-            font-weight: 600;
-            font-size: 18px;
-        }
-
-        .benefit-card p {
-            color: #666;
-            font-size: 14px;
-        }
-
-        /* Маршруты */
-        .routes {
-            background: #f8f9fa;
-            padding: 80px 20px;
-        }
-
-        .routes h2 {
-            text-align: center;
-            font-size: 36px;
-            margin-bottom: 60px;
-            color: #001f3f;
-            font-weight: 400;
-        }
-
-        .routes-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 30px;
-        }
-
-        .route-card {
-            background: white;
-            border-radius: 5px;
-            overflow: hidden;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
-            transition: box-shadow 0.3s ease;
-        }
-
-        .route-card:hover {
-            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
-        }
-
-        .route-image {
-            width: 100%;
-            height: 200px;
-            background: linear-gradient(135deg, #001f3f, #003d7a);
+        .add-btn {
+            width: 64px;
+            height: 64px;
+            font-family: var(--pixel-font);
+            font-size: 28px;
+            background: rgba(245, 194, 66, 0.12);
+            color: var(--gold-main);
+            border: 3px dashed var(--gold-dark);
+            cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
+            transition: all 0.2s;
+            margin-bottom: 10px;
+        }
+
+        .add-btn:hover {
+            background: rgba(245, 194, 66, 0.25);
+            border-style: solid;
+            transform: scale(1.08);
+        }
+
+        .locked-icon {
             font-size: 24px;
+            margin-bottom: 8px;
+            opacity: 0.6;
         }
 
-        .route-content {
+        /* Тело заполненной карточки */
+        .card-filled-body {
+            padding: 15px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .player-nick {
+            font-family: var(--pixel-font);
+            font-size: 11px;
+            color: var(--emerald-accent);
+            line-height: 1.5;
+            word-break: break-word;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 8px;
+            border-left: 3px solid var(--emerald-accent);
+        }
+
+        .prize-info {
+            font-size: 13.5px;
+            line-height: 1.45;
+            color: var(--snow-white);
+            white-space: pre-wrap;
+            word-break: break-word;
+            flex: 1;
+        }
+
+        .card-thumb-wrapper {
+            margin-top: auto;
+            position: relative;
+            border: 2px solid var(--gold-dark);
+            overflow: hidden;
+            cursor: zoom-in;
+            height: 110px;
+            background: #050b14;
+        }
+
+        .card-thumb-wrapper img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.3s ease;
+            display: block;
+        }
+
+        .card-thumb-wrapper:hover img {
+            transform: scale(1.07);
+        }
+
+        .zoom-hint {
+            position: absolute;
+            bottom: 4px;
+            right: 4px;
+            background: rgba(0, 0, 0, 0.75);
+            color: var(--gold-main);
+            font-size: 10px;
+            padding: 2px 6px;
+            pointer-events: none;
+        }
+
+        .edit-btn {
+            background: rgba(28, 61, 74, 0.9);
+            border: 2px solid var(--ice-blue);
+            color: var(--snow-white);
+            font-family: var(--pixel-font);
+            font-size: 9px;
+            padding: 6px 10px;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 6px;
+            transition: 0.2s;
+        }
+
+        .edit-btn:hover {
+            background: var(--gold-dark);
+            border-color: var(--gold-main);
+        }
+
+        /* Модальные окна */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(3, 8, 15, 0.85);
+            backdrop-filter: blur(5px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+            padding: 20px;
+        }
+
+        .modal-overlay.open {
+            display: flex;
+        }
+
+        .modal-box {
+            background: linear-gradient(180deg, #102a36 0%, #0b1929 100%);
+            border: 4px solid var(--gold-main);
+            box-shadow: 0 0 40px rgba(0, 0, 0, 0.9);
+            width: 100%;
+            max-width: 540px;
+            max-height: 90vh;
+            overflow-y: auto;
             padding: 25px;
+            position: relative;
         }
 
-        .route-content h3 {
-            color: #001f3f;
-            margin-bottom: 10px;
-            font-size: 20px;
-            font-weight: 600;
-        }
-
-        .route-content p {
-            color: #666;
-            font-size: 14px;
-            margin-bottom: 15px;
-        }
-
-        .price {
-            color: #ffd700;
-            font-size: 18px;
-            font-weight: 600;
-        }
-
-        /* Отзывы */
-        .reviews {
-            padding: 80px 20px;
-            background: white;
-        }
-
-        .reviews h2 {
-            text-align: center;
-            font-size: 36px;
-            margin-bottom: 60px;
-            color: #001f3f;
-            font-weight: 400;
-        }
-
-        .reviews-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 30px;
-        }
-
-        .review-card {
-            background: #f8f9fa;
-            padding: 30px;
-            border-radius: 5px;
-            border-left: 4px solid #ffd700;
-        }
-
-        .stars {
-            color: #ffd700;
-            margin-bottom: 15px;
-            font-size: 14px;
-        }
-
-        .review-text {
-            color: #333;
-            margin-bottom: 15px;
-            font-size: 14px;
-        }
-
-        .reviewer {
-            color: #001f3f;
-            font-weight: 600;
-            font-size: 14px;
-        }
-
-        /* Футер */
-        footer {
-            background: #001f3f;
-            color: white;
-            padding: 60px 20px 30px;
-        }
-
-        .footer-content {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 40px;
-            margin-bottom: 40px;
-        }
-
-        .footer-section h4 {
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid rgba(245, 194, 66, 0.3);
+            padding-bottom: 15px;
             margin-bottom: 20px;
-            color: #ffd700;
-            font-weight: 600;
+        }
+
+        .modal-header h2 {
+            font-family: var(--pixel-font);
             font-size: 14px;
+            color: var(--gold-main);
+            line-height: 1.4;
         }
 
-        .footer-section ul {
-            list-style: none;
+        .close-modal {
+            background: none;
+            border: 2px solid var(--ice-blue);
+            color: var(--snow-white);
+            font-family: var(--pixel-font);
+            font-size: 12px;
+            width: 32px;
+            height: 32px;
+            cursor: pointer;
         }
 
-        .footer-section ul li {
-            margin-bottom: 10px;
+        .close-modal:hover {
+            background: var(--gold-main);
+            color: #000;
+            border-color: var(--gold-main);
         }
 
-        .footer-section a {
-            color: #ccc;
-            text-decoration: none;
+        /* Формы */
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-group label {
+            display: block;
             font-size: 13px;
-            transition: color 0.3s ease;
+            font-weight: 500;
+            color: var(--ice-blue);
+            margin-bottom: 6px;
         }
 
-        .footer-section a:hover {
-            color: #ffd700;
+        .form-group input[type="text"],
+        .form-group input[type="password"],
+        .form-group textarea {
+            width: 100%;
+            background: #06101a;
+            border: 2px solid #265363;
+            color: var(--snow-white);
+            padding: 10px 12px;
+            font-family: var(--body-font);
+            font-size: 14px;
+            outline: none;
         }
 
-        .footer-bottom {
-            border-top: 1px solid rgba(255, 255, 255, 0.1);
-            padding-top: 30px;
+        .form-group input:focus,
+        .form-group textarea:focus {
+            border-color: var(--gold-main);
+        }
+
+        .form-group textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        .image-preview-box {
+            margin-top: 10px;
+            display: none;
+            position: relative;
+            border: 2px solid var(--gold-dark);
+            max-width: 220px;
+        }
+
+        .image-preview-box img {
+            width: 100%;
+            display: block;
+        }
+
+        .remove-img-btn {
+            margin-top: 6px;
+            background: #1c3d4a;
+            color: var(--ice-blue);
+            border: 1px solid var(--ice-blue);
+            padding: 4px 8px;
+            font-size: 12px;
+            cursor: pointer;
+        }
+
+        .modal-footer {
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+            margin-top: 22px;
+            flex-wrap: wrap;
+        }
+
+        /* Просмотр полноразмерного изображения */
+        .lightbox-box {
+            max-width: 90vw;
+            max-height: 90vh;
+            background: #050b14;
+            border: 4px solid var(--gold-main);
+            padding: 10px;
+            position: relative;
             text-align: center;
-            color: #999;
-            font-size: 13px;
         }
 
-        /* Адаптивность */
-        @media (max-width: 768px) {
-            nav ul {
-                gap: 20px;
-                font-size: 14px;
-            }
+        .lightbox-box img {
+            max-width: 100%;
+            max-height: 80vh;
+            display: block;
+            margin: 0 auto;
+        }
 
-            .hero h1 {
-                font-size: 36px;
-            }
+        /* Пустое окно правил */
+        .rules-content {
+            min-height: 180px;
+            color: var(--snow-white);
+            line-height: 1.6;
+            font-size: 15px;
+        }
 
-            .hero p {
-                font-size: 16px;
-            }
-
-            .search-form {
-                grid-template-columns: 1fr;
-            }
+        /* Скрытый input для импорта JSON */
+        #import-file-input {
+            display: none;
         }
     </style>
 </head>
 <body>
-    <!-- Навигация -->
-    <header>
-        <div class="container">
-            <nav>
-                <div class="logo">✈ EMIRATES</div>
-                <ul>
-                    <li><a href="#search">Бронирование</a></li>
-                    <li><a href="#routes">Маршруты</a></li>
-                    <li><a href="#benefits">О нас</a></li>
-                    <li><a href="#contact">Контакты</a></li>
-                </ul>
-            </nav>
-        </div>
-    </header>
 
-    <!-- Главный баннер -->
-    <section class="hero">
-        <div class="container">
-            <h1>Летите с достоинством</h1>
-            <p>Премиальные перелёты в 180 стран мира</p>
-            <button class="btn">Забронировать сейчас</button>
-        </div>
-    </section>
+    <!-- Снегопад -->
+    <canvas id="snow-canvas"></canvas>
 
-    <!-- Поиск рейсов -->
-    <section class="search-section" id="search">
-        <div class="container">
-            <div class="search-box">
-                <h2>Поиск рейсов</h2>
-                <form class="search-form">
-                    <div class="form-group">
-                        <label>Откуда</label>
-                        <input type="text" placeholder="Город отправления" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Куда</label>
-                        <input type="text" placeholder="Город назначения" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Вылет</label>
-                        <input type="date" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Возврат</label>
-                        <input type="date">
-                    </div>
-                    <div class="form-group">
-                        <label>Пассажиры</label>
-                        <select required>
-                            <option>1 пассажир</option>
-                            <option>2 пассажира</option>
-                            <option>3 пассажира</option>
-                            <option>4+ пассажиров</option>
-                        </select>
-                    </div>
-                </form>
-                <button class="btn">Искать рейсы</button>
+    <div class="container">
+        <!-- Шапка -->
+        <header>
+            <div class="title-block">
+                <h1>❄️ Новогодняя площадь: Календарь призов</h1>
+                <p>10 дней зимних чудес, подарков и праздничных наград на нашем сервере</p>
+            </div>
+            <div class="header-controls">
+                <button class="mc-btn mc-btn-gold" id="open-rules-btn">📜 Правила</button>
+                <button class="mc-btn" id="admin-toggle-btn">🔑 Вход для админа</button>
+            </div>
+        </header>
+
+        <!-- Панель администратора (видна только после ввода пароля) -->
+        <div class="admin-bar" id="admin-bar">
+            <div class="admin-status">
+                <span>🟢 РЕЖИМ АДМИНИСТРАТОРА АКТИВЕН</span>
+            </div>
+            <div class="admin-actions">
+                <button class="mc-btn" id="export-db-btn">💾 Сохранить базу в файл</button>
+                <button class="mc-btn" id="import-db-btn">📂 Загрузить из файла</button>
+                <input type="file" id="import-file-input" accept=".json">
             </div>
         </div>
-    </section>
 
-    <!-- Преимущества -->
-    <section class="benefits" id="benefits">
-        <div class="container">
-            <h2>Почему выбирают Emirates</h2>
-            <div class="benefits-grid">
-                <div class="benefit-card">
-                    <div class="benefit-icon">🌟</div>
-                    <h3>Премиум комфорт</h3>
-                    <p>Широкие кресла, премиальное питание и безупречный сервис в каждом полёте</p>
-                </div>
-                <div class="benefit-card">
-                    <div class="benefit-icon">🌍</div>
-                    <h3>180+ маршрутов</h3>
-                    <p>Летите в любую точку земного шара с удобными стыковками</p>
-                </div>
-                <div class="benefit-card">
-                    <div class="benefit-icon">💎</div>
-                    <h3>Lounge Access</h3>
-                    <p>Премиальный доступ в VIP залы ожидания мира</p>
-                </div>
-                <div class="benefit-card">
-                    <div class="benefit-icon">🎬</div>
-                    <h3>Развлечения</h3>
-                    <p>Тысячи фильмов, сериалов и музыкальных треков на борту</p>
-                </div>
-                <div class="benefit-card">
-                    <div class="benefit-icon">🛄</div>
-                    <h3>Багаж включён</h3>
-                    <p>Щедрые лимиты багажа и приоритетная обработка</p>
-                </div>
-                <div class="benefit-card">
-                    <div class="benefit-icon">🏆</div>
-                    <h3>Миль бонусы</h3>
-                    <p>Накапливайте мили и обменивайте на билеты</p>
-                </div>
+        <!-- Сетка календаря на 10 дней -->
+        <main class="calendar-grid" id="calendar-grid">
+            <!-- Карточки генерируются через JS -->
+        </main>
+    </div>
+
+    <!-- Модальное окно: Правила -->
+    <div class="modal-overlay" id="rules-modal">
+        <div class="modal-box">
+            <div class="modal-header">
+                <h2>📜 Правила события</h2>
+                <button class="close-modal" data-close="rules-modal">X</button>
+            </div>
+            <div class="rules-content" id="rules-text-container">
+                <!-- ВСТАВЬТЕ ТЕКСТ ПРАВИЛ СЮДА ПОЗЖЕ -->
             </div>
         </div>
-    </section>
+    </div>
 
-    <!-- Популярные маршруты -->
-    <section class="routes" id="routes">
-        <div class="container">
-            <h2>Популярные маршруты</h2>
-            <div class="routes-grid">
-                <div class="route-card">
-                    <div class="route-image">🏙️</div>
-                    <div class="route-content">
-                        <h3>Дубай → Лондон</h3>
-                        <p>Прямой рейс с отличным обслуживанием. Время в полёте 8 часов</p>
-                        <div class="price">от 450 €</div>
+    <!-- Модальное окно: Вход администратора -->
+    <div class="modal-overlay" id="login-modal">
+        <div class="modal-box" style="max-width: 400px;">
+            <div class="modal-header">
+                <h2>🔑 Вход в админ-панель</h2>
+                <button class="close-modal" data-close="login-modal">X</button>
+            </div>
+            <form id="login-form">
+                <div class="form-group">
+                    <label for="admin-password-input">Введите пароль администратора:</label>
+                    <input type="password" id="admin-password-input" placeholder="Пароль..." required>
+                </div>
+                <p id="login-error" style="color: #88c9e8; font-size: 13px; margin-bottom: 10px; display: none;">
+                    Неверный пароль. Попробуйте снова.
+                </p>
+                <div class="modal-footer">
+                    <button type="submit" class="mc-btn mc-btn-gold" style="width: 100%; justify-content: center;">Войти</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Модальное окно: Редактирование / Добавление записи дня -->
+    <div class="modal-overlay" id="edit-modal">
+        <div class="modal-box">
+            <div class="modal-header">
+                <h2 id="edit-modal-title">🎁 День 1: Запись приза</h2>
+                <button class="close-modal" data-close="edit-modal">X</button>
+            </div>
+            <form id="day-form">
+                <input type="hidden" id="edit-day-number">
+
+                <div class="form-group">
+                    <label for="field-nickname">1. Никнейм игрока (или список ников) *</label>
+                    <input type="text" id="field-nickname" placeholder="Например: Steve, Alex_2026" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="field-prize">2. Название приза и дополнительная информация *</label>
+                    <textarea id="field-prize" placeholder="Опишите приз, условия получения или заметки..." required></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="field-slot">3. Номер приза / ячейки (необязательно)</label>
+                    <input type="text" id="field-slot" placeholder="Например: Ячейка №14">
+                </div>
+
+                <div class="form-group">
+                    <label for="field-image">4. Фото или скриншот (необязательно)</label>
+                    <input type="file" id="field-image" accept="image/*">
+                    <div class="image-preview-box" id="image-preview-box">
+                        <img id="image-preview" src="" alt="Предпросмотр">
+                        <button type="button" class="remove-img-btn" id="remove-image-btn">Удалить картинку</button>
                     </div>
                 </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="mc-btn" id="clear-day-btn" style="display: none;">Очистить день</button>
+                    <button type="submit" class="mc-btn mc-btn-gold">💾 Сохранить</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Модальное окно: Просмотр картинки крупно -->
+    <div class="modal-overlay" id="lightbox-modal">
+        <div class="lightbox-box">
+            <img id="lightbox-img" src="" alt="Скриншот приза">
+            <div style="margin-top: 12px;">
+                <button class="mc-btn" data-close="lightbox-modal">Закрыть</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        /* ==========================================
+           НАСТРОЙКИ АДМИНИСТРАТОРА
+           ========================================== */
+        const ADMIN_PASSWORD = "admin"; // <-- ИЗМЕНИТЕ ПАРОЛЬ ЗДЕСЬ
+        const TOTAL_DAYS = 10;
+
+        let isAdmin = sessionStorage.getItem('mc_calendar_admin') === 'true';
+        let calendarData = {}; // Объект вида { 1: { nickname, prize, slot, image }, ... }
+        let currentBase64Image = null;
+
+        /* ==========================================
+           РАБОТА С INDEXEDDB (ХРАНЕНИЕ ДАННЫХ И ФОТО)
+           ========================================== */
+        const DB_NAME = 'NewYearMinecraftCalendarDB';
+        const DB_VERSION = 1;
+        const STORE_NAME = 'days';
+
+        function openDB() {
+            return new Promise((resolve, reject) => {
+                const request = indexedDB.open(DB_NAME, DB_VERSION);
+                request.onupgradeneeded = (e) => {
+                    const db = e.target.result;
+                    if (!db.objectStoreNames.contains(STORE_NAME)) {
+                        db.createObjectStore(STORE_NAME, { keyPath: 'day' });
+                    }
+                };
+                request.onsuccess = () => resolve(request.result);
+                request.onerror = () => reject(request.error);
+            });
+        }
+
+        async function loadAllDaysFromDB() {
+            const db = await openDB();
+            return new Promise((resolve, reject) => {
+                const tx = db.transaction(STORE_NAME, 'readonly');
+                const store = tx.objectStore(STORE_NAME);
+                const req = store.getAll();
+                req.onsuccess = () => {
+                    const result = {};
+                    req.result.forEach(item => {
+                        result[item.day] = item;
+                    });
+                    resolve(result);
+                };
+                req.onerror = () => reject(req.error);
+            });
+        }
+
+        async function saveDayToDB(dayObj) {
+            const db = await openDB();
+            return new Promise((resolve, reject) => {
+                const tx = db.transaction(STORE_NAME, 'readwrite');
+                const store = tx.objectStore(STORE_NAME);
+                const req = store.put(dayObj);
+                req.onsuccess = () => resolve();
+                req.onerror = () => reject(req.error);
+            });
+        }
+
+        async function deleteDayFromDB(dayNumber) {
+            const db = await openDB();
+            return new Promise((resolve, reject) => {
+                const tx = db.transaction(STORE_NAME, 'readwrite');
+                const store = tx.objectStore(STORE_NAME);
+                const req = store.delete(Number(dayNumber));
+                req.onsuccess = () => resolve();
+                req.onerror = () => reject(req.error);
+            });
+        }
+
+        async function replaceAllDaysInDB(dataObj) {
+            const db = await openDB();
+            return new Promise((resolve, reject) => {
+                const tx = db.transaction(STORE_NAME, 'readwrite');
+                const store = tx.objectStore(STORE_NAME);
+                store.clear();
+                Object.values(dataObj).forEach(item => {
+                    if (item && item.day) {
+                        store.put(item);
+                    }
+                });
+                tx.oncomplete = () => resolve();
+                tx.onerror = () => reject(tx.error);
+            });
+        }
+
+        /* ==========================================
+           ОТРИСОВКА КАЛЕНДАРЯ
+           ========================================== */
+        function renderCalendar() {
+            const grid = document.getElementById('calendar-grid');
+            grid.innerHTML = '';
+
+            for (let day = 1; day <= TOTAL_DAYS; day++) {
+                const entry = calendarData[day];
+                const card = document.createElement('div');
+                card.className = 'day-card' + (entry ? ' filled' : '');
+
+                // Шапка карточки
+                const header = document.createElement('div');
+                header.className = 'card-header';
+                header.innerHTML = `
+                    <span class="day-number">День ${day}</span>
+                    ${entry && entry.slot ? `<span class="slot-badge">${escapeHTML(entry.slot)}</span>` : ''}
+                `;
+                card.appendChild(header);
+
+                // Если день заполнен
+                if (entry) {
+                    const body = document.createElement('div');
+                    body.className = 'card-filled-body';
+
+                    body.innerHTML = `
+                        <div class="player-nick">👤 ${escapeHTML(entry.nickname)}</div>
+                        <div class="prize-info">${escapeHTML(entry.prize)}</div>
+                    `;
+
+                    if (entry.image) {
+                        const thumbWrap = document.createElement('div');
+                        thumbWrap.className = 'card-thumb-wrapper';
+                        thumbWrap.innerHTML = `
+                            <img src="${entry.image}" alt="Приз дня ${day}">
+                            <span class="zoom-hint">🔍 Увеличить</span>
+                        `;
+                        thumbWrap.addEventListener('click', () => openLightbox(entry.image));
+                        body.appendChild(thumbWrap);
+                    }
+
+                    if (isAdmin) {
+                        const editBtn = document.createElement('button');
+                        editBtn.className = 'edit-btn';
+                        editBtn.textContent = '✎ Редактировать';
+                        editBtn.addEventListener('click', () => openEditModal(day));
+                        body.appendChild(editBtn);
+                    }
+
+                    card.appendChild(body);
+                } else {
+                    // Если день пустой
+                    const emptyBody = document.createElement('div');
+                    emptyBody.className = 'card-empty-body';
+
+                    if (isAdmin) {
+                        const addBtn = document.createElement('button');
+                        addBtn.className = 'add-btn';
+                        addBtn.textContent = '+';
+                        addBtn.title = 'Добавить запись';
+                        addBtn.addEventListener('click', () => openEditModal(day));
+                        emptyBody.appendChild(addBtn);
+
+                        const hint = document.createElement('span');
+                        hint.style.fontSize = '12px';
+                        hint.textContent = 'Заполнить день';
+                        emptyBody.appendChild(hint);
+                    } else {
+                        emptyBody.innerHTML = `
+                            <div class="locked-icon">❄️</div>
+                            <span style="font-size: 13px;">Ожидает открытия...</span>
+                        `;
+                    }
+                    card.appendChild(emptyBody);
+                }
+
+                grid.appendChild(card);
+            }
+        }
+
+        function escapeHTML(str) {
+            if (!str) return '';
+            return str.replace(/[&<>"']/g, m => ({
+                '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+            })[m]);
+        }
+
+        /* ==========================================
+           УПРАВЛЕНИЕ МОДАЛЬНЫМИ ОКНАМИ И АДМИНКОЙ
+           ========================================== */
+        function updateAdminUI() {
+            const adminBar = document.getElementById('admin-bar');
+            const toggleBtn = document.getElementById('admin-toggle-btn');
+
+            if (isAdmin) {
+                adminBar.classList.add('active');
+                toggleBtn.textContent = '🚪 Выйти из админки';
+            } else {
+                adminBar.classList.remove('active');
+                toggleBtn.textContent = '🔑 Вход для админа';
+            }
+            renderCalendar();
+        }
+
+        // Кнопка входа / выхода админа
+        document.getElementById('admin-toggle-btn').addEventListener('click', () => {
+            if (isAdmin) {
+                isAdmin = false;
+                sessionStorage.removeItem('mc_calendar_admin');
+                updateAdminUI();
+            } else {
+                document.getElementById('login-error').style.display = 'none';
+                document.getElementById('admin-password-input').value = '';
+                openModal('login-modal');
+            }
+        });
+
+        // Форма авторизации
+        document.getElementById('login-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const pwd = document.getElementById('admin-password-input').value;
+            if (pwd === ADMIN_PASSWORD) {
+                isAdmin = true;
+                sessionStorage.setItem('mc_calendar_admin', 'true');
+                closeModal('login-modal');
+                updateAdminUI();
+            } else {
+                document.getElementById('login-error').style.display = 'block';
+            }
+        });
+
+        // Правила
+        document.getElementById('open-rules-btn').addEventListener('click', () => {
+            openModal('rules-modal');
+        });
+
+        // Открытие формы редактирования дня
+        function openEditModal(day) {
+            const entry = calendarData[day] || {};
+            document.getElementById('edit-modal-title').textContent = `🎁 День ${day}: Запись приза`;
+            document.getElementById('edit-day-number').value = day;
+            document.getElementById('field-nickname').value = entry.nickname || '';
+            document.getElementById('field-prize').value = entry.prize || '';
+            document.getElementById('field-slot').value = entry.slot || '';
+            document.getElementById('field-image').value = '';
+
+            currentBase64Image = entry.image || null;
+            updateImagePreview();
+
+            const clearBtn = document.getElementById('clear-day-btn');
+            clearBtn.style.display = calendarData[day] ? 'inline-flex' : 'none';
+
+            openModal('edit-modal');
+        }
+
+        function updateImagePreview() {
+            const box = document.getElementById('image-preview-box');
+            const img = document.getElementById('image-preview');
+            if (currentBase64Image) {
+                img.src = currentBase64Image;
+                box.style.display = 'block';
+            } else {
+                img.src = '';
+                box.style.display = 'none';
+            }
+        }
+
+        // Загрузка изображения с ПК
+        document.getElementById('field-image').addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                currentBase64Image = event.target.result;
+                updateImagePreview();
+            };
+            reader.readAsDataURL(file);
+        });
+
+        // Удаление прикрепленной картинки
+        document.getElementById('remove-image-btn').addEventListener('click', () => {
+            currentBase64Image = null;
+            document.getElementById('field-image').value = '';
+            updateImagePreview();
+        });
+
+        // Сохранение карточки дня
+        document.getElementById('day-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const day = Number(document.getElementById('edit-day-number').value);
+            const nickname = document.getElementById('field-nickname').value.trim();
+            const prize = document.getElementById('field-prize').value.trim();
+            const slot = document.getElementById('field-slot').value.trim();
+
+            const dayObj = {
+                day,
+                nickname,
+                prize,
+                slot,
+                image: currentBase64Image
+            };
+
+            await saveDayToDB(dayObj);
+            calendarData[day] = dayObj;
+            closeModal('edit-modal');
+            renderCalendar();
+        });
+
+        // Очистка карточки дня
+        document.getElementById('clear-day-btn').addEventListener('click', async () => {
+            const day = Number(document.getElementById('edit-day-number').value);
+            if (confirm(`Очистить данные за День ${day}?`)) {
+                await deleteDayFromDB(day);
+                delete calendarData[day];
+                closeModal('edit-modal');
+                renderCalendar();
+            }
+        });
+
+        // Просмотр изображения крупно
+        function openLightbox(src) {
+            document.getElementById('lightbox-img').src = src;
+            openModal('lightbox-modal');
+        }
+
+        function openModal(id) {
+            document.getElementById(id).classList.add('open');
+        }
+
+        function closeModal(id) {
+            document.getElementById(id).classList.remove('open');
+        }
+
+        document.querySelectorAll('[data-close]').forEach(btn => {
+            btn.addEventListener('click', () => closeModal(btn.getAttribute('data-close')));
+        });
+
+        document.querySelectorAll('.modal-overlay').forEach(overlay => {
+            overlay.addEventListener('click', (e) => {
+                if (e.target === overlay) overlay.classList.remove('open');
+            });
+        });
+
+        /* ==========================================
+           ЭКСПОРТ И ИМПОРТ БАЗЫ ДАННЫХ (JSON)
+           ========================================== */
+        document.getElementById('export-db-btn').addEventListener('click', () => {
+            const dataStr = JSON.stringify(calendarData, null, 2);
+            const blob = new Blob([dataStr], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            const dateStr = new Date().toISOString().slice(0, 10);
+            a.href = url;
+            a.download = `minecraft_calendar_backup_${dateStr}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+        });
+
+        document.getElementById('import-db-btn').addEventListener('click', () => {
+            document.getElementById('import-file-input').click();
+        });
+
+        document.getElementById('import-file-input').addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = async (event) => {
+                try {
+                    const imported = JSON.parse(event.target.result);
+                    if (typeof imported === 'object' && imported !== null) {
+                        await replaceAllDaysInDB(imported);
+                        calendarData = imported;
+                        renderCalendar();
+                        alert('База успешно загружена!');
+                    } else {
+                        alert('Некорректный формат файла.');
+                    }
+                } catch (err) {
+                    alert('Ошибка при чтении файла резервной копии.');
+                }
+                e.target.value = '';
+            };
+            reader.readAsText(file);
+        });
+
+        /* ==========================================
+           ЛЕГКИЙ СНЕГОПАД НА ФОНЕ
+           ========================================== */
+        function initSnow() {
+            const canvas = document.getElementById('snow-canvas');
+            const ctx = canvas.getContext('2d');
+            let width = canvas.width = window.innerWidth;
+            let height = canvas.height = window.innerHeight;
+
+            const snowflakes = Array.from({ length: 75 }, () => ({
+                x: Math.random() * width,
+                y: Math.random() * height,
+                size: Math.random() * 3 + 2, // Квадратные пиксельные снежинки
+                speedY: Math.random() * 0.8 + 0.3,
+                speedX: (Math.random() - 0.5) * 0.4,
+                opacity: Math.random() * 0.6 + 0.2
+            }));
+
+            window.addEventListener('resize', () => {
+                width = canvas.width = window.innerWidth;
+                height = canvas.height = window.innerHeight;
+            });
+
+            function animate() {
+                ctx.clearRect(0, 0, width, height);
+                snowflakes.forEach(flake => {
+                    flake.y += flake.speedY;
+                    flake.x += flake.speedX;
+
+                    if (flake.y > height) {
+                        flake.y = -5;
+                        flake.x = Math.random() * width;
+                    }
+                    if (flake.x > width) flake.x = 0;
+                    if (flake.x < 0) flake.x = width;
+
+                    ctx.fillStyle = `rgba(238, 246, 252, ${flake.opacity})`;
+                    ctx.fillRect(flake.x, flake.y, flake.size, flake.size);
+                });
+                requestAnimationFrame(animate);
+            }
+            animate();
+        }
+
+        /* ==========================================
+           ЗАПУСК ПРИЛОЖЕНИЯ
+           ========================================== */
+        (async function init() {
+            initSnow();
+            calendarData = await loadAllDaysFromDB();
+            updateAdminUI();
+        })();
+    </script>
+</body>
+</html>
