@@ -1,200 +1,1062 @@
+
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>ERROR 403 // RESTRICTED NODE</title>
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        body {
-            background-color: #020305;
-            color: #d0f0e0;
-            font-family: 'Courier New', Courier, monospace;
-            height: 100vh;
-            overflow: hidden;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            user-select: none;
-        }
-        canvas#bgCanvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; pointer-events: none; }
-        .crt-overlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: radial-gradient(circle, rgba(0,0,0,0) 55%, rgba(0,0,0,0.85) 100%),
-                        linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.4) 50%);
-            background-size: 100% 100%, 100% 3px;
-            z-index: 2; pointer-events: none;
-        }
-        .hud-corner { position: fixed; width: 25px; height: 25px; border-color: rgba(0, 255, 170, 0.4); border-style: solid; z-index: 3; pointer-events: none; }
-        .tl { top: 15px; left: 15px; border-width: 2px 0 0 2px; }
-        .tr { top: 15px; right: 15px; border-width: 2px 2px 0 0; }
-        .bl { bottom: 15px; left: 15px; border-width: 0 0 2px 2px; }
-        .br { bottom: 15px; right: 15px; border-width: 0 2px 2px 0; }
-        .rec-indicator { position: fixed; top: 20px; left: 50px; font-size: 12px; color: #ff2a55; letter-spacing: 2px; z-index: 3; display: flex; align-items: center; gap: 8px; }
-        .rec-dot { width: 8px; height: 8px; background: #ff2a55; border-radius: 50%; box-shadow: 0 0 10px #ff2a55; animation: pulse 1.2s infinite; }
-        .container {
-            position: relative; z-index: 10; width: 92%; max-width: 440px;
-            background: rgba(6, 12, 16, 0.8); backdrop-filter: blur(8px);
-            border: 1px solid rgba(0, 255, 170, 0.25);
-            box-shadow: 0 0 40px rgba(0, 0, 0, 0.9), inset 0 0 20px rgba(0, 255, 170, 0.05);
-            padding: 30px 20px; border-radius: 6px; text-align: center;
-            transition: all 0.7s cubic-bezier(0.22, 1, 0.36, 1);
-        }
-        .warning-tag { display: inline-block; font-size: 11px; color: #ff2a55; border: 1px solid rgba(255, 42, 85, 0.5); background: rgba(255, 42, 85, 0.1); padding: 4px 12px; letter-spacing: 3px; margin-bottom: 18px; text-transform: uppercase; }
-        .glitch { font-size: 24px; font-weight: bold; letter-spacing: 4px; color: #fff; position: relative; text-shadow: 0 0 10px rgba(0, 255, 170, 0.6); margin-bottom: 12px; }
-        .sub-info { font-size: 13px; color: #7da196; line-height: 1.5; min-height: 45px; margin-bottom: 25px; }
-        .scanner-wrapper { position: relative; width: 120px; height: 120px; margin: 0 auto 15px; border-radius: 50%; border: 1px dashed rgba(0, 255, 170, 0.4); display: flex; justify-content: center; align-items: center; cursor: pointer; touch-action: none; transition: 0.3s; background: radial-gradient(circle, rgba(0,255,170,0.08) 0%, transparent 70%); }
-        .scanner-wrapper.scanning { border-color: #00ffaa; box-shadow: 0 0 25px rgba(0, 255, 170, 0.4); transform: scale(1.05); }
-        .fingerprint-svg { width: 64px; height: 64px; fill: none; stroke: rgba(0, 255, 170, 0.6); stroke-width: 2; stroke-linecap: round; transition: stroke 0.3s; pointer-events: none; }
-        .scanner-wrapper.scanning .fingerprint-svg { stroke: #00ffaa; }
-        .laser { position: absolute; top: 10%; left: 10%; width: 80%; height: 2px; background: #00ffaa; box-shadow: 0 0 12px #00ffaa, 0 0 20px #00ffaa; opacity: 0; pointer-events: none; }
-        .scanner-wrapper.scanning .laser { opacity: 1; animation: scanMove 1.2s infinite alternate ease-in-out; }
-        .scan-hint { font-size: 12px; letter-spacing: 2px; color: #00ffaa; text-transform: uppercase; animation: pulse 2s infinite; }
-        .sys-logs { margin-top: 22px; padding-top: 12px; border-top: 1px solid rgba(255, 255, 255, 0.08); font-size: 10px; color: #4a665d; text-align: left; height: 42px; overflow: hidden; line-height: 1.4; }
-        .video-stage { display: none; flex-direction: column; align-items: center; animation: fadeIn 0.8s ease forwards; }
-        .feed-header { width: 100%; display: flex; justify-content: space-between; font-size: 11px; color: #00ffaa; margin-bottom: 10px; letter-spacing: 1px; }
-        video { width: 100%; max-height: 65vh; border: 1px solid rgba(0, 255, 170, 0.4); border-radius: 4px; background: #000; box-shadow: 0 0 25px rgba(0, 255, 170, 0.15); }
-        @keyframes scanMove { 0% { top: 15%; } 100% { top: 85%; } }
-        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.35; } }
-        @keyframes fadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#020305">
+<title>CLASSIFIED // ACCESS TERMINAL</title>
+
+<style>
+:root {
+    --bg: #020305;
+    --green: #00ffaa;
+    --cyan: #00d9ff;
+    --red: #ff304b;
+    --text: #c5ffe8;
+    --muted: #527d6c;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    min-height: 100vh;
+    min-height: 100svh;
+    background: var(--bg);
+    color: var(--text);
+    font-family: "Courier New", monospace;
+    overflow-x: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 25px 15px;
+}
+
+/* BACKGROUND */
+
+#matrix {
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 0;
+    opacity: .65;
+}
+
+body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 10;
+    background: repeating-linear-gradient(
+        0deg,
+        rgba(0,0,0,.18) 0px,
+        rgba(0,0,0,.18) 1px,
+        transparent 1px,
+        transparent 3px
+    );
+}
+
+body::after {
+    content: "";
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 11;
+    background: radial-gradient(
+        ellipse at center,
+        transparent 35%,
+        rgba(0,0,0,.8) 100%
+    );
+}
+
+/* CAMERA FRAME */
+
+.camera-frame {
+    position: fixed;
+    inset: 15px;
+    z-index: 12;
+    pointer-events: none;
+}
+
+.corner {
+    position: absolute;
+    width: 35px;
+    height: 35px;
+    border-color: var(--green);
+    border-style: solid;
+    opacity: .6;
+}
+
+.top-left {
+    top: 0;
+    left: 0;
+    border-width: 2px 0 0 2px;
+}
+
+.top-right {
+    top: 0;
+    right: 0;
+    border-width: 2px 2px 0 0;
+}
+
+.bottom-left {
+    bottom: 0;
+    left: 0;
+    border-width: 0 0 2px 2px;
+}
+
+.bottom-right {
+    bottom: 0;
+    right: 0;
+    border-width: 0 2px 2px 0;
+}
+
+/* STATUS */
+
+.status {
+    position: fixed;
+    top: 35px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 15;
+    color: var(--red);
+    font-size: 11px;
+    letter-spacing: 3px;
+    white-space: nowrap;
+    animation: blink 1s infinite;
+}
+
+.status::before {
+    content: "● ";
+}
+
+@keyframes blink {
+    50% { opacity: .25; }
+}
+
+/* MAIN CARD */
+
+.container {
+    position: relative;
+    z-index: 5;
+    width: 100%;
+    max-width: 510px;
+}
+
+.card {
+    position: relative;
+    width: 100%;
+    padding: 38px 35px;
+    background: rgba(3, 13, 12, .87);
+    border: 1px solid rgba(0,255,170,.28);
+    box-shadow:
+        0 0 40px rgba(0,255,170,.07),
+        inset 0 0 35px rgba(0,255,170,.025);
+    backdrop-filter: blur(15px);
+    -webkit-backdrop-filter: blur(15px);
+    overflow: hidden;
+}
+
+.card::before,
+.card::after {
+    content: "";
+    position: absolute;
+    width: 35px;
+    height: 2px;
+    background: var(--green);
+    box-shadow: 0 0 12px var(--green);
+}
+
+.card::before {
+    top: 0;
+    left: 0;
+}
+
+.card::after {
+    right: 0;
+    bottom: 0;
+}
+
+.header {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.classification {
+    color: var(--green);
+    font-size: 10px;
+    letter-spacing: 4px;
+    margin-bottom: 17px;
+}
+
+h1 {
+    font-size: clamp(26px, 7vw, 37px);
+    letter-spacing: 3px;
+    color: #e2fff3;
+    text-shadow: 0 0 15px rgba(0,255,170,.55);
+    position: relative;
+    animation: glitch 4s infinite;
+}
+
+@keyframes glitch {
+    0%, 94%, 100% { transform: translate(0); }
+    95% { transform: translate(-2px, 1px); }
+    96% { transform: translate(2px, -1px); }
+    97% { transform: translate(-1px, 0); }
+}
+
+.line {
+    width: 65px;
+    height: 1px;
+    margin: 18px auto;
+    background: var(--green);
+    box-shadow: 0 0 10px var(--green);
+}
+
+.description {
+    min-height: 75px;
+    color: #8eb6a5;
+    font-size: 13px;
+    line-height: 1.8;
+    text-align: center;
+}
+
+/* SCANNER */
+
+.scanner-area {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin: 20px 0 25px;
+}
+
+.scanner {
+    width: 155px;
+    height: 155px;
+    border: 1px solid rgba(0,255,170,.5);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    cursor: pointer;
+    background: radial-gradient(
+        circle,
+        rgba(0,255,170,.13),
+        rgba(0,255,170,.015) 70%
+    );
+    box-shadow:
+        0 0 25px rgba(0,255,170,.1),
+        inset 0 0 25px rgba(0,255,170,.08);
+    transition: .3s;
+    touch-action: none;
+    user-select: none;
+    -webkit-user-select: none;
+}
+
+.scanner:active {
+    transform: scale(.97);
+}
+
+.scanner::before,
+.scanner::after {
+    content: "";
+    position: absolute;
+    border-radius: 50%;
+    border: 1px dashed rgba(0,255,170,.3);
+}
+
+.scanner::before {
+    inset: 9px;
+}
+
+.scanner::after {
+    inset: -8px;
+    border-color: rgba(0,217,255,.2);
+    animation: rotate 12s linear infinite;
+}
+
+@keyframes rotate {
+    to { transform: rotate(360deg); }
+}
+
+.fingerprint {
+    width: 72px;
+    height: 72px;
+    fill: none;
+    stroke: var(--green);
+    stroke-width: 1.5;
+    stroke-linecap: round;
+    filter: drop-shadow(0 0 6px var(--green));
+    pointer-events: none;
+}
+
+.scanner.active .fingerprint {
+    animation: fingerPulse .4s infinite alternate;
+}
+
+@keyframes fingerPulse {
+    to {
+        opacity: .4;
+        filter: drop-shadow(0 0 15px var(--green));
+    }
+}
+
+.laser {
+    position: absolute;
+    left: 10%;
+    right: 10%;
+    top: 50%;
+    height: 2px;
+    background: var(--green);
+    box-shadow: 0 0 12px 3px var(--green);
+    opacity: 0;
+    pointer-events: none;
+}
+
+.scanner.active .laser {
+    opacity: 1;
+    animation: laserScan 1.6s linear infinite;
+}
+
+@keyframes laserScan {
+    0% { top: 15%; }
+    100% { top: 85%; }
+}
+
+.instruction {
+    margin-top: 23px;
+    font-size: 10px;
+    letter-spacing: 2px;
+    color: var(--green);
+    text-align: center;
+    animation: blink 2s infinite;
+}
+
+.progress-wrap {
+    width: 100%;
+    margin-top: 22px;
+}
+
+.progress-info {
+    display: flex;
+    justify-content: space-between;
+    font-size: 11px;
+    color: var(--muted);
+    margin-bottom: 9px;
+}
+
+.progress-info span:last-child {
+    color: var(--green);
+}
+
+.progress-track {
+    width: 100%;
+    height: 3px;
+    background: #10251e;
+    overflow: hidden;
+}
+
+.progress-bar {
+    width: 0%;
+    height: 100%;
+    background: var(--green);
+    box-shadow: 0 0 12px var(--green);
+    transition: width .04s linear;
+}
+
+/* LOGS */
+
+.logs {
+    border-top: 1px solid rgba(0,255,170,.16);
+    padding-top: 18px;
+    min-height: 100px;
+}
+
+.log-title {
+    font-size: 10px;
+    letter-spacing: 2px;
+    color: var(--green);
+    margin-bottom: 12px;
+}
+
+.log-list {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+    font-size: 10px;
+    color: #547b6b;
+    min-height: 45px;
+}
+
+.log-line {
+    animation: logAppear .25s ease;
+}
+
+.log-line::before {
+    content: "> ";
+    color: var(--green);
+}
+
+@keyframes logAppear {
+    from { opacity: 0; transform: translateX(-5px); }
+    to { opacity: 1; transform: translateX(0); }
+}
+
+.footer {
+    display: flex;
+    justify-content: space-between;
+    border-top: 1px solid rgba(0,255,170,.12);
+    padding-top: 15px;
+    margin-top: 18px;
+    font-size: 9px;
+    color: #426353;
+    letter-spacing: 1px;
+}
+
+/* VIDEO */
+
+.video-section {
+    display: none;
+    opacity: 0;
+    transform: translateY(15px);
+}
+
+.video-section.show {
+    display: block;
+    animation: reveal .8s forwards;
+}
+
+@keyframes reveal {
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.video-heading {
+    text-align: center;
+    font-size: 13px;
+    letter-spacing: 2px;
+    color: var(--green);
+    margin: 25px 0 20px;
+    text-shadow: 0 0 10px var(--green);
+}
+
+.decrypted {
+    color: var(--green);
+    animation: blink 1.5s infinite;
+}
+
+video {
+    width: 100%;
+    display: block;
+    background: #000;
+    border: 1px solid rgba(0,255,170,.35);
+    box-shadow: 0 0 20px rgba(0,255,170,.1);
+    max-height: 60vh;
+}
+
+.video-message {
+    text-align: center;
+    font-size: 10px;
+    color: var(--muted);
+    margin-top: 17px;
+    line-height: 1.8;
+}
+
+.hidden {
+    display: none !important;
+}
+
+/* MOBILE */
+
+@media(max-width: 480px) {
+    body {
+        padding: 65px 15px 25px;
+    }
+
+    .card {
+        padding: 30px 20px;
+    }
+
+    .scanner {
+        width: 140px;
+        height: 140px;
+    }
+
+    .status {
+        top: 27px;
+        font-size: 9px;
+        letter-spacing: 2px;
+    }
+
+    .camera-frame {
+        inset: 8px;
+    }
+
+    .footer {
+        font-size: 8px;
+    }
+}
+
+@media(prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+        animation-duration: .01ms !important;
+        animation-iteration-count: 1 !important;
+    }
+}
+</style>
 </head>
+
 <body>
-    <canvas id="bgCanvas"></canvas>
-    <div class="crt-overlay"></div>
-    <div class="hud-corner tl"></div><div class="hud-corner tr"></div>
-    <div class="hud-corner bl"></div><div class="hud-corner br"></div>
-    <div class="rec-indicator"><div class="rec-dot"></div><span id="recText">SIGNAL INTERCEPTED</span></div>
 
-    <div class="container" id="mainBox">
+<canvas id="matrix"></canvas>
+
+<div class="camera-frame">
+    <div class="corner top-left"></div>
+    <div class="corner top-right"></div>
+    <div class="corner bottom-left"></div>
+    <div class="corner bottom-right"></div>
+</div>
+
+<div class="status" id="status">
+    SIGNAL INTERCEPTED
+</div>
+
+<main class="container">
+    <section class="card">
+
+        <!-- LOCK SCREEN -->
+
         <div id="lockScreen">
-            <div class="warning-tag">UNKNOWN SOURCE // NODE 09</div>
-            <div class="glitch" id="glitchTitle">ДОСТУП ЗАКРЫТ</div>
-            <div class="sub-info" id="typewriter"></div>
-            <div class="scanner-wrapper" id="scanner">
-                <div class="laser"></div>
-                <svg class="fingerprint-svg" viewBox="0 0 24 24">
-                    <path d="M12 11c0 3.517-1.009 6.799-2.753 9.571m-3.44-2.04l.054-.09A13.916 13.916 0 008 11a4 4 0 118 0c0 1.017-.07 2.019-.203 3m-2.118 6.844A21.88 21.88 0 0015.171 17m3.839 1.132c.645-2.266.99-4.659.99-7.132A8 8 0 008 4.07M3 15.364c.64-1.319 1-2.8 1-4.364 0-1.457.39-2.823 1.07-4"/>
-                </svg>
+
+            <header class="header">
+                <div class="classification">
+                    // TOP SECRET // LEVEL 07
+                </div>
+
+                <h1>ДОСТУП ЗАКРЫТ</h1>
+
+                <div class="line"></div>
+
+                <p class="description" id="typingText"></p>
+            </header>
+
+            <div class="scanner-area">
+
+                <div class="scanner" id="scanner">
+
+                    <svg class="fingerprint"
+                         viewBox="0 0 100 100"
+                         aria-label="Fingerprint">
+
+                        <path d="M50 12 C29 12 16 28 16 48"/>
+                        <path d="M50 20 C34 20 24 32 24 48"/>
+                        <path d="M50 28 C39 28 32 37 32 49"/>
+                        <path d="M50 12 C71 12 84 28 84 48"/>
+                        <path d="M50 20 C66 20 76 32 76 48"/>
+                        <path d="M50 28 C61 28 68 37 68 49"/>
+                        <path d="M16 53 C16 77 30 91 40 95"/>
+                        <path d="M24 53 C24 73 35 86 43 90"/>
+                        <path d="M32 54 C32 68 39 80 46 84"/>
+                        <path d="M84 53 C84 77 70 91 60 95"/>
+                        <path d="M76 53 C76 73 65 86 57 90"/>
+                        <path d="M68 54 C68 68 61 80 54 84"/>
+                        <path d="M50 38 C44 38 40 43 40 50"/>
+                        <path d="M50 38 C56 38 60 43 60 50"/>
+                        <path d="M40 53 C40 68 44 77 50 80"/>
+                        <path d="M60 53 C60 68 56 77 50 80"/>
+                        <path d="M50 48 L50 70"/>
+
+                    </svg>
+
+                    <div class="laser"></div>
+
+                </div>
+
+                <div class="instruction" id="instruction">
+                    [ HOLD TO AUTHENTICATE ]
+                </div>
+
             </div>
-            <div class="scan-hint" id="scanHint">УДЕРЖИВАЙТЕ ПАЛЕЦ ДЛЯ СКАНИРОВАНИЯ</div>
-            <div class="sys-logs" id="sysLogs">&gt; Ожидание биометрического ключа...<br>&gt; Шифрование: AES-256-GCM [АКТИВНО]</div>
+
+            <div class="progress-wrap">
+
+                <div class="progress-info">
+                    <span>BIOMETRIC SCAN</span>
+                    <span id="percent">0%</span>
+                </div>
+
+                <div class="progress-track">
+                    <div class="progress-bar" id="progressBar"></div>
+                </div>
+
+            </div>
+
+            <div class="logs">
+
+                <div class="log-title">
+                    SYSTEM LOG // LIVE
+                </div>
+
+                <div class="log-list" id="logs">
+                    <div class="log-line">Secure connection established</div>
+                    <div class="log-line">Unknown package detected</div>
+                    <div class="log-line">Awaiting biometric verification...</div>
+                </div>
+
+            </div>
+
         </div>
 
-        <div class="video-stage" id="videoStage">
-            <div class="feed-header"><span>ARCHIVE_FILE_01.MP4</span><span style="color:#ff2a55;">● DECRYPTED</span></div>
-            <video id="secretVideo" controls playsinline preload="metadata"></video>
+        <!-- DECRYPTED VIDEO -->
+
+        <div class="video-section" id="videoSection">
+
+            <div class="classification">
+                // ENCRYPTION REMOVED // LEVEL 07
+            </div>
+
+            <h2 class="video-heading">
+                ARCHIVE_FILE_01.MP4
+                <span class="decrypted">● DECRYPTED</span>
+            </h2>
+
+            <video
+                id="archiveVideo"
+                controls
+                playsinline
+                preload="metadata">
+                Ваш браузер не поддерживает HTML5 Video.
+            </video>
+
+            <p class="video-message">
+                ENCRYPTION: DISABLED<br>
+                ARCHIVE STATUS: DECLASSIFIED<br>
+                CONNECTION: SECURE
+            </p>
+
         </div>
-    </div>
 
-    <script>
-        const VIDEO_URL = "";
+        <footer class="footer">
+            <span>SYS://ARCHIVE_07</span>
+            <span id="clock">00:00:00</span>
+            <span>ENCRYPTED</span>
+        </footer>
 
-        if (VIDEO_URL) {
-            document.getElementById('secretVideo').src = VIDEO_URL;
-        }
+    </section>
+</main>
 
-        const introText = "Обнаружен скрытый пакет данных. Личность отправителя не установлена. Подтвердите присутствие...";
-        let charIndex = 0;
-        const typeEl = document.getElementById('typewriter');
-        function typeEffect() {
-            if (charIndex < introText.length) {
-                typeEl.innerHTML += introText.charAt(charIndex);
-                charIndex++;
-                setTimeout(typeEffect, 35);
+<script>
+
+// ==========================================
+// VIDEO CONFIGURATION
+// ВСТАВЬ СЮДА ПРЯМУЮ ССЫЛКУ НА MP4 ИЗ SUPABASE
+// ==========================================
+
+const VIDEO_URL = "https://pilfsbqdoxngiwvmniaz.supabase.co/storage/v1/object/public/secret/archive_01.mp4";
+
+// ==========================================
+// CANVAS PARTICLES + RADAR
+// ==========================================
+
+const canvas = document.getElementById("matrix");
+const ctx = canvas.getContext("2d");
+
+let particles = [];
+let animationFrame;
+
+function resizeCanvas() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+
+    particles = [];
+
+    const count = Math.min(
+        100,
+        Math.floor(canvas.width * canvas.height / 12000)
+    );
+
+    for (let i = 0; i < count; i++) {
+        particles.push({
+            x: Math.random() * canvas.width,
+            y: Math.random() * canvas.height,
+            vx: (Math.random() - .5) * .35,
+            vy: (Math.random() - .5) * .35,
+            size: Math.random() * 2 + .5,
+            alpha: Math.random() * .6 + .1
+        });
+    }
+}
+
+window.addEventListener("resize", resizeCanvas);
+resizeCanvas();
+
+let radarAngle = 0;
+
+function drawBackground() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    // Particles
+
+    particles.forEach(p => {
+        p.x += p.vx;
+        p.y += p.vy;
+
+        if (p.x < 0 || p.x > canvas.width) p.vx *= -1;
+        if (p.y < 0 || p.y > canvas.height) p.vy *= -1;
+
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+
+        ctx.fillStyle = `rgba(0,255,170,${p.alpha})`;
+        ctx.fill();
+    });
+
+    // Connecting lines
+
+    for (let i = 0; i < particles.length; i++) {
+        for (let j = i + 1; j < particles.length; j++) {
+
+            const dx = particles[i].x - particles[j].x;
+            const dy = particles[i].y - particles[j].y;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+
+            if (distance < 110) {
+                ctx.beginPath();
+                ctx.moveTo(particles[i].x, particles[i].y);
+                ctx.lineTo(particles[j].x, particles[j].y);
+
+                ctx.strokeStyle =
+                    `rgba(0,255,170,${.12 * (1 - distance / 110)})`;
+
+                ctx.stroke();
             }
         }
-        setTimeout(typeEffect, 400);
+    }
 
-        const titleEl = document.getElementById('glitchTitle');
-        const origTitle = "ДОСТУП ЗАКРЫТ";
-        const glitchChars = "!<>-_\\/[]{}—=+*^?#________";
-        setInterval(() => {
-            if (Math.random() > 0.82) {
-                titleEl.innerText = origTitle.split('').map(c => Math.random() > 0.7 ? glitchChars[Math.floor(Math.random() * glitchChars.length)] : c).join('');
-                setTimeout(() => { titleEl.innerText = origTitle; }, 120);
-            }
-        }, 1500);
+    // Radar
 
-        const scanner = document.getElementById('scanner');
-        const scanHint = document.getElementById('scanHint');
-        const sysLogs = document.getElementById('sysLogs');
-        let holdTimer = null, progress = 0, unlocked = false;
+    const radarX = canvas.width - 85;
+    const radarY = canvas.height - 85;
+    const radius = 65;
 
-        function startScan(e) {
-            if (unlocked) return;
-            if (e.cancelable) e.preventDefault();
-            clearInterval(holdTimer);
-            scanner.classList.add('scanning');
-            scanHint.style.color = "#fff";
-            holdTimer = setInterval(() => {
-                progress += 5;
-                scanHint.innerText = `ИДЕНТИФИКАЦИЯ... ${progress}%`;
-                if (progress === 30) sysLogs.innerHTML = "&gt; Анализ отпечатка...<br>&gt; Обход защиты узла #09...";
-                if (progress === 70) sysLogs.innerHTML = "&gt; Ключ принят!<br>&gt; Дешифровка видеопотока...";
-                if (progress >= 100) {
-                    clearInterval(holdTimer);
-                    unlocked = true;
-                    scanHint.innerText = "ДОСТУП РАЗРЕШЕН";
-                    document.getElementById('recText').innerText = "CONNECTION ESTABLISHED";
-                    document.getElementById('recText').style.color = "#00ffaa";
-                    setTimeout(() => {
-                        document.getElementById('lockScreen').style.display = 'none';
-                        document.getElementById('mainBox').style.maxWidth = '650px';
-                        document.getElementById('videoStage').style.display = 'flex';
-                        const vid = document.getElementById('secretVideo');
-                        if (VIDEO_URL) vid.play().catch(() => {});
-                    }, 500);
-                }
-            }, 80);
+    ctx.strokeStyle = "rgba(0,255,170,.15)";
+    ctx.lineWidth = 1;
+
+    [25, 45, 65].forEach(r => {
+        ctx.beginPath();
+        ctx.arc(radarX, radarY, r, 0, Math.PI * 2);
+        ctx.stroke();
+    });
+
+    ctx.beginPath();
+    ctx.moveTo(radarX - radius, radarY);
+    ctx.lineTo(radarX + radius, radarY);
+    ctx.moveTo(radarX, radarY - radius);
+    ctx.lineTo(radarX, radarY + radius);
+    ctx.stroke();
+
+    const gradient = ctx.createConicalGradient
+        ? null
+        : null;
+
+    const sweep = ctx.createLinearGradient(
+        radarX,
+        radarY,
+        radarX + Math.cos(radarAngle) * radius,
+        radarY + Math.sin(radarAngle) * radius
+    );
+
+    sweep.addColorStop(0, "rgba(0,255,170,0)");
+    sweep.addColorStop(1, "rgba(0,255,170,.9)");
+
+    ctx.beginPath();
+    ctx.moveTo(radarX, radarY);
+    ctx.lineTo(
+        radarX + Math.cos(radarAngle) * radius,
+        radarY + Math.sin(radarAngle) * radius
+    );
+
+    ctx.strokeStyle = sweep;
+    ctx.lineWidth = 2;
+    ctx.stroke();
+
+    radarAngle += .018;
+
+    animationFrame = requestAnimationFrame(drawBackground);
+}
+
+drawBackground();
+
+// ==========================================
+// TYPING EFFECT
+// ==========================================
+
+const typingText = document.getElementById("typingText");
+
+const message =
+    "Обнаружен скрытый пакет данных. Личность отправителя не установлена. Подтвердите присутствие...";
+
+let typingIndex = 0;
+
+function typeText() {
+    if (typingIndex < message.length) {
+        typingText.textContent += message.charAt(typingIndex);
+        typingIndex++;
+
+        setTimeout(typeText, 35);
+    }
+}
+
+typeText();
+
+// ==========================================
+// CLOCK
+// ==========================================
+
+const clock = document.getElementById("clock");
+
+function updateClock() {
+    clock.textContent = new Date().toLocaleTimeString("ru-RU", {
+        hour12: false
+    });
+}
+
+updateClock();
+setInterval(updateClock, 1000);
+
+// ==========================================
+// BIOMETRIC SCANNER
+// ==========================================
+
+const scanner = document.getElementById("scanner");
+const progressBar = document.getElementById("progressBar");
+const percent = document.getElementById("percent");
+const instruction = document.getElementById("instruction");
+const logs = document.getElementById("logs");
+
+const lockScreen = document.getElementById("lockScreen");
+const videoSection = document.getElementById("videoSection");
+const archiveVideo = document.getElementById("archiveVideo");
+const status = document.getElementById("status");
+
+const SCAN_DURATION = 1600;
+
+let scanStart = 0;
+let scanProgress = 0;
+let scanning = false;
+let scanFrame = null;
+let unlocked = false;
+
+let logInterval = null;
+let logIndex = 0;
+
+const scanLogs = [
+    "Reading biometric signature...",
+    "Analyzing fingerprint pattern...",
+    "Cross-checking encrypted database...",
+    "Identity pattern detected...",
+    "Bypassing security protocol...",
+    "Decrypting archive container...",
+    "Generating access token...",
+    "Finalizing authorization..."
+];
+
+function addLog(text) {
+    const line = document.createElement("div");
+
+    line.className = "log-line";
+    line.textContent = text;
+
+    logs.appendChild(line);
+
+    while (logs.children.length > 4) {
+        logs.removeChild(logs.firstElementChild);
+    }
+}
+
+function startLogs() {
+    stopLogs();
+
+    logIndex = 0;
+
+    addLog("Biometric scan initiated");
+
+    logInterval = setInterval(() => {
+        addLog(scanLogs[logIndex % scanLogs.length]);
+        logIndex++;
+    }, 350);
+}
+
+function stopLogs() {
+    if (logInterval !== null) {
+        clearInterval(logInterval);
+        logInterval = null;
+    }
+}
+
+function startScan(event) {
+    if (unlocked || scanning) return;
+
+    if (event && event.button !== undefined && event.button !== 0) {
+        return;
+    }
+
+    scanning = true;
+    scanStart = performance.now();
+
+    scanner.classList.add("active");
+
+    instruction.textContent = "[ SCANNING... KEEP HOLDING ]";
+
+    startLogs();
+
+    scanFrame = requestAnimationFrame(updateScan);
+}
+
+function updateScan(timestamp) {
+    if (!scanning || unlocked) return;
+
+    const elapsed = timestamp - scanStart;
+
+    scanProgress = Math.min(
+        100,
+        (elapsed / SCAN_DURATION) * 100
+    );
+
+    progressBar.style.width = scanProgress + "%";
+    percent.textContent = Math.floor(scanProgress) + "%";
+
+    if (scanProgress >= 100) {
+        completeScan();
+        return;
+    }
+
+    scanFrame = requestAnimationFrame(updateScan);
+}
+
+function stopScan() {
+    if (!scanning || unlocked) return;
+
+    scanning = false;
+
+    if (scanFrame !== null) {
+        cancelAnimationFrame(scanFrame);
+        scanFrame = null;
+    }
+
+    scanner.classList.remove("active");
+
+    scanProgress = 0;
+
+    progressBar.style.width = "0%";
+    percent.textContent = "0%";
+
+    instruction.textContent = "[ AUTHENTICATION INTERRUPTED ]";
+
+    stopLogs();
+
+    addLog("ERROR: Biometric scan interrupted");
+
+    setTimeout(() => {
+        if (!unlocked && !scanning) {
+            instruction.textContent = "[ HOLD TO AUTHENTICATE ]";
+            addLog("System reset. Awaiting new attempt...");
+        }
+    }, 1200);
+}
+
+function completeScan() {
+    if (unlocked) return;
+
+    unlocked = true;
+    scanning = false;
+
+    if (scanFrame !== null) {
+        cancelAnimationFrame(scanFrame);
+        scanFrame = null;
+    }
+
+    stopLogs();
+
+    scanner.classList.remove("active");
+
+    progressBar.style.width = "100%";
+    percent.textContent = "100%";
+
+    instruction.textContent = "[ ACCESS GRANTED ]";
+
+    addLog("BIOMETRIC MATCH: CONFIRMED");
+    addLog("ACCESS GRANTED");
+    addLog("DECRYPTION COMPLETE");
+
+    status.textContent = "SIGNAL DECRYPTED";
+    status.style.color = "#00ffaa";
+
+    setTimeout(openArchive, 900);
+}
+
+function openArchive() {
+    lockScreen.style.transition = "opacity .7s ease, transform .7s ease";
+    lockScreen.style.opacity = "0";
+    lockScreen.style.transform = "translateY(-15px)";
+
+    setTimeout(() => {
+        lockScreen.classList.add("hidden");
+
+        videoSection.classList.add("show");
+
+        // Assign the Supabase MP4 URL.
+        if (VIDEO_URL.trim()) {
+            archiveVideo.src = VIDEO_URL.trim();
+            archiveVideo.load();
+        } else {
+            const message = document.createElement("p");
+
+            message.className = "video-message";
+            message.style.color = "#ff5268";
+            message.textContent =
+                "ARCHIVE SOURCE NOT CONFIGURED // INSERT VIDEO_URL IN SCRIPT";
+
+            archiveVideo.insertAdjacentElement("afterend", message);
         }
 
-        function stopScan() {
-            if (unlocked) return;
-            clearInterval(holdTimer);
-            scanner.classList.remove('scanning');
-            progress = 0;
-            scanHint.innerText = "УДЕРЖИВАЙТЕ ПАЛЕЦ ДЛЯ СКАНИРОВАНИЯ";
-            scanHint.style.color = "#00ffaa";
-        }
+        addLog("Archive successfully decrypted");
 
-        scanner.addEventListener('pointerdown', startScan);
-window.addEventListener('pointerup', stopScan);
-window.addEventListener('pointercancel', stopScan);
-const canvas = document.getElementById('bgCanvas');
-const ctx = canvas.getContext('2d');
-let w = canvas.width = window.innerWidth, h = canvas.height = window.innerHeight;
-const particles = Array.from({ length: 45 }, () => ({
-x: Math.random() * w, y: Math.random() * h,
-r: Math.random() * 1.8 + 0.5,
-vx: (Math.random() - 0.5) * 0.4, vy: (Math.random() - 0.5) * 0.4
-}));
-function animateBg() {
-ctx.clearRect(0, 0, w, h);
-const radius = 120 + Math.sin(Date.now() * 0.001) * 15;
-ctx.beginPath();
-ctx.arc(w / 2, h / 2, radius, 0, Math.PI * 2);
-ctx.strokeStyle = 'rgba(0, 255, 170, 0.06)';
-ctx.stroke();
-ctx.fillStyle = 'rgba(0, 255, 170, 0.45)';
-particles.forEach((p, i) => {
-p.x += p.vx; p.y += p.vy;
-if (p.x < 0 || p.x > w) p.vx *= -1;
-if (p.y < 0 || p.y > h) p.vy *= -1;
-ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2); ctx.fill();
-for (let j = i + 1; j < particles.length; j++) {
-const dist = Math.hypot(p.x - particles[j].x, p.y - particles[j].y);
-if (dist < 100) {
-ctx.beginPath(); ctx.moveTo(p.x, p.y); ctx.lineTo(particles[j].x, particles[j].y);
-ctx.strokeStyle = rgba(0, 255, 170, ${0.12 * (1 - dist / 100)});
-ctx.stroke();
+    }, 700);
 }
-}
+
+// Pointer events: mouse, touch and stylus.
+
+scanner.addEventListener("pointerdown", event => {
+    event.preventDefault();
+
+    try {
+        scanner.setPointerCapture(event.pointerId);
+    } catch (error) {
+        // Pointer capture may not be available in every environment.
+    }
+
+    startScan(event);
 });
-requestAnimationFrame(animateBg);
-}
-animateBg();
-window.addEventListener('resize', () => { w = canvas.width = window.innerWidth; h = canvas.height = window.innerHeight; });
-            </script>
+
+scanner.addEventListener("pointerup", stopScan);
+scanner.addEventListener("pointercancel", stopScan);
+scanner.addEventListener("lostpointercapture", stopScan);
+
+scanner.addEventListener("contextmenu", event => {
+    event.preventDefault();
+});
+
+</script>
+
 </body>
 </html>
