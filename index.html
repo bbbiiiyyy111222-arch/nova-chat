@@ -1,87 +1,247 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Новогодняя площадь: Календарь призов</title>
-<style>
-@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Nunito:wght@400;600;700;800;900&display=swap');
-:root{--ink:#e8f3f4;--gold:#ffdc91;--blue:#9ed4e8;--pine:#172f2a;--pine2:#234b3d;--night:#081625;--night2:#132a40}
-*{box-sizing:border-box}body{margin:0;min-height:100vh;color:var(--ink);font-family:Nunito,system-ui,sans-serif;background:linear-gradient(180deg,#081625 0%,#10273b 44%,#132f3a 100%);overflow-x:hidden}
-body:before,body:after{content:"";position:fixed;inset:0;pointer-events:none;z-index:0}
-body:before{opacity:.25;background-image:radial-gradient(circle,#dff7ff 1px,transparent 1.5px),radial-gradient(circle,#fff 1px,transparent 1.5px);background-size:47px 57px,83px 92px;background-position:0 0,22px 14px;animation:flakes 20s linear infinite}
-body:after{opacity:.28;background:linear-gradient(180deg,transparent 68%,#06111c 100%)}
-@keyframes flakes{to{background-position:0 450px,22px 620px}}
-.wrap{position:relative;z-index:1;max-width:1160px;margin:auto;padding:26px 22px 70px}
-header{display:flex;justify-content:space-between;align-items:center;gap:20px;flex-wrap:wrap;padding:20px 25px;background:linear-gradient(135deg,#183b35ee,#10253bee);border:2px solid #5c827d;border-radius:6px;box-shadow:0 8px 0 #07131e,0 0 40px #3b94b544;position:relative}
-header:before{content:"";position:absolute;inset:5px;border:1px solid #c5b47855;pointer-events:none}
-h1{font-family:'Press Start 2P',monospace;font-size:clamp(15px,2.4vw,24px);line-height:1.7;color:var(--gold);text-shadow:3px 4px 0 #122a34;margin:0}
-header p{color:#b7d9df;margin:9px 0 0;font-size:14px;letter-spacing:2px;text-transform:uppercase}
-button{font:800 14px Nunito,sans-serif;cursor:pointer;color:#10252d;background:linear-gradient(#e4d19b,#b79a59);border:2px solid #f3e5b9;border-radius:3px;padding:12px 18px;box-shadow:0 4px 0 #75613b;transition:transform .14s,filter .14s}
-button:hover{transform:translateY(-2px);filter:brightness(1.1)}button:active{transform:translateY(2px);box-shadow:0 1px 0 #75613b}
-main{margin-top:32px}.intro{text-align:center;margin:0 0 26px;color:#c8e1e7;font-size:16px}.intro span{color:var(--gold)}
-.grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:19px}
-.day{position:relative;min-height:226px;display:flex;flex-direction:column;align-items:center;text-align:center;padding:15px 14px 16px;background:linear-gradient(145deg,#254e42,#172e40 90%);border:2px solid #527c78;border-radius:5px;box-shadow:0 6px 0 #09151e,0 0 0 4px #102536,0 10px 28px #0004;overflow:hidden;transition:transform .2s,box-shadow .2s}
-.day:hover{transform:translateY(-4px);box-shadow:0 10px 0 #09151e,0 0 0 4px #102536,0 0 22px #82c9d755}
-.day:before{content:"";position:absolute;top:0;left:0;right:0;height:5px;background:linear-gradient(90deg,#a5d8e4,#e5cf8e,#a5d8e4);opacity:.75}
-.daynum{font-family:'Press Start 2P',monospace;font-size:14px;color:#f3d88e;text-shadow:2px 2px #172b34;margin:12px 0 14px}
-.chest{height:75px;width:94px;position:relative;margin:0 auto 8px;filter:drop-shadow(0 8px 5px #08121b66);cursor:pointer}
-.chest .lid{height:26px;background:linear-gradient(#b88b51,#835b35);border:4px solid #563e2a;border-bottom:3px solid #4e3827;position:absolute;top:0;left:0;right:0;border-radius:3px 3px 0 0}
-.chest .base{position:absolute;top:25px;left:0;right:0;height:49px;background:linear-gradient(90deg,#815b39,#b58a55,#815b39);border:4px solid #523b27;border-radius:0 0 3px 3px}
-.chest .band{position:absolute;left:39px;top:-1px;bottom:-1px;width:16px;background:#d4b96e;border-left:3px solid #927744;border-right:3px solid #927744;z-index:2}
-.chest .lock{position:absolute;left:37px;top:29px;width:20px;height:19px;background:#e2c780;border:3px solid #957744;z-index:3;border-radius:2px}
-.chest.open .lid{transform:translateY(-12px) rotate(-8deg);transform-origin:left bottom}
-.chest.open .lock{box-shadow:0 0 18px #ffdd85}
-.add{width:46px;height:46px;border-radius:3px;font-family:'Press Start 2P',monospace;font-size:20px;padding:0;color:#152b31;background:linear-gradient(#e4d19b,#b79a59);border:3px solid #f5e3ad;box-shadow:0 4px 0 #75613b}
-.saved{font-size:13px;line-height:1.5;color:#edf3e9;white-space:pre-wrap;overflow-wrap:anywhere;background:#0b1c2a88;border:1px solid #547c79;padding:10px;width:100%;border-radius:3px}
-.saved strong{color:var(--gold)}.saved .nick{color:#c2e9f2;font-weight:900}
-.thumb{width:100%;max-height:125px;object-fit:cover;border:2px solid #9bbdbd;margin-top:10px;cursor:zoom-in;border-radius:3px}
-.card-actions{display:flex;gap:8px;margin-top:auto;padding-top:12px}.card-actions button{font-size:12px;padding:8px 11px}
-.empty{color:#a9c5cf;font-size:12px;letter-spacing:.5px}.footer{margin-top:35px;text-align:center;color:#a9c6d0;font-size:13px;letter-spacing:2px}
-.bottom-controls{display:flex;justify-content:center;gap:10px;flex-wrap:wrap;margin-top:22px}
-.modal{position:fixed;inset:0;background:#030c16dd;z-index:5;display:none;align-items:center;justify-content:center;padding:16px;backdrop-filter:blur(5px)}.modal.show{display:flex}
-.panel{width:min(560px,100%);max-height:90vh;overflow:auto;background:linear-gradient(145deg,#1e4539,#10243a);border:3px solid #8bafad;border-radius:4px;padding:24px;box-shadow:0 0 0 5px #0a1826,0 24px 65px #000b;position:relative}.panel:before{content:"";position:absolute;inset:6px;border:1px solid #d6bf7b55;pointer-events:none}
-.panel h2{font-family:'Press Start 2P',monospace;font-size:13px;line-height:1.8;color:var(--gold);margin:0 0 18px}
-label{display:block;font-weight:900;color:#d7ebed;margin:12px 0 6px;font-size:14px}input,textarea{width:100%;font:inherit;color:#f4f0df;background:#0c1d2d;border:2px solid #5d8185;border-radius:3px;padding:11px}textarea{min-height:105px;resize:vertical}
-input[type=file]{padding:7px}input[type=file]::file-selector-button{background:#d8bd78;border:0;border-radius:2px;padding:8px;margin-right:10px;cursor:pointer}
-.modal-buttons{display:flex;flex-wrap:wrap;gap:10px;justify-content:flex-end;margin-top:18px}
-.image-modal img{max-width:min(90vw,900px);max-height:85vh;border:3px solid #dfc47d;border-radius:3px}.image-modal{background:#020811e8}
-@media(max-width:800px){.grid{grid-template-columns:repeat(3,minmax(0,1fr))}}@media(max-width:520px){.grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.wrap{padding:15px 12px 40px}.day{min-height:185px}h1{font-size:13px}}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CLASSIFIED // LEVEL 5 ACCESS</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background-color: #030806;
+            color: #00ff66;
+            font-family: 'Courier New', Courier, monospace;
+            overflow: hidden;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            user-select: none;
+        }
+
+        /* Фон с падающим кодом */
+        canvas {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            z-index: 1;
+            opacity: 0.25;
+        }
+
+        /* Эффект полос старого монитора */
+        .scanlines {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.35) 50%);
+            background-size: 100% 4px;
+            z-index: 2;
+            pointer-events: none;
+        }
+
+        /* Главный контейнер терминала */
+        .terminal {
+            position: relative;
+            z-index: 3;
+            width: 90%;
+            max-width: 500px;
+            padding: 30px 25px;
+            border: 1px solid #00ff66;
+            background: rgba(2, 15, 8, 0.85);
+            box-shadow: 0 0 25px rgba(0, 255, 102, 0.2), inset 0 0 15px rgba(0, 255, 102, 0.1);
+            text-align: center;
+            border-radius: 4px;
+            transition: all 0.6s ease;
+        }
+
+        .badge {
+            display: inline-block;
+            border: 1px solid #ff3333;
+            color: #ff3333;
+            padding: 4px 10px;
+            font-size: 12px;
+            letter-spacing: 2px;
+            margin-bottom: 20px;
+            animation: blink 1.5s infinite;
+        }
+
+        h1 {
+            font-size: 20px;
+            letter-spacing: 3px;
+            margin-bottom: 15px;
+            text-shadow: 0 0 8px rgba(0, 255, 102, 0.7);
+        }
+
+        .typing-text {
+            font-size: 14px;
+            line-height: 1.6;
+            color: #a8ffcb;
+            min-height: 65px;
+            margin-bottom: 25px;
+        }
+
+        /* Анимированная кнопка */
+        .btn-access {
+            background: transparent;
+            color: #00ff66;
+            border: 2px solid #00ff66;
+            padding: 15px 30px;
+            font-family: inherit;
+            font-size: 15px;
+            font-weight: bold;
+            letter-spacing: 2px;
+            cursor: pointer;
+            text-transform: uppercase;
+            position: relative;
+            overflow: hidden;
+            transition: 0.3s;
+            box-shadow: 0 0 15px rgba(0, 255, 102, 0.3);
+        }
+
+        .btn-access:hover, .btn-access:active {
+            background: #00ff66;
+            color: #030806;
+            box-shadow: 0 0 30px #00ff66;
+        }
+
+        /* Полоса загрузки при нажатии */
+        .loader-box {
+            display: none;
+            margin-top: 20px;
+        }
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            border: 1px solid #00ff66;
+            padding: 1px;
+            margin-top: 8px;
+        }
+        .progress-fill {
+            height: 100%;
+            width: 0%;
+            background: #00ff66;
+            transition: width 0.1s linear;
+        }
+
+        /* Контейнер для видео */
+        .video-container {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: #000;
+            z-index: 10;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+        }
+
+        video {
+            width: 100%;
+            max-width: 800px;
+            max-height: 85vh;
+            outline: none;
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+    </style>
 </head>
 <body>
-<div class="wrap">
-<header><div><h1>❄ Новогодняя площадь:<br>Календарь призов</h1><p>10 дней зимних подарков и чудес ✦</p></div><button id="rulesBtn">Правила</button></header>
-<main><p class="intro">Открывай календарь, чтобы узнать, какие сокровища ждут игроков! <span>☃</span></p><div class="grid" id="calendar"></div></main>
-<div class="footer">✦ ЗИМНЯЯ МАГИЯ · ПОДАРКИ · ПРИКЛЮЧЕНИЯ ✦</div>
-<div style="display:flex;justify-content:center;gap:10px;flex-wrap:wrap;margin-top:18px"><button id="loginBtn">Войти в режим администратора</button><button id="logoutBtn" style="display:none">Выйти из режима администратора</button><button id="exportBtn" style="display:none">Сохранить базу в файл</button><button id="importBtn" style="display:none">Загрузить из файла</button><input id="importFile" type="file" accept=".json,application/json" hidden></div>
-</div>
-<div class="modal" id="modal"><div class="panel"><h2 id="modalTitle">Запись календаря</h2><form id="entryForm"><label for="nick">Никнейм игрока (или список ников)</label><input id="nick" required placeholder="Например, SnowFox, WinterWolf"><label for="prize">Название приза и дополнительная информация</label><textarea id="prize" required placeholder="Описание приза, заметки или условия…"></textarea><label for="slot">Номер приза / ячейки (необязательно)</label><input id="slot" placeholder="Например, 7"><label for="photo">Фото или скриншот (необязательно)</label><input id="photo" type="file" accept="image/*"><div id="fileHint" class="empty"></div><div class="modal-buttons"><button type="button" id="cancelBtn">Отмена</button><button class="gold" type="submit">Сохранить</button></div></form></div></div>
-<div class="modal" id="rulesModal"><div class="panel"><h2>Правила календаря</h2><div style="min-height:120px"></div><div class="modal-buttons"><button id="closeRules">Закрыть</button></div></div></div>
-<div class="modal" id="loginModal"><div class="panel"><h2>Вход администратора</h2><label for="password">Пароль</label><input id="password" type="password" placeholder="Введите пароль"><div class="modal-buttons"><button id="cancelLogin">Отмена</button><button class="gold" id="confirmLogin">Войти</button></div><p class="empty">Пароль по умолчанию: winter2026 (можно изменить в коде сайта).</p></div></div>
-<div class="modal image-modal" id="imageModal"><img id="largeImage" alt="Фото приза"><button id="closeImage" style="position:absolute;top:20px;right:20px">Закрыть</button></div>
-<script>
-const ADMIN_PASSWORD = "winter2026"; // Измените пароль здесь.
-const KEY="winterCalendarPrizeData_v1";
-let data=JSON.parse(localStorage.getItem(KEY)||"{}"),admin=false,editingDay=null,existingImage=null;
-const calendar=document.getElementById("calendar"),modal=document.getElementById("modal");
-function persist(){try{localStorage.setItem(KEY,JSON.stringify(data))}catch(e){alert("Не удалось сохранить: возможно, изображения слишком большие. Попробуйте фото меньшего размера.")}}
-function render(){calendar.innerHTML="";for(let d=1;d<=10;d++){const card=document.createElement("section");card.className="day";card.innerHTML=`<div class="daynum">ДЕНЬ ${d}</div><div class="chest ${data[d]?'open':''}" aria-hidden="true"><div class="lid"></div><div class="base"></div><div class="band"></div><div class="lock"></div></div>`;const entry=data[d];
-if(entry){const text=document.createElement("div");text.className="saved";text.innerHTML=`<strong>Игроки:</strong> <span class="nick"></span><br><strong>Приз:</strong><br><span class="desc"></span>`;text.querySelector(".nick").textContent=entry.nick;text.querySelector(".desc").textContent=(entry.slot?("№ "+entry.slot+" · "):"")+entry.prize;card.appendChild(text);if(entry.image){const img=document.createElement("img");img.className="thumb";img.src=entry.image;img.alt="Фото приза";img.onclick=()=>showImage(entry.image);card.appendChild(img)}if(admin){const actions=document.createElement("div");actions.className="card-actions";actions.innerHTML='<button class="gold">Редактировать</button>';actions.querySelector("button").onclick=()=>openForm(d);card.appendChild(actions)}}else if(admin){const b=document.createElement("button");b.className="add";b.textContent="+";b.setAttribute("aria-label","Добавить запись для дня "+d);b.onclick=()=>openForm(d);card.appendChild(b)}else{const e=document.createElement("p");e.className="empty";e.textContent="Скоро здесь появится сюрприз";card.appendChild(e)}
-calendar.appendChild(card)}}
-function openForm(day){editingDay=day;const e=data[day]||{};document.getElementById("modalTitle").textContent="Запись · День "+day;document.getElementById("nick").value=e.nick||"";document.getElementById("prize").value=e.prize||"";document.getElementById("slot").value=e.slot||"";document.getElementById("photo").value="";existingImage=e.image||null;document.getElementById("fileHint").textContent=e.image?"Существующее изображение сохранится, если не выбрать новое.":"Изображение не выбрано.";modal.classList.add("show")}
-document.getElementById("entryForm").onsubmit=async ev=>{ev.preventDefault();if(!admin)return;const file=document.getElementById("photo").files[0];let img=existingImage;if(file){if(file.size>3*1024*1024){alert("Файл больше 3 МБ. Выберите изображение меньшего размера.");return}img=await new Promise((resolve,reject)=>{const r=new FileReader();r.onload=()=>resolve(r.result);r.onerror=reject;r.readAsDataURL(file)})}data[editingDay]={nick:document.getElementById("nick").value.trim(),prize:document.getElementById("prize").value.trim(),slot:document.getElementById("slot").value.trim(),image:img};persist();modal.classList.remove("show");render()};
-document.getElementById("cancelBtn").onclick=()=>modal.classList.remove("show");
-document.getElementById("rulesBtn").onclick=()=>document.getElementById("rulesModal").classList.add("show");document.getElementById("closeRules").onclick=()=>document.getElementById("rulesModal").classList.remove("show");
-document.getElementById("loginBtn").onclick=()=>document.getElementById("loginModal").classList.add("show");document.getElementById("cancelLogin").onclick=()=>document.getElementById("loginModal").classList.remove("show");
-document.getElementById("confirmLogin").onclick=()=>{if(document.getElementById("password").value===ADMIN_PASSWORD){admin=true;document.getElementById("loginModal").classList.remove("show");document.getElementById("password").value="";refreshMode()}else alert("Неверный пароль")};
-document.getElementById("password").onkeydown=e=>{if(e.key==="Enter")document.getElementById("confirmLogin").click()};
-document.getElementById("logoutBtn").onclick=()=>{admin=false;refreshMode()};
-function refreshMode(){document.getElementById("loginBtn").style.display=admin?"none":"inline-block";document.getElementById("logoutBtn").style.display=admin?"inline-block":"none";document.getElementById("exportBtn").style.display=admin?"inline-block":"none";document.getElementById("importBtn").style.display=admin?"inline-block":"none";render()}
-document.getElementById("exportBtn").onclick=()=>{const blob=new Blob([JSON.stringify({version:1,exportedAt:new Date().toISOString(),entries:data},null,2)],{type:"application/json"});const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="winter-calendar-backup.json";a.click();URL.revokeObjectURL(a.href)};
-document.getElementById("importBtn").onclick=()=>document.getElementById("importFile").click();
-document.getElementById("importFile").onchange=async e=>{const f=e.target.files[0];if(!f)return;try{const parsed=JSON.parse(await f.text());const entries=parsed.entries||parsed;if(!entries||typeof entries!=="object")throw Error();if(confirm("Заменить текущие записи данными из файла?")){data=entries;persist();render();alert("База загружена.")}}catch(err){alert("Не удалось прочитать файл резервной копии.")}e.target.value=""};
-function showImage(src){document.getElementById("largeImage").src=src;document.getElementById("imageModal").classList.add("show")}document.getElementById("closeImage").onclick=()=>document.getElementById("imageModal").classList.remove("show");document.getElementById("imageModal").onclick=e=>{if(e.target.id==="imageModal")e.currentTarget.classList.remove("show")};
-render();
-</script>
-</body></html>
+
+    <canvas id="matrix"></canvas>
+    <div class="scanlines"></div>
+
+    <!-- Экран секретного архива -->
+    <div class="terminal" id="terminal">
+        <div class="badge">TOP SECRET // ARCHIVE #094</div>
+        <h1>СЕКРЕТНЫЙ АРХИВ</h1>
+        <div class="typing-text" id="text"></div>
+        
+        <button class="btn-access" id="openBtn" onclick="startHack()">ОТКРЫТЬ ДОСТУП</button>
+
+        <div class="loader-box" id="loader">
+            <div style="font-size: 12px;" id="status">РАСШИФРОВКА ФАЙЛА... 0%</div>
+            <div class="progress-bar">
+                <div class="progress-fill" id="fill"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Экран с видео (появится после нажатия) -->
+    <div class="video-container" id="videoBox">
+        <!-- ВСТАВЬ СВОЁ ВИДЕО НИЖЕ ВМЕСТО video.mp4 -->
+        <video id="prankVideo" controls playsinline>
+            <source src="video.mp4" type="video/mp4">
+            Ваш браузер не поддерживает видео.
+        </video>
+    </div>
+
+    <script>
+        // 1. Эффект печатающегося текста
+        const message = "ОБНАРУЖЕНО НЕИЗВЕСТНОЕ ПОДКЛЮЧЕНИЕ.\nДОСТУП К ЗАСЕКРЕЧЕННЫМ МАТЕРИАЛАМ ОГРАНИЧЕН.\nПОДТВЕРДИТЕ ВХОД ДЛЯ ПРОСМОТРА...";
+        let idx = 0;
+        const textEl = document.getElementById('text');
+        function typeWriter() {
+            if (idx < message.length) {
+                textEl.innerHTML += message.charAt(idx) === '\n' ? '<br>' : message.charAt(idx);
+                idx++;
+                setTimeout(typeWriter, 35);
+            }
+        }
+        typeWriter();
+
+        // 2. Анимация падающих символов (Матрица)
+        const canvas = document.getElementById('matrix');
+        const ctx = canvas.getContext('2d');
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        const chars = '010101SECRETARCHIVEACCESSDENIEDFBISYSTEM';
+        const fontSize = 14;
+        const columns = canvas.width / fontSize;
+        const drops = Array(Math.floor(columns)).fill(1);
+
+        function drawMatrix() {
+            ctx.fillStyle = 'rgba(3, 8, 6, 0.08)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = '#00ff66';
+            ctx.font = fontSize + 'px monospace';
+            for (let i = 0; i < drops.length; i++) {
+                const text = chars[Math.floor(Math.random() * chars.length)];
+                ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+                if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) drops[i] = 0;
+                drops[i]++;
+            }
+        }
+        setInterval(drawMatrix, 45);
+
+        // 3. Анимация взлома при нажатии на кнопку и запуск видео
+        function startHack() {
+            document.getElementById('openBtn').style.display = 'none';
+            document.getElementById('loader').style.display = 'block';
+            
+            let progress = 0;
+            const fill = document.getElementById('fill');
+            const status = document.getElementById('status');
+
+            const interval = setInterval(() => {
+                progress += Math.floor(Math.random() * 12) + 5;
+                if (progress >= 100) {
+                    progress = 100;
+                    clearInterval(interval);
+                    status.innerText = "ДОСТУП РАЗРЕШЕН!";
+                    setTimeout(() => {
+                        document.getElementById('terminal').style.opacity = '0';
+                        setTimeout(() => {
+                            document.getElementById('videoBox').style.display = 'flex';
+                            const vid = document.getElementById('prankVideo');
+                            vid.play();
+                        }, 500);
+                    }, 400);
+                }
+                fill.style.width = progress + '%';
+                status.innerText = `РАСШИФРОВКА ФАЙЛА... ${progress}%`;
+            }, 120);
+        }
+    </script>
+</body>
+</html>
