@@ -5,12 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>ERROR 403 // RESTRICTED NODE</title>
     <style>
-        @import url('https://googleapis.com');
         * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         body {
             background-color: #020305;
             color: #d0f0e0;
-            font-family: 'Share Tech Mono', 'Courier New', monospace;
+            font-family: 'Courier New', Courier, monospace;
             height: 100vh;
             overflow: hidden;
             display: flex;
@@ -18,7 +17,7 @@
             align-items: center;
             user-select: none;
         }
-        canvas#bgCanvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; }
+        canvas#bgCanvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; pointer-events: none; }
         .crt-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: radial-gradient(circle, rgba(0,0,0,0) 55%, rgba(0,0,0,0.85) 100%),
@@ -34,8 +33,8 @@
         .rec-indicator { position: fixed; top: 20px; left: 50px; font-size: 12px; color: #ff2a55; letter-spacing: 2px; z-index: 3; display: flex; align-items: center; gap: 8px; }
         .rec-dot { width: 8px; height: 8px; background: #ff2a55; border-radius: 50%; box-shadow: 0 0 10px #ff2a55; animation: pulse 1.2s infinite; }
         .container {
-            position: relative; z-index: 4; width: 92%; max-width: 440px;
-            background: rgba(6, 12, 16, 0.75); backdrop-filter: blur(8px);
+            position: relative; z-index: 10; width: 92%; max-width: 440px;
+            background: rgba(6, 12, 16, 0.8); backdrop-filter: blur(8px);
             border: 1px solid rgba(0, 255, 170, 0.25);
             box-shadow: 0 0 40px rgba(0, 0, 0, 0.9), inset 0 0 20px rgba(0, 255, 170, 0.05);
             padding: 30px 20px; border-radius: 6px; text-align: center;
@@ -44,9 +43,9 @@
         .warning-tag { display: inline-block; font-size: 11px; color: #ff2a55; border: 1px solid rgba(255, 42, 85, 0.5); background: rgba(255, 42, 85, 0.1); padding: 4px 12px; letter-spacing: 3px; margin-bottom: 18px; text-transform: uppercase; }
         .glitch { font-size: 24px; font-weight: bold; letter-spacing: 4px; color: #fff; position: relative; text-shadow: 0 0 10px rgba(0, 255, 170, 0.6); margin-bottom: 12px; }
         .sub-info { font-size: 13px; color: #7da196; line-height: 1.5; min-height: 45px; margin-bottom: 25px; }
-        .scanner-wrapper { position: relative; width: 110px; height: 110px; margin: 0 auto 15px; border-radius: 50%; border: 1px dashed rgba(0, 255, 170, 0.4); display: flex; justify-content: center; align-items: center; cursor: pointer; transition: 0.3s; background: radial-gradient(circle, rgba(0,255,170,0.08) 0%, transparent 70%); }
+        .scanner-wrapper { position: relative; width: 120px; height: 120px; margin: 0 auto 15px; border-radius: 50%; border: 1px dashed rgba(0, 255, 170, 0.4); display: flex; justify-content: center; align-items: center; cursor: pointer; touch-action: none; transition: 0.3s; background: radial-gradient(circle, rgba(0,255,170,0.08) 0%, transparent 70%); }
         .scanner-wrapper.scanning { border-color: #00ffaa; box-shadow: 0 0 25px rgba(0, 255, 170, 0.4); transform: scale(1.05); }
-        .fingerprint-svg { width: 60px; height: 60px; fill: none; stroke: rgba(0, 255, 170, 0.6); stroke-width: 2; stroke-linecap: round; transition: stroke 0.3s; }
+        .fingerprint-svg { width: 64px; height: 64px; fill: none; stroke: rgba(0, 255, 170, 0.6); stroke-width: 2; stroke-linecap: round; transition: stroke 0.3s; pointer-events: none; }
         .scanner-wrapper.scanning .fingerprint-svg { stroke: #00ffaa; }
         .laser { position: absolute; top: 10%; left: 10%; width: 80%; height: 2px; background: #00ffaa; box-shadow: 0 0 12px #00ffaa, 0 0 20px #00ffaa; opacity: 0; pointer-events: none; }
         .scanner-wrapper.scanning .laser { opacity: 1; animation: scanMove 1.2s infinite alternate ease-in-out; }
@@ -84,13 +83,17 @@
 
         <div class="video-stage" id="videoStage">
             <div class="feed-header"><span>ARCHIVE_FILE_01.MP4</span><span style="color:#ff2a55;">● DECRYPTED</span></div>
-            <video id="secretVideo" controls playsinline preload="auto">
-                <source src="ВСТАВЬ_СЮДА_ССЫЛКУ_ИЗ_SUPABASE" type="video/mp4">
-            </video>
+            <video id="secretVideo" controls playsinline preload="metadata"></video>
         </div>
     </div>
 
     <script>
+        const VIDEO_URL = "";
+
+        if (VIDEO_URL) {
+            document.getElementById('secretVideo').src = VIDEO_URL;
+        }
+
         const introText = "Обнаружен скрытый пакет данных. Личность отправителя не установлена. Подтвердите присутствие...";
         let charIndex = 0;
         const typeEl = document.getElementById('typewriter');
@@ -120,7 +123,8 @@
 
         function startScan(e) {
             if (unlocked) return;
-            e.preventDefault();
+            if (e.cancelable) e.preventDefault();
+            clearInterval(holdTimer);
             scanner.classList.add('scanning');
             scanHint.style.color = "#fff";
             holdTimer = setInterval(() => {
@@ -138,7 +142,8 @@
                         document.getElementById('lockScreen').style.display = 'none';
                         document.getElementById('mainBox').style.maxWidth = '650px';
                         document.getElementById('videoStage').style.display = 'flex';
-                        document.getElementById('secretVideo').play().catch(() => {});
+                        const vid = document.getElementById('secretVideo');
+                        if (VIDEO_URL) vid.play().catch(() => {});
                     }, 500);
                 }
             }, 80);
@@ -153,132 +158,43 @@
             scanHint.style.color = "#00ffaa";
         }
 
-        scanner.addEventListener('mousedown', startScan);
-        scanner.addEventListener('touchstart', startScan);
-        window.addEventListener('mouseup', stopScan);
-        const titleEl = document.getElementById('glitchTitle');
-        const origTitle = "ДОСТУП ЗАКРЫТ";
-        const glitchChars = "!<>-_\\/[]{}—=+*^?#________";
-        setInterval(() => {
-            if (Math.random() > 0.82) {
-                let glitched = origTitle.split('').map(c => Math.random() > 0.7 ? glitchChars[Math.floor(Math.random() * glitchChars.length)] : c).join('');
-                titleEl.innerText = glitched;
-                setTimeout(() => { titleEl.innerText = origTitle; }, 120);
-            }
-        }, 1500);
-
-        const scanner = document.getElementById('scanner');
-        const scanHint = document.getElementById('scanHint');
-        const sysLogs = document.getElementById('sysLogs');
-        let holdTimer = null;
-        let progress = 0;
-        let unlocked = false;
-
-        function startScan(e) {
-            if (unlocked) return;
-            e.preventDefault();
-            scanner.classList.add('scanning');
-            scanHint.style.color = "#fff";
-            
-            holdTimer = setInterval(() => {
-                progress += 5;
-                scanHint.innerText = `ИДЕНТИФИКАЦИЯ... ${progress}%`;
-                
-                if (progress === 30) sysLogs.innerHTML = "&gt; Анализ отпечатка...<br>&gt; Обход защиты узла #09...";
-                if (progress === 70) sysLogs.innerHTML = "&gt; Ключ принят!<br>&gt; Дешифровка видеопотока...";
-
-                if (progress >= 100) {
-                    clearInterval(holdTimer);
-                    unlocked = true;
-                    unlockArchive();
-                }
-            }, 80);
-        }
-
-        function stopScan() {
-            if (unlocked) return;
-            clearInterval(holdTimer);
-            scanner.classList.remove('scanning');
-            progress = 0;
-            scanHint.innerText = "УДЕРЖИВАЙТЕ ПАЛЕЦ ДЛЯ СКАНИРОВАНИЯ";
-            scanHint.style.color = "#00ffaa";
-        }
-
-        scanner.addEventListener('mousedown', startScan);
-        scanner.addEventListener('touchstart', startScan);
-        window.addEventListener('mouseup', stopScan);
-        window.addEventListener('touchend', stopScan);
-
-        function unlockArchive() {
-            scanHint.innerText = "ДОСТУП РАЗРЕШЕН";
-            document.getElementById('recText').innerText = "CONNECTION ESTABLISHED";
-            document.getElementById('recText').style.color = "#00ffaa";
-            
-            setTimeout(() => {
-                document.getElementById('lockScreen').style.display = 'none';
-                document.getElementById('mainBox').style.maxWidth = '650px';
-                document.getElementById('videoStage').style.display = 'flex';
-                
-                const video = document.getElementById('secretVideo');
-                video.play().catch(() => {});
-            }, 500);
-        }
-
-        const canvas = document.getElementById('bgCanvas');
-        const ctx = canvas.getContext('2d');
-        let w = canvas.width = window.innerWidth;
-        let h = canvas.height = window.innerHeight;
-
-        const particles = Array.from({ length: 45 }, () => ({
-            x: Math.random() * w,
-            y: Math.random() * h,
-            r: Math.random() * 1.8 + 0.5,
-            vx: (Math.random() - 0.5) * 0.4,
-            vy: (Math.random() - 0.5) * 0.4
-        }));
-
-        function animateBg() {
-            ctx.clearRect(0, 0, w, h);
-            
-            const time = Date.now() * 0.001;
-            const radius = 120 + Math.sin(time) * 15;
-            ctx.beginPath();
-            ctx.arc(w / 2, h / 2, radius, 0, Math.PI * 2);
-            ctx.strokeStyle = 'rgba(0, 255, 170, 0.06)';
-            ctx.lineWidth = 1;
-            ctx.stroke();
-
-            ctx.fillStyle = 'rgba(0, 255, 170, 0.45)';
-            particles.forEach((p, i) => {
-                p.x += p.vx;
-                p.y += p.vy;
-                if (p.x < 0 || p.x > w) p.vx *= -1;
-                if (p.y < 0 || p.y > h) p.vy *= -1;
-
-                ctx.beginPath();
-                ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
-                ctx.fill();
-
-                for (let j = i + 1; j < particles.length; j++) {
-                    const dx = p.x - particles[j].x;
-                    const dy = p.y - particles[j].y;
-                    const dist = Math.sqrt(dx * dx + dy * dy);
-                    if (dist < 100) {
-                        ctx.beginPath();
-                        ctx.moveTo(p.x, p.y);
-                        ctx.lineTo(particles[j].x, particles[j].y);
-                        ctx.strokeStyle = `rgba(0, 255, 170, ${0.12 * (1 - dist / 100)})`;
-                        ctx.stroke();
-                    }
-                }
-            });
-            requestAnimationFrame(animateBg);
-        }
-        animateBg();
-        window.addEventListener('resize', () => {
-            w = canvas.width = window.innerWidth;
-            h = canvas.height = window.innerHeight;
-        });
-    </script>
+        scanner.addEventListener('pointerdown', startScan);
+window.addEventListener('pointerup', stopScan);
+window.addEventListener('pointercancel', stopScan);
+const canvas = document.getElementById('bgCanvas');
+const ctx = canvas.getContext('2d');
+let w = canvas.width = window.innerWidth, h = canvas.height = window.innerHeight;
+const particles = Array.from({ length: 45 }, () => ({
+x: Math.random() * w, y: Math.random() * h,
+r: Math.random() * 1.8 + 0.5,
+vx: (Math.random() - 0.5) * 0.4, vy: (Math.random() - 0.5) * 0.4
+}));
+function animateBg() {
+ctx.clearRect(0, 0, w, h);
+const radius = 120 + Math.sin(Date.now() * 0.001) * 15;
+ctx.beginPath();
+ctx.arc(w / 2, h / 2, radius, 0, Math.PI * 2);
+ctx.strokeStyle = 'rgba(0, 255, 170, 0.06)';
+ctx.stroke();
+ctx.fillStyle = 'rgba(0, 255, 170, 0.45)';
+particles.forEach((p, i) => {
+p.x += p.vx; p.y += p.vy;
+if (p.x < 0 || p.x > w) p.vx *= -1;
+if (p.y < 0 || p.y > h) p.vy *= -1;
+ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2); ctx.fill();
+for (let j = i + 1; j < particles.length; j++) {
+const dist = Math.hypot(p.x - particles[j].x, p.y - particles[j].y);
+if (dist < 100) {
+ctx.beginPath(); ctx.moveTo(p.x, p.y); ctx.lineTo(particles[j].x, particles[j].y);
+ctx.strokeStyle = rgba(0, 255, 170, ${0.12 * (1 - dist / 100)});
+ctx.stroke();
+}
+}
+});
+requestAnimationFrame(animateBg);
+}
+animateBg();
+window.addEventListener('resize', () => { w = canvas.width = window.innerWidth; h = canvas.height = window.innerHeight; });
+            </script>
 </body>
 </html>
